@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/apphost/">
+    <Project Path="apphost/BizSrt.AppHost.csproj" />
+  </Folder>
+  <Folder Name="/backend/">
+    <Project Path="backend/BizSrt.Api.csproj" />
+  </Folder>
+</Solution>

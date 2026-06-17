@@ -1,0 +1,29 @@
+# .gitignore for .NET and Node.js
+
+# .NET
+[Bb]in/
+[Oo]bj/
+*.user
+*.userosscache
+*.sln.docuser
+.vs/
+.vscode/
+.aspire/
+
+# Node.js
+node_modules/
+.next/
+out/
+build/
+dist/
+.env*
+!.env.example
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# OS Files
+.DS_Store
+Thumbs.db
+desktop.ini
