@@ -1,5 +1,4 @@
 import { LitElement, html, css } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 
@@ -35,14 +34,20 @@ interface Company {
   offices: Office[];
 }
 
-@customElement('company-profile')
 export class CompanyProfile extends LitElement {
-  @property({ type: Number }) companyId?: number;
+  static properties = {
+    companyId: { type: Number },
+    _company: { state: true },
+    _selectedOffice: { state: true },
+    _loading: { state: true },
+    _error: { state: true }
+  };
 
-  @state() private _company?: Company;
-  @state() private _selectedOffice?: Office;
-  @state() private _loading = false;
-  @state() private _error?: string;
+  companyId?: number;
+  private _company?: Company;
+  private _selectedOffice?: Office;
+  private _loading = false;
+  private _error?: string;
 
   static styles = css`
     :host {
@@ -277,4 +282,8 @@ export class CompanyProfile extends LitElement {
       </div>
     `;
   }
+}
+
+if (!customElements.get('company-profile')) {
+  customElements.define('company-profile', CompanyProfile);
 }
