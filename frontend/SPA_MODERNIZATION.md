@@ -28,16 +28,32 @@ The following table demonstrates how the custom concepts from the legacy archite
 
 ## Hybrid Component Strategy (React + Lit)
 
-To achieve the best of both worlds, we employ a **Wrapper Pattern**:
+To achieve the best of both worlds, we employ a **Wrapper Pattern** using `*Wrapper.tsx` files:
 
 1. **Lit Web Component (`src/company/profile.ts`)**: Contains the styling, template, and client-side logic for the specific bundle page.
 2. **Bundle Layout (`src/company/header-layout.ts`)**: The Lit web component defining the shared shell (tabs, logo) for all pages within the bundle.
-3. **React Wrappers (`src/company/ProfileWrapper.tsx`)**: Intermediaries that expose React props and render the custom elements.
-4. **Next.js Page/Layout (`src/app/company/[id]/page.tsx`, `layout.tsx`)**: The server-rendered route groups that extract parameters from the URL, generate SEO metadata, and serve the wrappers.
+3. **React Wrappers (`src/company/*Wrapper.tsx`)**: These are crucial **bridge components** that seamlessly integrate the legacy Lit custom elements into the Next.js React ecosystem.
+   - **Client-Side Boundaries**: Lit components manipulate the DOM and require browser APIs. These wrappers explicitly declare the `"use client"` directive to tell Next.js to render them entirely on the client-side.
+   - **React to Lit Translation**: We utilize the `@lit/react` library (specifically the `createComponent` function) inside these wrappers. This creates a strongly-typed React component wrapper around the vanilla Lit web component.
+   - **Props & Events**: The wrapper allows us to safely pass React props down to the Lit elements and bubble custom DOM events back up to the Next.js application if necessary.
+4. **Next.js Page/Layout (`src/app/company/[id]/page.tsx`, `layout.tsx`)**: The server-rendered route groups that extract parameters from the URL, generate SEO metadata, and import/serve the React Wrappers.
 
 ### Routing Example: Company Page Bundle
 * **Legacy:** URL `/company-profile/123` matched regex `^/company-profile/`. `Routes` engine dispatched an event to `<page-view>`, which fetched `company.bundle.js`. The bundle executed, instantiating `<company-profile>`, which internally wrapped itself in `<company-header-layout>`.
 * **Modern:** URL `/company/123` hits `app/company/[id]/page.tsx`. Next.js extracts `params.id`. It automatically applies the bundle's shared shell defined in `app/company/[id]/layout.tsx`. The layout renders the `CompanyHeaderWrapper`, which wraps the `ProfileWrapper` page content. Code-splitting happens automatically per Next.js route segment.
+
+## Server-Side SEO & Structured Data (JSON-LD)
+
+In the legacy architecture, SEO optimizations (like `document.title`, `<meta>` tags, and `Schema_org` structured data) were built via client-side ViewModels. This required crawlers to execute JavaScript to index the pages.
+
+In the modernized Next.js architecture, **all SEO generation executes on the Server Side**:
+
+1. **Dynamic Metadata (`<title>`, `<meta>`, OpenGraph)**:
+   Instead of static objects, dynamic routes (e.g., `app/company/[id]/page.tsx`) export a `generateMetadata` async function. Next.js fetches the required data server-side and automatically injects the tags into the `<head>` of the initial HTML response.
+2. **JSON-LD (`Schema_org`)**:
+   Structured data payloads (e.g., `LocalBusiness` schemas) are generated directly within the Server Component's render path and natively injected into the DOM as `<script type="application/ld+json">`.
+
+Because these execute entirely on the Node.js server, web crawlers receive fully populated, SEO-optimized HTML immediately on their first network request.
 
 ## Styling and Components
 
