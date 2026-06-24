@@ -34,3 +34,19 @@ export async function toPreview(companies: any[]): Promise<CompanyPreview[]> {
   
   return await response.json();
 }
+
+/**
+ * Fetches a single company profile by its ID.
+ * Matches legacy: view(company, options, ...)
+ */
+export async function view(companyId: number): Promise<any> {
+  if (!companyId) throw new Error('Company ID is required');
+
+  const response = await fetch(`${API_BASE}/api/company/profile/view?company=${companyId}`);
+  
+  if (!response.ok) {
+    throw new Error(`Failed to fetch company profile: ${response.statusText}`);
+  }
+  
+  return await response.json();
+}

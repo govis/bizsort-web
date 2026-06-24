@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter, useSelectedLayoutSegment } from 'next/navigation';
 import type { Company } from '@/components/types';
+import { view } from '../service/company';
 
 // -- 1. Lit Web Component Imports (Registers custom elements for this bundle) --
 import './home';
@@ -44,12 +45,8 @@ export function CompanyLayoutWrapper({
   useEffect(() => {
     async function fetchCompany() {
       try {
-        const backendUrl = process.env.NEXT_PUBLIC_API_URL || '';
-        const res = await fetch(`${backendUrl}/api/company/profile/view?company=${companyId}`);
-        if (res.ok) {
-          const data = await res.json();
-          setCompany(data);
-        }
+        const data = await view(companyId);
+        setCompany(data);
       } catch (err) {
         console.error('Failed to load company for layout:', err);
       }
