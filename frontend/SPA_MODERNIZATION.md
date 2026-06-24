@@ -28,19 +28,18 @@ The following table demonstrates how the custom concepts from the legacy archite
 
 ## Hybrid Component Strategy (React + Lit)
 
-To achieve the best of both worlds, we employ a **Wrapper Pattern** using `*Wrapper.tsx` files:
+To achieve the best of both worlds, we employ a unified **Client Bundle Boundary** using a single `bundle.tsx` per domain (e.g., `src/company/bundle.tsx`):
 
-1. **Lit Web Component (`src/company/profile.ts`)**: Contains the styling, template, and client-side logic for the specific bundle page.
-2. **Bundle Layout (`src/company/header-layout.ts`)**: The Lit web component defining the shared shell (tabs, logo) for all pages within the bundle.
-3. **React Wrappers (`src/company/*Wrapper.tsx`)**: These are crucial **bridge components** that seamlessly integrate the legacy Lit custom elements into the Next.js React ecosystem.
-   - **Client-Side Boundaries**: Lit components manipulate the DOM and require browser APIs. These wrappers explicitly declare the `"use client"` directive to tell Next.js to render them entirely on the client-side.
-   - **React to Lit Translation**: We utilize the `@lit/react` library (specifically the `createComponent` function) inside these wrappers. This creates a strongly-typed React component wrapper around the vanilla Lit web component.
-   - **Props & Events**: The wrapper allows us to safely pass React props down to the Lit elements and bubble custom DOM events back up to the Next.js application if necessary.
-4. **Next.js Page/Layout (`src/app/company/[id]/page.tsx`, `layout.tsx`)**: The server-rendered route groups that extract parameters from the URL, generate SEO metadata, and import/serve the React Wrappers.
+1. **Lit Web Components (`src/company/*.ts`)**: Contains the styling, templates, and client-side logic for the specific bundle pages (e.g., `home.ts`, `profile.ts`, `header-layout.ts`).
+2. **Unified React Client Boundary (`src/company/bundle.tsx`)**: This file serves as the singular entry point to bridge the Server-Side Next.js app with the Client-Side Lit components.
+   - **Client-Side execution (`"use client"`)**: Lit components manipulate the DOM and require browser APIs (`window`). This bundle explicitly declares `"use client"` so it executes entirely in the browser.
+   - **Centralized Custom Element Registration**: Like the legacy `directory.js` bundles, this file centrally imports all `.ts` Lit components for the domain, ensuring they are registered in the browser's `customElements` registry.
+   - **React 19 Native Custom Elements**: Because Next.js 15 uses **React 19**, we no longer need translation libraries like `@lit/react` (`createComponent`). React 19 natively maps props and DOM events to custom elements! We simply export lightweight wrapper functions that return native JSX like `<company-profile company-id={id}></company-profile>`.
+3. **Next.js Server Pages (`src/app/company/...`)**: The server-rendered route groups dynamically import the wrappers from `bundle.tsx` via `next/dynamic`.
 
 ### Routing Example: Company Page Bundle
-* **Legacy:** URL `/company-profile/123` matched regex `^/company-profile/`. `Routes` engine dispatched an event to `<page-view>`, which fetched `company.bundle.js`. The bundle executed, instantiating `<company-profile>`, which internally wrapped itself in `<company-header-layout>`.
-* **Modern:** URL `/company/123` hits `app/company/[id]/page.tsx`. Next.js extracts `params.id`. It automatically applies the bundle's shared shell defined in `app/company/[id]/layout.tsx`. The layout renders the `CompanyHeaderWrapper`, which wraps the `ProfileWrapper` page content. Code-splitting happens automatically per Next.js route segment.
+* **Legacy:** URL `/company-profile/123` matched regex `^/company-profile/`. `Routes` engine dispatched an event to `<page-view>`, which fetched `company.bundle.js` (or `directory.js`). The bundle executed, defining all custom elements and instantiating `<company-profile>`.
+* **Modern:** URL `/company/123` hits `app/company/[id]/page.tsx`. Next.js dynamically imports the `bundle.tsx` for the company domain. The bundle automatically registers the Lit custom elements and returns the `<company-profile>` element inside the shared `<company-header-layout>`. Code-splitting happens automatically per domain bundle.
 
 ## Server-Side SEO & Structured Data (JSON-LD)
 
