@@ -32,7 +32,7 @@ export class CompanyProfile extends LitElement {
       _selectedOffice: { state: true },
       _loading: { state: true },
       _error: { state: true },
-      _tab: { state: true }
+      activeTab: { type: String, attribute: 'active-tab' }
     };
   }
 
@@ -41,12 +41,12 @@ export class CompanyProfile extends LitElement {
   declare private _selectedOffice?: Office;
   declare private _loading: boolean;
   declare private _error?: string;
-  declare private _tab: string;
+  declare activeTab: string;
 
   constructor() {
     super();
     this._loading = false;
-    this._tab = 'about';
+    this.activeTab = 'about';
   }
 
   willUpdate(changedProperties: Map<string | number | symbol, unknown>) {
@@ -286,64 +286,16 @@ export class CompanyProfile extends LitElement {
     const logoUrl = this._getLogoUrl();
 
     return html`
-      <company-header-layout
-        title-text="${this._company.name}"
-        logo-text-main="${!logoUrl ? 'biz' : ''}"
-        logo-text-accent="${!logoUrl ? 'SORT' : ''}"
-      >
-        <!-- Search icon -->
-        <wa-button slot="navbar" variant="text" is-icon-button>
-          <wa-icon name="search"></wa-icon>
-        </wa-button>
-
-        <!-- Dropdown menu -->
-        <page-menu slot="dropdown" theme="dark">
-          <wa-dropdown-item>Directory</wa-dropdown-item>
-          <wa-dropdown-item>Enrichment</wa-dropdown-item>
-          <wa-dropdown-item>Share Community</wa-dropdown-item>
-        </page-menu>
-
-        <!-- Company logo -->
-        ${logoUrl ? html`
-          <img slot="logo" src="${logoUrl}" alt="${this._company.name} Logo" />
-        ` : ''}
-
-        <!-- Tab navigation -->
-        <wa-tab-group slot="tabs" @wa-tab-show="${(e: CustomEvent<{ name: string }>) => this._tab = e.detail.name}">
-          <wa-tab slot="nav" panel="about" ?active="${this._tab === 'about'}">About</wa-tab>
-          ${this._company.offerings && !this._company.offerings.hideOfferings ? html`
-            <wa-tab slot="nav" panel="products" ?active="${this._tab === 'products'}">${this._company.offerings.label || 'What We Do'}</wa-tab>
-          ` : ''}
-          ${this._company.projects ? html`
-            <wa-tab slot="nav" panel="projects" ?active="${this._tab === 'projects'}">${this._company.projects.label || 'Projects'}</wa-tab>
-          ` : ''}
-          ${this._company.jobs ? html`
-            <wa-tab slot="nav" panel="jobs" ?active="${this._tab === 'jobs'}">${this._company.jobs.label || 'Jobs'}</wa-tab>
-          ` : ''}
-          ${this._company.marketplace ? html`
-            <wa-tab slot="nav" panel="marketplace" ?active="${this._tab === 'marketplace'}">${this._company.marketplace.label || 'Marketplace'}</wa-tab>
-          ` : ''}
-          ${this._company.promotions ? html`
-            <wa-tab slot="nav" panel="promotions" ?active="${this._tab === 'promotions'}">${this._company.promotions.label || 'Promotions'}</wa-tab>
-          ` : ''}
-          ${this._company.news ? html`
-            <wa-tab slot="nav" panel="news" ?active="${this._tab === 'news'}">${this._company.news.label || 'News'}</wa-tab>
-          ` : ''}
-          ${this._company.articles ? html`
-            <wa-tab slot="nav" panel="articles" ?active="${this._tab === 'articles'}">${this._company.articles.label || 'Articles'}</wa-tab>
-          ` : ''}
-        </wa-tab-group>
-
-        <!-- Tab content (main content area) -->
-        ${this._tab === 'about' ? this._renderAboutTab(hasMultipleOffices) : ''}
-        ${this._tab === 'products' ? this._renderProductsTab() : ''}
-        ${this._tab === 'projects' ? this._renderStubTab('projects', this._company.projects?.label || 'Projects') : ''}
-        ${this._tab === 'jobs' ? this._renderStubTab('jobs', this._company.jobs?.label || 'Jobs') : ''}
-        ${this._tab === 'marketplace' ? this._renderStubTab('marketplace', this._company.marketplace?.label || 'Marketplace') : ''}
-        ${this._tab === 'promotions' ? this._renderStubTab('promotions', this._company.promotions?.label || 'Promotions') : ''}
-        ${this._tab === 'news' ? this._renderStubTab('news', this._company.news?.label || 'News') : ''}
-        ${this._tab === 'articles' ? this._renderArticlesTab() : ''}
-      </company-header-layout>
+      <div class="company-profile-content">
+        ${this.activeTab === 'about' ? this._renderAboutTab(hasMultipleOffices) : ''}
+        ${this.activeTab === 'products' ? this._renderProductsTab() : ''}
+        ${this.activeTab === 'projects' ? this._renderStubTab('projects', this._company.projects?.label || 'Projects') : ''}
+        ${this.activeTab === 'jobs' ? this._renderStubTab('jobs', this._company.jobs?.label || 'Jobs') : ''}
+        ${this.activeTab === 'marketplace' ? this._renderStubTab('marketplace', this._company.marketplace?.label || 'Marketplace') : ''}
+        ${this.activeTab === 'promotions' ? this._renderStubTab('promotions', this._company.promotions?.label || 'Promotions') : ''}
+        ${this.activeTab === 'news' ? this._renderStubTab('news', this._company.news?.label || 'News') : ''}
+        ${this.activeTab === 'articles' ? this._renderArticlesTab() : ''}
+      </div>
     `;
   }
 
