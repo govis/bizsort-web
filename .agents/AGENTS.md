@@ -36,3 +36,10 @@ This file contains structural and naming conventions that all agents must follow
 - **Legacy Caching:** The legacy backend extensively utilizes memory caching (e.g., `ReadManyExpirationCache`). When porting data access logic, you must check if the legacy system used a cache for the entity.
 - **Do Not Bypass Cache:** Do NOT hit the database directly via EF Core in the modern `Service` classes if the legacy implementation relied on cache.
 - **Cache Porting Approach:** Scaffold and port the required cache mechanism. Use the modernized `BizSrt.Api.Data.Cache.ReadManyExpirationCache<TKey, TValue>` base class. Create specific cache implementations (e.g., `CompanyProfilesCache`), define the corresponding `Cached*` models (porting their mapping methods like `ToPreview()`), and register the caches as Singletons in `Program.cs`.
+
+## Frontend Modernization Rules
+
+### 1. API Helper Abstractions
+- **Port Legacy Service Helpers:** For EVERY API call required by the frontend, you MUST check the legacy codebase in `..\legacy\website\wwwroot\src\service\` (e.g. `company.ts`, `product.ts`, etc.).
+- **No Raw Fetch Calls:** Do NOT improvise or write new inline `fetch()` calls directly inside React components or Lit elements. 
+- **Maintain Method Names:** Find the exact legacy helper method, port it to the modern `frontend/src/service/` directory, and use that abstracted function. Maintain the legacy method name (e.g., `view()`, `getFeatured()`, `toPreview()`) and logic to ensure complete parity with the legacy UI data flow.
