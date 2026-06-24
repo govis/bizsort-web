@@ -1,6 +1,6 @@
 # BizSort Web Implementation Documentation
 
-This document describes the modernization of the BizSort Web application, migrating from a legacy Polymer/WCF/Web API stack to a modern architecture using .NET 10, Next.js, Lit, Shoelace, and .NET Aspire.
+This document describes the modernization of the BizSort Web application, migrating from a legacy Polymer/Material Web Components stack to a modern architecture using .NET 10, Next.js 16, Lit 3.3, Web Awesome, and .NET Aspire.
 
 ## 1. System Architecture
 
@@ -8,18 +8,18 @@ The application is structured as a distributed system orchestrated by **.NET Asp
 
 ### Components:
 - **AppHost (`/apphost`)**: The .NET Aspire orchestrator. It manages the lifecycle of the backend and frontend, handles port allocation, and injects service discovery environment variables.
-- **Backend (`/backend`)**: A .NET 10 Minimal API. It handles business logic, data access via Entity Framework Core (SQL Server), and image processing via ImageSharp.
-- **Frontend (`/frontend`)**: A Next.js 16 application. It uses Lit for web components and Shoelace for UI elements, maintaining compatibility with the legacy component-based logic while utilizing modern React-based routing and SSR capabilities.
+- **Backend (`/backend`)**: A .NET 10 Minimal API. It handles business logic, data access via Entity Framework Core (SQL Server with NetTopologySuite), and image processing via ImageSharp.
+- **Frontend (`/frontend`)**: A Next.js 16 application. It uses Lit 3.3 for web components and Web Awesome (`wa-` prefix) for UI elements, maintaining compatibility with the legacy component-based logic while utilizing modern React-based routing and SSR capabilities.
 
-## 2. Backend Migration (C#)
+## 2. Backend (C#)
 
-The backend was ported from the legacy `BizSrt.Api` to a modern **Minimal API** structure.
+The backend was ported from the `Service`, `Model`, `Data`, and `Dev` folders in the `..\legacy\server\` directory. This legacy code was migrated to a modern **Minimal API** structure. It is required to verify endpoint and data format consistency when making changes to models or services to ensure compatibility with the ported UI components.
 
 ### Key Porting Strategies:
 - **Legacy Model Retention**: Models from the legacy `Model` and `Data` directories were re-implemented in `backend/Models/` to ensure the JSON payloads remain identical to the legacy system. This prevents breaking changes for the ported UI components.
-- **Minimal API Mapping**: Legacy `ApiController` routes (e.g., `svc/company/profile/view`) were mapped to `app.MapGet` and `app.MapPost` in `backend/Endpoints/CompanyEndpoints.cs`.
-- **Entity Framework Core**: The `AppDbContext` was expanded to support complex relationships like `CompanyProfile` and its associated `Offices`.
-- **Service Layer**: `CompanyService` was updated to handle complex DTO mapping (e.g., `Profile` and `Office` structures) while utilizing modern C# features like primary constructors and collection expressions.
+- **Minimal API Mapping**: Legacy `ApiController` routes (e.g., `svc/company/profile/view`) were mapped to `app.MapGet` in `backend/Endpoints/CompanyEndpoints.cs`.
+- **Entity Framework Core**: The `AppDbContext` supports 16 entity types with complex relationships (CompanyProfile, Offices, Products, Projects, Jobs, Communities, Affiliations, Promotions, Media).
+- **Service Layer**: `CompanyService` (14 methods) handles complex DTO mapping while utilizing modern C# features. `ImageService` handles on-the-fly image resizing via ImageSharp.
 
 ### Data Structure Mapping:
 | Legacy Concept | New Implementation | Location |
@@ -27,26 +27,45 @@ The backend was ported from the legacy `BizSrt.Api` to a modern **Minimal API** 
 | `EntityId<T>`, `IdName<T>` | `EntityId<T>`, `IdName<T>` | `LegacyModels.cs` |
 | `Company.Profile` | `Profile` DTO | `CompanyModels.cs` |
 | `Office` | `Office` DTO | `CompanyModels.cs` |
+| `Product.Profile` | `Profile` DTO | `ProductModels.cs` |
+| `Project.Profile` | `Profile` DTO | `ProjectModels.cs` |
+| `Job.Profile` | `Profile` DTO | `JobModels.cs` |
+| `Promotion.Preview` | `Preview` DTO | `PromotionModels.cs` |
 | `svc/company/profile` | `/api/company/profile` | `CompanyEndpoints.cs` |
+| Image serving | `/api/image/get` | `ImageEndpoints.cs` |
 
-## 3. Frontend Migration (TypeScript/Lit/Shoelace)
+### API Endpoints:
+- **Company** (`/api/company`): profile/view, profile/getFeatured, profile/search, profile/getCommunities, profile/getAffiliations, profile/getProducts, profile/getProjects, profile/getJobs, profile/getPromotions, profile/getInfo, profile/newProfiles, product/getFeatured, product/view, job/view, project/view
+- **Image** (`/api/image`): get (with resize), captcha
+
+### Database:
+- SQL Server (local instance, database `BizSort`)
+- Connection configured in `appsettings.json`
+
+## 3. Frontend (TypeScript/Lit/Web Awesome)
 
 The frontend uses **Next.js** as the host framework but utilizes **Lit** for the core UI logic to facilitate a smooth port from the legacy Polymer components.
 
 ### UI Stack:
 - **Next.js 16**: App Router, Dynamic Imports, and SSR.
 - **Lit 3.3**: Used for porting legacy Polymer logic (`.ts` components).
-- **Shoelace 2.20**: Used for standardized, accessible UI components (`sl-card`, `sl-select`, etc.).
+- **Web Awesome 3.8** (`@awesome.me/webawesome`): Used for standardized, accessible UI components (`wa-card`, `wa-select`, `wa-tab-group`, etc.).
 
 ### Porting Process:
-1. **Remove Tailwind**: To align with the custom Lit/Shoelace styling strategy, Tailwind CSS was removed.
+1. **Remove Tailwind**: To align with the custom Lit/Web Awesome styling strategy, Tailwind CSS was removed.
 2. **Lit Components**: Legacy components (e.g., `company/profile.ts`) were rewritten as modern Lit classes.
-3. **Shoelace Integration**: Legacy `@material/web` and `paper-` components were replaced with Shoelace equivalents.
+3. **Web Awesome Integration**: Legacy `@material/web` (`md-`) and `paper-` components were replaced with Web Awesome (`wa-`) equivalents.
 4. **React Wrapper**: Since Lit components are Custom Elements, they are integrated into the Next.js App Router via a React wrapper (`CompanyProfileWrapper.tsx`) that uses `next/dynamic` with `ssr: false` to ensure they only render on the client.
 
 ### Component Structure:
-- `frontend/src/components/company-profile.ts`: The core Lit component logic and template.
-- `frontend/src/components/CompanyProfileWrapper.tsx`: The Client Component that registers and exports the Lit custom element for use in React.
+- `frontend/src/components/types.ts`: Shared TypeScript interfaces (`Company`, `Office`, `Location`, `Category`, `Offerings`).
+- `frontend/src/components/company-profile.ts`: The core Lit component — company profile viewer with tabs, contact info, map, and office switching.
+- `frontend/src/components/CompanyProfileWrapper.tsx`: The Client Component that bridges Lit custom elements into React.
+- `frontend/src/components/company-header-layout.ts`: Reusable header layout with logo, title, and slots for navbar/dropdown/tabs.
+- `frontend/src/components/layout-card.ts`: Generic card wrapper using `wa-card` with Material Design-like shadow styling.
+- `frontend/src/components/page-menu.ts`: 3-dot dropdown menu component.
+- `frontend/src/components/search-box.ts`: Search input styled for dark header backgrounds.
+- `frontend/src/components/search-category-menu.ts`: Category action dropdown (stub).
 - `frontend/src/app/page.tsx`: The Next.js entry point rendering the profile for a specific `companyId`.
 
 ## 4. Orchestration (.NET Aspire)
@@ -58,14 +77,20 @@ The AppHost automatically allocates ports for the backend. In `apphost/Program.c
 ```csharp
 builder.AddNpmApp("frontend", "../frontend", "dev")
     .WithReference(backend)
-    .WithEnvironment("NEXT_PUBLIC_API_URL", backend.GetEndpoint("http"));
+    .WithHttpEndpoint(env: "PORT")
+    .WithEnvironment("NEXT_PUBLIC_API_URL", backend.GetEndpoint("http"))
+    .WithExternalHttpEndpoints();
 ```
 
 ### Running the Project:
 1. Run `dotnet run --project apphost/BizSrt.AppHost.csproj`.
 2. Access the Aspire Dashboard to view logs and endpoint URLs.
 
-## 5. Known Limitations & TODOs:
-- **Mock Data**: Currently, backend endpoints return placeholder/empty data. Seeding logic in `Program.cs` or a real database connection is required for full validation.
+## 5. Current Status & TODOs:
+- **Company Profile**: The profile page (`About`, `Products and Services`, `Articles` tabs) is ported and functional against the live database.
+- **Building Blocks**: Reusable components (`company-header-layout`, `layout-card`, `page-menu`, `search-box`, `search-category-menu`) are created but not yet composed into the main profile component.
 - **SSL Trust**: In some CLI environments, `https` profiles may fail due to untrusted dev certificates. Use the `http` profile if necessary.
-- **Remaining Components**: Additional legacy components (Jobs, Products, Projects) are prepared in the backend models but still need UI porting in the frontend.
+- **Remaining Pages**: Additional legacy pages (Jobs, Products, Projects, Promotions, News, Articles, Marketplace, Search, Home) need UI porting. Backend endpoints for these already exist.
+- **Featured Sections**: Product slider, affiliations slider, and communities slider on the profile page are not yet ported.
+- **Company Logo**: Currently uses placeholder text; should be wired to `/api/image/get`.
+- **SEO**: Legacy JSON-LD, breadcrumbs, and meta tags need to be ported to Next.js `metadata` exports.

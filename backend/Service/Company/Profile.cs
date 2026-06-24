@@ -1,12 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BizSrt.Api.Data;
-using BizSrt.Api.Services;
-using BizSrt.Api.Models.Company;
-using BizSrt.Api.Models.Legacy.List;
+using BizSrt.Api.Service;
+using BizSrt.Api.Model.Company;
+using BizSrt.Api.Model.Legacy.List;
 using System.Text.Json;
 
-namespace BizSrt.Api.Endpoints;
+namespace BizSrt.Api.Service.Company;
+
+using BizSrt.Api.Data.Company;
 
 public static class CompanyEndpoints
 {
@@ -16,8 +18,8 @@ public static class CompanyEndpoints
 
         group.MapGet("/profile/view", async ([FromQuery] int company, [FromQuery] string? options, ICompanyService companyService) =>
         {
-            var profile = await companyService.GetCompanyProfileAsync(company);
-            return profile is not null ? Results.Ok(profile) : Results.NotFound();
+            var result = await companyService.ViewAsync(company);
+            return result is not null ? Results.Ok(result) : Results.NotFound();
         })
         .WithName("ViewCompanyProfile")
         .WithOpenApi();
@@ -25,76 +27,85 @@ public static class CompanyEndpoints
         group.MapGet("/profile/getFeatured", async ([FromQuery] string sliceInput, ICompanyService companyService) =>
         {
             var input = JsonSerializer.Deserialize<SliceInput>(sliceInput) ?? new SliceInput();
-            var result = await companyService.GetFeaturedCompaniesAsync(input);
+            var result = await companyService.GetFeaturedAsync(input);
             return Results.Ok(result);
         });
 
         group.MapGet("/profile/search", async ([FromQuery] string queryInput, ICompanyService companyService) =>
         {
             var input = JsonSerializer.Deserialize<SearchInput>(queryInput) ?? new SearchInput();
-            var result = await companyService.SearchCompaniesAsync(input);
+            var result = await companyService.SearchAsync(input);
             return Results.Ok(result);
         });
 
         group.MapGet("/profile/getCommunities", async ([FromQuery] int company, [FromQuery] string sliceInput, ICompanyService companyService) =>
         {
             var input = JsonSerializer.Deserialize<SliceInput>(sliceInput) ?? new SliceInput();
-            var result = await companyService.GetCompanyCommunitiesAsync(company, input);
+            var result = await companyService.GetCommunitiesAsync(company, input);
             return Results.Ok(result);
         });
 
         group.MapGet("/profile/getAffiliations", async ([FromQuery] int company, [FromQuery] string sliceInput, ICompanyService companyService) =>
         {
             var input = JsonSerializer.Deserialize<SliceInput>(sliceInput) ?? new SliceInput();
-            var result = await companyService.GetCompanyAffiliationsAsync(company, input);
+            var result = await companyService.GetAffiliationsAsync(company, input);
             return Results.Ok(result);
         });
 
         group.MapGet("/profile/getProducts", async ([FromQuery] int company, [FromQuery] string queryInput, ICompanyService companyService) =>
         {
             var input = JsonSerializer.Deserialize<QueryInput>(queryInput) ?? new QueryInput();
-            var result = await companyService.GetCompanyProductsAsync(company, input);
+            var result = await companyService.GetProductsAsync(company, input);
             return Results.Ok(result);
         });
 
         group.MapGet("/profile/getProjects", async ([FromQuery] int company, [FromQuery] string queryInput, ICompanyService companyService) =>
         {
             var input = JsonSerializer.Deserialize<QueryInput>(queryInput) ?? new QueryInput();
-            var result = await companyService.GetCompanyProjectsAsync(company, input);
+            var result = await companyService.GetProjectsAsync(company, input);
             return Results.Ok(result);
         });
 
         group.MapGet("/profile/getJobs", async ([FromQuery] int company, [FromQuery] short department, [FromQuery] string queryInput, ICompanyService companyService) =>
         {
             var input = JsonSerializer.Deserialize<QueryInput>(queryInput) ?? new QueryInput();
-            var result = await companyService.GetCompanyJobsAsync(company, department, input);
+            var result = await companyService.GetJobsAsync(company, department, input);
             return Results.Ok(result);
         });
 
         group.MapGet("/profile/getPromotions", async ([FromQuery] int company, ICompanyService companyService) =>
         {
-            var result = await companyService.GetCompanyPromotionsAsync(company);
+            var result = await companyService.GetPromotionsAsync(company);
             return Results.Ok(result);
         });
 
         group.MapGet("/profile/getInfo", async ([FromQuery] int company, ICompanyService companyService) =>
         {
-            var info = await companyService.GetCompanyInfoAsync(company);
-            return info is not null ? Results.Ok(info) : Results.NotFound();
+            var result = await companyService.GetInfoAsync(company);
+            return result is not null ? Results.Ok(result) : Results.NotFound();
         });
 
         group.MapGet("/profile/newProfiles", async ([FromQuery] string queryInput, ICompanyService companyService) =>
         {
             var input = JsonSerializer.Deserialize<SearchInput>(queryInput) ?? new SearchInput();
-            var result = await companyService.SearchCompaniesAsync(input); 
+            var result = await companyService.SearchAsync(input); 
+            return Results.Ok(result);
+        });
+
+        group.MapGet("/profile/toPreview", async ([FromQuery] string? companies, ICompanyService companyService) =>
+        {
+            if (string.IsNullOrWhiteSpace(companies)) return Results.Ok(Array.Empty<Preview>());
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var input = JsonSerializer.Deserialize<SearchItem[]>(companies, options) ?? Array.Empty<SearchItem>();
+            var result = await companyService.ToPreviewAsync(input);
             return Results.Ok(result);
         });
 
         group.MapGet("/product/getFeatured", async ([FromQuery] int company, [FromQuery] string sliceInput, ICompanyService companyService) =>
         {
              var input = JsonSerializer.Deserialize<SliceInput>(sliceInput) ?? new SliceInput();
-             var result = await companyService.GetCompanyProductsAsync(company, new QueryInput { StartIndex = input.Index, Length = input.Length });
-             return Results.Ok(new SliceOutput<BizSrt.Api.Models.Legacy.EntityId<long>>(result.Series, result.StartIndex + result.Series.Length < result.TotalCount ? result.StartIndex + result.Series.Length : -1));
+             var result = await companyService.GetProductsAsync(company, new QueryInput { StartIndex = input.Index, Length = input.Length });
+             return Results.Ok(new SliceOutput<BizSrt.Api.Model.Legacy.EntityId<long>>(result.Series, result.StartIndex + result.Series.Length < result.TotalCount ? result.StartIndex + result.Series.Length : -1));
         });
 
         group.MapGet("/product/view", async ([FromQuery] int company, [FromQuery] long product, [FromQuery] string? options, ICompanyService companyService) =>

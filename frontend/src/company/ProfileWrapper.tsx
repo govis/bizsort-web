@@ -1,18 +1,10 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
-import '@/components/company-profile';
+import React from 'react';
+import './profile';
 
 interface CompanyProfileProps {
   companyId: number;
-}
-
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      'company-profile': any;
-    }
-  }
 }
 
 export default function CompanyProfileWrapper({ companyId }: CompanyProfileProps) {

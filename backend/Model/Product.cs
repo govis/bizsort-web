@@ -1,8 +1,8 @@
 using System;
 using System.Text.Json.Serialization;
-using BizSrt.Api.Models.Legacy;
+using BizSrt.Api.Model.Legacy;
 
-namespace BizSrt.Api.Models.Product;
+namespace BizSrt.Api.Model.Product;
 
 public class ProductType
 {

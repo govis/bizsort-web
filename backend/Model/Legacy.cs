@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 
-namespace BizSrt.Api.Models.Legacy
+namespace BizSrt.Api.Model.Legacy
 {
     public enum Status : byte
     {
@@ -26,13 +26,11 @@ namespace BizSrt.Api.Models.Legacy
 
     public class EntityId<T>
     {
-        [JsonPropertyName("id")]
         public T Id { get; set; } = default!;
     }
 
     public class IdName<T> : EntityId<T>
     {
-        [JsonPropertyName("name")]
         public string Name { get; set; } = string.Empty;
     }
 

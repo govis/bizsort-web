@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import "@shoelace-style/shoelace/dist/themes/light.css";
+import "@awesome.me/webawesome/dist/styles/themes/default.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,8 +14,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BizSort Web",
-  description: "Modernized Web Application",
+  title: {
+    template: '%s | BizSort',
+    default: 'BizSort - Business Directory',
+  },
+  description: 'BizSort — find and explore local businesses, view company profiles, products, services, and more.',
 };
 
 export default function RootLayout({
@@ -26,9 +29,10 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable}`}
+      style={{ height: '100%' }}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body style={{ minHeight: '100%', display: 'flex', flexDirection: 'column', margin: 0 }}>{children}</body>
     </html>
   );
 }

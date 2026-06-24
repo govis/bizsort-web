@@ -1,2 +1,6 @@
 dotnet run --project apphost/BizSrt.AppHost.csproj
 dotnet run --project apphost/BizSrt.AppHost.csproj --no-build
+
+API URL: http://localhost:5000
+Swagger UI: http://localhost:5000/swagger
+

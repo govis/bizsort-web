@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
-using BizSrt.Api.Models.Legacy;
+using BizSrt.Api.Model.Legacy;
 
-namespace BizSrt.Api.Models.Company;
+namespace BizSrt.Api.Model.Company;
 
 public class Page_Offerings
 {
@@ -68,6 +68,9 @@ public class Page_Marketplace
 
 public class Office
 {
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
     [JsonPropertyName("phone")]
     public string Phone { get; set; } = string.Empty;
     [JsonPropertyName("phone1")]
@@ -96,6 +99,9 @@ public class Profile : Account
 
     [JsonPropertyName("category")]
     public Category? Category { get; set; }
+
+    [JsonPropertyName("headOffice")]
+    public Office? HeadOffice { get; set; }
 
     [JsonPropertyName("offices")]
     public Office[] Offices { get; set; } = Array.Empty<Office>();
@@ -128,7 +134,7 @@ public class Profile : Account
     public string? AppUri { get; set; }
 }
 
-public class SearchInput : BizSrt.Api.Models.Legacy.List.QueryInput
+public class SearchInput : BizSrt.Api.Model.Legacy.List.QueryInput
 {
     [JsonPropertyName("transactionType")]
     public short TransactionType { get; set; }
@@ -148,10 +154,7 @@ public class SearchInput : BizSrt.Api.Models.Legacy.List.QueryInput
 
 public class SearchItem : EntityId<int>
 {
-
-    [JsonPropertyName("office")]
     public int? Office { get; set; }
-    [JsonPropertyName("distance")]
     public float Distance { get; set; }
 }
 

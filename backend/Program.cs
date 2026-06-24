@@ -1,7 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using BizSrt.Api.Data;
-using BizSrt.Api.Services;
-using BizSrt.Api.Endpoints;
+using BizSrt.Api.Service;
+using BizSrt.Api.Service.Company;
+using BizSrt.Api.Endpoint;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,8 +19,19 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString, x => x.UseNetTopologySuite()));
 
 // Domain Services
-builder.Services.AddScoped<ICompanyService, CompanyService>();
+builder.Services.AddScoped<BizSrt.Api.Data.Company.ICompanyService, BizSrt.Api.Data.Company.CompanyService>();
+builder.Services.AddSingleton<BizSrt.Api.Data.Cache.Company.CompanyProfilesCache>();
 builder.Services.AddSingleton<IImageService, ImageService>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
 var app = builder.Build();
 
@@ -29,6 +41,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors();
 
 app.UseHttpsRedirection();
 

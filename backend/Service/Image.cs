@@ -4,10 +4,10 @@ using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.PixelFormats;
 using Microsoft.EntityFrameworkCore;
 using BizSrt.Api.Data;
-using BizSrt.Api.Models.Legacy;
+using BizSrt.Api.Model.Legacy;
 using BizSrt.Api.Data.Entities;
 
-namespace BizSrt.Api.Services;
+namespace BizSrt.Api.Service;
 
 public interface IImageService
 {

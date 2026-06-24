@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using BizSrt.Api.Services;
-using BizSrt.Api.Models.Legacy;
+using BizSrt.Api.Service;
+using BizSrt.Api.Model.Legacy;
 
-namespace BizSrt.Api.Endpoints;
+namespace BizSrt.Api.Endpoint;
 
 public static class ImageEndpoints
 {
