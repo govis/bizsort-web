@@ -8,7 +8,10 @@ declare module 'react' {
       'company-header-layout': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & { 'title-text'?: string };
       'wa-tab-group': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & { onWaTabShow?: (e: any) => void };
       'wa-tab': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & { panel?: string, active?: boolean };
+      'wa-button': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & { variant?: string, 'is-icon-button'?: boolean };
+      'wa-icon': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & { name?: string };
+      'page-menu': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement> & { theme?: string };
+      'wa-dropdown-item': React.DetailedHTMLProps<React.HTMLAttributes<HTMLElement>, HTMLElement>;
     }
   }
 }
-

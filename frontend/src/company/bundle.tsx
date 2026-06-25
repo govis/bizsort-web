@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useRouter, useSelectedLayoutSegment } from 'next/navigation';
 import type { Company } from '@/components/types';
 import { view } from '../service/company';
@@ -11,6 +11,11 @@ import './profile';
 import './header-layout';
 import '@awesome.me/webawesome/dist/components/tab-group/tab-group.js';
 import '@awesome.me/webawesome/dist/components/tab/tab.js';
+import '../components/menu/page';
+import '@awesome.me/webawesome/dist/components/button/button.js';
+import '@awesome.me/webawesome/dist/components/icon/icon.js';
+import '@awesome.me/webawesome/dist/components/dropdown/dropdown.js';
+import '@awesome.me/webawesome/dist/components/dropdown-item/dropdown-item.js';
 
 // -- 2. React Client Boundaries --
 
@@ -41,6 +46,7 @@ export function CompanyLayoutWrapper({
   const router = useRouter();
   const segment = useSelectedLayoutSegment() || 'profile';
   const [company, setCompany] = useState<Company | null>(null);
+  const tabGroupRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     async function fetchCompany() {
@@ -71,6 +77,14 @@ export function CompanyLayoutWrapper({
     }
   };
 
+  useEffect(() => {
+    const tabGroup = tabGroupRef.current;
+    if (tabGroup) {
+      tabGroup.addEventListener('wa-tab-show', handleTabChange);
+      return () => tabGroup.removeEventListener('wa-tab-show', handleTabChange);
+    }
+  }, [companyId]);
+
   return (
     <company-header-layout title-text={company.name}>
       <div slot="logo" style={{ width: '100%', height: '100%' }}>
@@ -83,8 +97,18 @@ export function CompanyLayoutWrapper({
         )}
       </div>
 
+      <wa-button slot="navbar" variant="text" style={{ fontSize: '1.5rem', color: 'white' }}>
+        <wa-icon name="search"></wa-icon>
+      </wa-button>
+
+      <page-menu slot="dropdown" theme="dark">
+        <wa-dropdown-item>Directory</wa-dropdown-item>
+        <wa-dropdown-item>Enrichment</wa-dropdown-item>
+        <wa-dropdown-item>Share Community</wa-dropdown-item>
+      </page-menu>
+
       <div slot="tabs">
-        <wa-tab-group onWaTabShow={handleTabChange}>
+        <wa-tab-group ref={tabGroupRef}>
           <wa-tab slot="nav" panel="profile" active={segment === 'profile' ? true : undefined}>About</wa-tab>
           
           {company.offerings?.view && (
