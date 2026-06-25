@@ -43,55 +43,39 @@ export class CompanyHeaderLayout extends LitElement {
     
     .header-panel {
       background-color: var(--primary-theme-color, #448aff);
-      min-height: 200px;
       position: sticky;
       top: 0;
       z-index: 100;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      transition: height 0.3s ease;
     }
     
-    .header-actions {
-      position: absolute;
-      right: 1rem;
-      top: 1rem;
-      display: flex;
-      gap: 0.5rem;
-      align-items: center;
-      z-index: 101;
+    .name-placeholder {
+      height: 84px;
     }
     
-    .header-content-wrapper {
+    .navbar {
       max-width: 1000px;
       margin: 0 auto;
       display: flex;
+      flex-direction: row;
       align-items: flex-end;
       padding: 0 1rem;
-      height: 140px;
-      position: relative;
-      transition: height 0.3s ease;
     }
     
-    /* Condensing logic */
-    :host([condensed]) .header-content-wrapper {
-      height: 60px; /* Condensed height */
-    }
-    
-    .logo-container {
-      width: 140px;
-      height: 140px;
+    .image-container {
+      width: 100px;
+      height: 100px;
       background-color: white;
-      border-radius: 4px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-      border: 4px solid var(--primary-theme-color, #448aff);
-      margin-bottom: -40px;
-      margin-right: 2rem;
+      border-radius: 3px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      margin-bottom: -30px;
+      margin-right: 15px;
       z-index: 10;
       flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: white;
+      color: var(--primary-theme-color, #448aff);
       font-weight: bold;
       font-size: 2rem;
       overflow: hidden;
@@ -99,38 +83,40 @@ export class CompanyHeaderLayout extends LitElement {
       transform-origin: top center;
     }
     
-    :host([condensed]) .logo-container {
-      opacity: 0;
-      pointer-events: none;
-      transform: scale(0.8) translateY(-20px);
+    :host([condensed]) .image-container {
+      display: none;
     }
     
-    .logo-container ::slotted(img) {
+    .image-container ::slotted(img) {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
+      background-color: white;
     }
     
-    .header-text-area {
+    .name-tabs {
       flex: 1;
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
-      height: 100%;
-      transition: transform 0.3s ease;
     }
     
-    .company-title {
+    .name {
+      height: 84px;
+      margin-top: -84px;
+      display: flex;
+      align-items: center;
       font-size: 28px;
       font-weight: 500;
-      margin: 0 0 1rem 0;
       color: white;
-      transition: font-size 0.3s ease, margin 0.3s ease;
+      padding-left: 16px;
     }
     
-    :host([condensed]) .company-title {
-      font-size: 20px;
-      margin: 0 0 0.25rem 0;
+    .header-actions {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      margin-bottom: 8px; /* Align with tabs */
     }
     
     .main-content {
@@ -150,22 +136,23 @@ export class CompanyHeaderLayout extends LitElement {
 
     return html`
       <div class="header-panel">
-        <div class="header-actions">
-          <slot name="navbar"></slot>
-          <slot name="dropdown"></slot>
-        </div>
-
-        <div class="header-content-wrapper">
-          <div class="logo-container">
+        <div class="name-placeholder"></div>
+        <div class="navbar">
+          <div class="image-container shadow-2dp">
              <slot name="logo">
                 ${this.logoTextMain ? html`<span>${this.logoTextMain}</span>` : ''}
                 ${this.logoTextAccent ? html`<span style="color:#ffeb3b;">${this.logoTextAccent}</span>` : ''}
              </slot>
           </div>
           
-          <div class="header-text-area">
-            <h1 class="company-title">${this.titleText || ''}</h1>
+          <div class="name-tabs">
+            <div class="name">${this.titleText || ''}</div>
             <slot name="tabs"></slot>
+          </div>
+          
+          <div class="header-actions">
+            <slot name="navbar"></slot>
+            <slot name="dropdown"></slot>
           </div>
         </div>
       </div>
