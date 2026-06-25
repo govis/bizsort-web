@@ -13,8 +13,15 @@ export class PageMenu extends LitElement {
     wa-icon {
       font-size: 24px;
     }
-    :host([theme="dark"]) wa-button::part(base) {
-      color: white;
+    :host([theme="dark"]) wa-button {
+      --wa-color-fill-loud: var(--primary-theme-color, #448aff);
+      --wa-color-on-loud: white;
+      --wa-color-neutral-fill-loud: var(--primary-theme-color, #448aff);
+      --wa-color-neutral-on-loud: white;
+      --wa-color-fill-normal: var(--primary-theme-color, #448aff);
+      --wa-color-on-normal: white;
+      --wa-color-neutral-fill-normal: var(--primary-theme-color, #448aff);
+      --wa-color-neutral-on-normal: white;
     }
     :host([theme="dark"]) wa-icon {
       color: white;
@@ -55,7 +62,7 @@ export class PageMenu extends LitElement {
   render() {
     return html`
       <wa-dropdown placement="bottom-end">
-        <wa-button slot="trigger" variant="text" is-icon-button>
+        <wa-button slot="trigger" is-icon-button>
           <wa-icon name="ellipsis-vertical" library="system"></wa-icon>
         </wa-button>
         <slot></slot>
