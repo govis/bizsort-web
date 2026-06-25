@@ -168,6 +168,23 @@ export function CompanyLayoutWrapper({
         wa-button[slot="navbar"]::part(base) {
           color: white;
         }
+        page-menu[theme="dark"] wa-dropdown-item {
+          --wa-color-neutral-1000: white;
+          --wa-color-neutral-900: white;
+          --wa-color-neutral-800: white;
+          --wa-color-neutral-700: white;
+          --wa-color-neutral-600: white;
+          --wa-color-neutral-500: white;
+          color: white;
+        }
+        page-menu[theme="dark"] wa-dropdown-item::part(base) {
+          color: white;
+          background-color: transparent;
+        }
+        page-menu[theme="dark"] wa-dropdown-item:hover::part(base),
+        page-menu[theme="dark"] wa-dropdown-item[data-active]::part(base) {
+          background-color: rgba(255, 255, 255, 0.15);
+        }
       `}</style>
 
       {children}

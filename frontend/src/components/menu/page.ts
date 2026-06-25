@@ -26,8 +26,13 @@ export class PageMenu extends LitElement {
       border-radius: 4px;
       box-shadow: 0 4px 6px rgba(0,0,0,0.2);
     }
+    :host([theme="dark"]) wa-dropdown {
+      --wa-panel-background-color: var(--primary-theme-color, #448aff);
+      --wa-panel-border-color: transparent;
+    }
     :host([theme="dark"]) wa-dropdown::part(panel) {
       background-color: var(--primary-theme-color, #448aff);
+      border-color: transparent;
     }
     ::slotted(wa-dropdown-item) {
       color: var(--wa-color-neutral-800);
