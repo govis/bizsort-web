@@ -60,14 +60,6 @@ export function CompanyLayoutWrapper({
     fetchCompany();
   }, [companyId]);
 
-  if (!company) {
-    return <div style={{ padding: '2rem', textAlign: 'center' }}>Loading company...</div>;
-  }
-
-  const logoUrl = company.image?.imageId 
-    ? `${process.env.NEXT_PUBLIC_API_URL || ''}/api/image/get?entity=${company.image.entity}&id=${company.image.imageId}&maxImageSize=4`
-    : '';
-
   const handleTabChange = (e: any) => {
     const tabName = e.target.getAttribute('panel');
     if (tabName === 'profile') {
@@ -83,7 +75,17 @@ export function CompanyLayoutWrapper({
       tabGroup.addEventListener('wa-tab-show', handleTabChange);
       return () => tabGroup.removeEventListener('wa-tab-show', handleTabChange);
     }
-  }, [companyId]);
+  }, [companyId, router]);
+
+  if (!company) {
+    return <div style={{ padding: '2rem', textAlign: 'center' }}>Loading company...</div>;
+  }
+
+  const logoUrl = company.image?.imageId 
+    ? `${process.env.NEXT_PUBLIC_API_URL || ''}/api/image/get?entity=${company.image.entity}&id=${company.image.imageId}&maxImageSize=4`
+    : '';
+
+
 
   return (
     <company-header-layout title-text={company.name}>
