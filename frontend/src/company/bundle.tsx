@@ -91,7 +91,7 @@ export function CompanyLayoutWrapper({
     <company-header-layout title-text={company.name}>
       <div slot="logo" style={{ width: '100%', height: '100%' }}>
         {logoUrl ? (
-          <img src={logoUrl} alt={`${company.name} logo`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <img src={logoUrl} alt={`${company.name} logo`} style={{ width: '100%', height: '100%', objectFit: 'contain', backgroundColor: 'white' }} />
         ) : (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
             {company.name.substring(0, 2).toUpperCase()}
@@ -140,6 +140,27 @@ export function CompanyLayoutWrapper({
           ) : null}
         </wa-tab-group>
       </div>
+
+      <style>{`
+        wa-tab-group {
+          --indicator-color: white;
+          --track-color: transparent;
+          width: 100%;
+        }
+        wa-tab {
+          color: rgba(255, 255, 255, 0.7);
+        }
+        wa-tab::part(base) {
+          padding: 0.75rem 1.5rem;
+          font-weight: 500;
+        }
+        wa-tab[active] {
+          color: white;
+        }
+        wa-button[slot="navbar"]::part(base) {
+          color: white;
+        }
+      `}</style>
 
       {children}
     </company-header-layout>

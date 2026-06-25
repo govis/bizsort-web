@@ -80,10 +80,10 @@ export class CompanyHeaderLayout extends LitElement {
     .logo-container {
       width: 140px;
       height: 140px;
-      background-color: #1a237e;
-      border-radius: 8px;
+      background-color: white;
+      border-radius: 4px;
       box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-      border: 4px solid white;
+      border: 4px solid #4285f4;
       margin-bottom: -40px;
       margin-right: 2rem;
       z-index: 10;
