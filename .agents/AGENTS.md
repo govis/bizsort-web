@@ -43,3 +43,12 @@ This file contains structural and naming conventions that all agents must follow
 - **Port Legacy Service Helpers:** For EVERY API call required by the frontend, you MUST check the legacy codebase in `..\legacy\website\wwwroot\src\service\` (e.g. `company.ts`, `product.ts`, etc.).
 - **No Raw Fetch Calls:** Do NOT improvise or write new inline `fetch()` calls directly inside React components or Lit elements. 
 - **Maintain Method Names:** Find the exact legacy helper method, port it to the modern `frontend/src/service/` directory, and use that abstracted function. Maintain the legacy method name (e.g., `view()`, `getFeatured()`, `toPreview()`) and logic to ensure complete parity with the legacy UI data flow.
+
+### 2. WebAwesome (Shoelace v3.0) Nuances & Gotchas
+- **Icon Loading:** By default, WebAwesome fetches icons from `ka-f.fontawesome.com`. Do NOT override the `setIconPath()` to other CDNs (like jsdelivr) unless absolutely necessary, as it expects a specific Alpha folder structure for FontAwesome 7 and custom paths will break all icon rendering.
+- **Dropdown Item Slots:** WebAwesome renamed their icon slots! Older Shoelace used `slot="prefix"` and `slot="suffix"`, but `wa-dropdown-item` now explicitly expects `slot="icon"` for icons. If you use `start` or `prefix`, the icon will be completely swallowed by the Shadow DOM projection and will not render in the tree.
+- **System Icons:** WebAwesome bundles a small set of "system" icons directly into its Javascript (e.g. `search`, `ellipsis-vertical`, `chevron-down`). If you are trying to render one of these core UI icons and it's missing, ensure you add the `library="system"` attribute (e.g. `<wa-icon name="ellipsis-vertical" library="system"></wa-icon>`).
+- **Styling Custom Elements:** WebAwesome strictly controls its internal component styling via CSS variables.
+  - Avoid targeting internal parts like `::part(base)` for layout/color changes unless explicitly documented.
+  - Instead, use CSS variables on the host component (e.g., set `--wa-color-surface-raised` to change dropdown backgrounds).
+  - When passing custom elements into slots (like `<wa-dropdown-item>` inside a wrapper), apply styles using the `::slotted()` pseudo-element in the wrapper's CSS, and override the specific `--wa-color-neutral-*` variables to enforce text colors in dark modes. Do not apply inline styles directly in React to attempt to override Shadow DOM internals.
