@@ -19,7 +19,6 @@ export class PageMenu extends LitElement {
     }
     :host([theme="dark"]) wa-icon {
       color: white;
-      font-size: 1.5rem;
     }
     :host([theme="dark"]) wa-dropdown {
       --wa-color-surface-raised: var(--primary-theme-color, #448aff);
