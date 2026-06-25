@@ -53,7 +53,7 @@ export class PageMenu extends LitElement {
     return html`
       <wa-dropdown placement="bottom-end">
         <wa-button slot="trigger" variant="text" is-icon-button>
-          <wa-icon name="ellipsis-vertical"></wa-icon>
+          <wa-icon name="ellipsis-vertical" library="system"></wa-icon>
         </wa-button>
         <slot></slot>
       </wa-dropdown>
