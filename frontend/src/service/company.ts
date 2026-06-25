@@ -1,4 +1,5 @@
 import type { CompanyPreview, SliceOutput } from '../components/types.js';
+import { FetchOneCache, Cache, SessionCacheType } from '../session/cache';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
 
@@ -35,18 +36,33 @@ export async function toPreview(companies: any[]): Promise<CompanyPreview[]> {
   return await response.json();
 }
 
+class CompanyProfileCache extends FetchOneCache<any> {
+  get isTransient(): boolean {
+    return true; // Match legacy: Do not store in sessionStorage
+  }
+
+  constructor() {
+    super(SessionCacheType.CompanyProfile);
+    this.isUserSpecific = false;
+    this.itemKey = 'id';
+  }
+
+  async fetch(key: number | string): Promise<any> {
+    const response = await fetch(`${API_BASE}/api/company/profile/view?company=${key}`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch company profile: ${response.statusText}`);
+    }
+    return await response.json();
+  }
+}
+
+const companyCache = Cache.get(SessionCacheType.CompanyProfile, () => new CompanyProfileCache());
+
 /**
  * Fetches a single company profile by its ID.
  * Matches legacy: view(company, options, ...)
  */
 export async function view(companyId: number): Promise<any> {
   if (!companyId) throw new Error('Company ID is required');
-
-  const response = await fetch(`${API_BASE}/api/company/profile/view?company=${companyId}`);
-  
-  if (!response.ok) {
-    throw new Error(`Failed to fetch company profile: ${response.statusText}`);
-  }
-  
-  return await response.json();
+  return companyCache.getItem(companyId);
 }
