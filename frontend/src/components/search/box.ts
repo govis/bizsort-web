@@ -44,9 +44,6 @@ export class SearchBox extends LitElement {
       align-items: center;
       justify-content: center;
     }
-    wa-icon {
-      font-size: 24px;
-    }
     wa-button::part(base):hover {
       background-color: rgba(255, 255, 255, 0.25);
     }

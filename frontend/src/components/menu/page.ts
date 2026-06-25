@@ -9,16 +9,12 @@ export class PageMenu extends LitElement {
     :host { display: inline-block; }
     wa-button::part(base) {
       color: var(--wa-color-neutral-600);
-      background-color: transparent;
-      border: none;
     }
     wa-icon {
       font-size: 24px;
     }
     :host([theme="dark"]) wa-button::part(base) {
       color: white;
-      background-color: var(--primary-theme-color, #448aff);
-      border: none;
     }
     :host([theme="dark"]) wa-icon {
       color: white;
