@@ -113,27 +113,27 @@ export function CompanyLayoutWrapper({
         <wa-tab-group ref={tabGroupRef}>
           <wa-tab slot="nav" panel="profile" active={segment === 'profile' ? true : undefined}>About</wa-tab>
           
-          {company.offerings !== undefined ? (
+          {company.offerings != null ? (
             <wa-tab slot="nav" panel="products" active={segment === 'products' ? true : undefined}>
               {company.offerings.label || 'What we Do'}
             </wa-tab>
           ) : null}
-          {company.projects !== undefined ? (
+          {company.projects != null ? (
             <wa-tab slot="nav" panel="projects" active={segment === 'projects' ? true : undefined}>
               {company.projects.label || 'Projects'}
             </wa-tab>
           ) : null}
-          {company.jobs !== undefined ? (
+          {company.jobs != null ? (
             <wa-tab slot="nav" panel="jobs" active={segment === 'jobs' ? true : undefined}>
               {company.jobs.label || 'Jobs'}
             </wa-tab>
           ) : null}
-          {company.news !== undefined ? (
+          {company.news != null ? (
             <wa-tab slot="nav" panel="news" active={segment === 'news' ? true : undefined}>
               {company.news.label || 'News'}
             </wa-tab>
           ) : null}
-          {company.articles !== undefined ? (
+          {company.articles != null ? (
             <wa-tab slot="nav" panel="articles" active={segment === 'articles' ? true : undefined}>
               {company.articles.label || 'Articles'}
             </wa-tab>
