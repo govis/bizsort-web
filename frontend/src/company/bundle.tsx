@@ -12,6 +12,7 @@ import './header-layout';
 import '@awesome.me/webawesome/dist/components/tab-group/tab-group.js';
 import '@awesome.me/webawesome/dist/components/tab/tab.js';
 import '../components/menu/page';
+import '../components/search/box';
 import '@awesome.me/webawesome/dist/components/button/button.js';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import '@awesome.me/webawesome/dist/components/dropdown/dropdown.js';
@@ -99,14 +100,21 @@ export function CompanyLayoutWrapper({
         )}
       </div>
 
-      <wa-button slot="navbar" variant="text" style={{ fontSize: '1.5rem', color: 'white' }}>
-        <wa-icon name="search"></wa-icon>
-      </wa-button>
+      <search-box slot="navbar"></search-box>
 
       <page-menu slot="dropdown" theme="dark">
-        <wa-dropdown-item>Directory</wa-dropdown-item>
-        <wa-dropdown-item>Enrichment</wa-dropdown-item>
-        <wa-dropdown-item>Share Community</wa-dropdown-item>
+        <wa-dropdown-item>
+          <wa-icon slot="prefix" name="pencil-fill"></wa-icon>
+          Add your Company
+        </wa-dropdown-item>
+        <wa-dropdown-item>
+          <wa-icon slot="prefix" name="tag-fill"></wa-icon>
+          Tag this Company
+        </wa-dropdown-item>
+        <wa-dropdown-item>
+          <wa-icon slot="prefix" name="share-fill"></wa-icon>
+          Share with Community
+        </wa-dropdown-item>
       </page-menu>
 
       <div slot="tabs">
