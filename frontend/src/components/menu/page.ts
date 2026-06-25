@@ -12,6 +12,9 @@ export class PageMenu extends LitElement {
       background-color: transparent;
       border: none;
     }
+    wa-icon {
+      font-size: 24px;
+    }
     :host([theme="dark"]) wa-button::part(base) {
       color: white;
       background-color: var(--primary-theme-color, #448aff);
@@ -19,6 +22,7 @@ export class PageMenu extends LitElement {
     }
     :host([theme="dark"]) wa-icon {
       color: white;
+      font-size: 24px;
     }
     :host([theme="dark"]) wa-dropdown {
       --wa-color-surface-raised: var(--primary-theme-color, #448aff);
