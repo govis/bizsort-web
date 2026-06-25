@@ -20,7 +20,7 @@ export class PageMenu extends LitElement {
       box-shadow: 0 4px 6px rgba(0,0,0,0.2);
     }
     :host([theme="dark"]) wa-dropdown::part(panel) {
-      background-color: #4285f4;
+      background-color: var(--primary-theme-color, #448aff);
     }
     ::slotted(wa-dropdown-item) {
       color: var(--wa-color-neutral-800);
@@ -30,9 +30,11 @@ export class PageMenu extends LitElement {
     }
     :host([theme="dark"]) ::slotted(wa-dropdown-item) {
       color: white;
+      --wa-color-neutral-600: white;
+      --wa-color-neutral-500: white;
     }
     :host([theme="dark"]) ::slotted(wa-dropdown-item:hover) {
-      background-color: rgba(255, 255, 255, 0.1);
+      background-color: rgba(255, 255, 255, 0.2);
     }
   `;
 

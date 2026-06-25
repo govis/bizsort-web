@@ -42,8 +42,8 @@ export class CompanyHeaderLayout extends LitElement {
     :host { display: block; }
     
     .header-panel {
-      background-color: #4285f4;
-      color: white;
+      background-color: var(--primary-theme-color, #448aff);
+      min-height: 200px;
       position: sticky;
       top: 0;
       z-index: 100;
@@ -83,7 +83,7 @@ export class CompanyHeaderLayout extends LitElement {
       background-color: white;
       border-radius: 4px;
       box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-      border: 4px solid #4285f4;
+      border: 4px solid var(--primary-theme-color, #448aff);
       margin-bottom: -40px;
       margin-right: 2rem;
       z-index: 10;

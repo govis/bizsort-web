@@ -1,6 +1,17 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  
+  --primary-theme-color: #448aff;
+  --text-color-on-primary: #fff;
+  --header-color2: #3367d6;
+  --header-icon-color: #82b1ff;
+  --color-accent1: #e040fb;
+  --color-accent2: #03a9f4;
+  --color-red-hot: #d50000;
+  --page-text-color: #616161;
+  --page-accent-color: #37474f;
+  --page-background-color: #fafafa;
 }
 
 @media (prefers-color-scheme: dark) {
