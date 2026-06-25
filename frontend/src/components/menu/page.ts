@@ -20,19 +20,10 @@ export class PageMenu extends LitElement {
     :host([theme="dark"]) wa-icon {
       color: white;
     }
-    wa-dropdown::part(panel) {
-      background-color: white;
-      border: none;
-      border-radius: 4px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-    }
     :host([theme="dark"]) wa-dropdown {
-      --wa-panel-background-color: var(--primary-theme-color, #448aff);
-      --wa-panel-border-color: transparent;
-    }
-    :host([theme="dark"]) wa-dropdown::part(panel) {
-      background-color: var(--primary-theme-color, #448aff);
-      border-color: transparent;
+      --wa-color-surface-raised: var(--primary-theme-color, #448aff);
+      --wa-color-surface-border: transparent;
+      --wa-color-text-normal: white;
     }
     ::slotted(wa-dropdown-item) {
       color: var(--wa-color-neutral-800);
