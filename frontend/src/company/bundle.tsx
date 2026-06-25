@@ -61,7 +61,7 @@ export function CompanyLayoutWrapper({
   }, [companyId]);
 
   const handleTabChange = (e: any) => {
-    const tabName = e.target.getAttribute('panel');
+    const tabName = e.detail.name;
     if (tabName === 'profile') {
       router.push(`/company/${companyId}`);
     } else {
