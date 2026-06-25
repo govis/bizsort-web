@@ -113,7 +113,7 @@ export function CompanyLayoutWrapper({
         <wa-tab-group ref={tabGroupRef}>
           <wa-tab slot="nav" panel="profile" active={segment === 'profile' ? true : undefined}>About</wa-tab>
           
-          {company.offerings != null ? (
+          {company.offerings?.view ? (
             <wa-tab slot="nav" panel="products" active={segment === 'products' ? true : undefined}>
               {company.offerings.label || 'What we Do'}
             </wa-tab>
