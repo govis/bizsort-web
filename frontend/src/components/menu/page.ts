@@ -7,9 +7,6 @@ import '@awesome.me/webawesome/dist/components/dropdown-item/dropdown-item.js';
 export class PageMenu extends LitElement {
   static styles = css`
     :host { display: inline-block; }
-    wa-button::part(base) {
-      color: var(--wa-color-neutral-600);
-    }
     wa-icon {
       font-size: 24px;
     }
