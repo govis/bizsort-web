@@ -104,15 +104,15 @@ export function CompanyLayoutWrapper({
 
       <page-menu slot="dropdown" theme="dark">
         <wa-dropdown-item>
-          <wa-icon slot="prefix" name="pencil-fill"></wa-icon>
+          <wa-icon slot="prefix" name="pen"></wa-icon>
           Add your Company
         </wa-dropdown-item>
         <wa-dropdown-item>
-          <wa-icon slot="prefix" name="tag-fill"></wa-icon>
+          <wa-icon slot="prefix" name="tag"></wa-icon>
           Tag this Company
         </wa-dropdown-item>
         <wa-dropdown-item>
-          <wa-icon slot="prefix" name="share-fill"></wa-icon>
+          <wa-icon slot="prefix" name="share-nodes"></wa-icon>
           Share with Community
         </wa-dropdown-item>
       </page-menu>

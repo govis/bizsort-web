@@ -47,7 +47,7 @@ export class PageMenu extends LitElement {
 
   static get properties() {
     return {
-      theme: { type: String }
+      theme: { type: String, reflect: true }
     };
   }
 
@@ -57,7 +57,7 @@ export class PageMenu extends LitElement {
     return html`
       <wa-dropdown placement="bottom-end">
         <wa-button slot="trigger" variant="text" is-icon-button>
-          <wa-icon name="three-dots-vertical"></wa-icon>
+          <wa-icon name="ellipsis-vertical"></wa-icon>
         </wa-button>
         <slot></slot>
       </wa-dropdown>
