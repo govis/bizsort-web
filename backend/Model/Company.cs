@@ -1,5 +1,5 @@
 using System.Text.Json.Serialization;
-using BizSrt.Api.Model.Legacy;
+using BizSrt.Api.Model;
 
 namespace BizSrt.Api.Model.Company;
 
@@ -134,7 +134,7 @@ public class Profile : Account
     public string? AppUri { get; set; }
 }
 
-public class SearchInput : BizSrt.Api.Model.Legacy.List.QueryInput
+public class SearchInput : BizSrt.Api.Model.List.QueryInput
 {
     [JsonPropertyName("transactionType")]
     public short TransactionType { get; set; }
@@ -174,4 +174,33 @@ public class Preview : IdName<int>
     public ProductsView ProductsView { get; set; }
     [JsonPropertyName("category")]
     public Category? Category { get; set; }
+}
+
+public class Option
+{
+    [Flags]
+    public enum Flags : byte
+    {
+        Default = 0,
+        Publish_Email = 1,
+        Products_Marketplace = 2
+    }
+
+    public class Set 
+    {
+        [JsonPropertyName("value")]
+        public Flags Value { get; set; }
+
+        public bool Publish_Email
+        {
+            get { return (Value & Flags.Publish_Email) > 0; }
+            set { if (value) Value |= Flags.Publish_Email; else Value &= ~Flags.Publish_Email; }
+        }
+
+        public bool Products_Marketplace
+        {
+            get { return (Value & Flags.Products_Marketplace) > 0; }
+            set { if (value) Value |= Flags.Products_Marketplace; else Value &= ~Flags.Products_Marketplace; }
+        }
+    }
 }

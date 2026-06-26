@@ -1,6 +1,6 @@
-using System;
+﻿using System;
 using System.Text.Json.Serialization;
-using BizSrt.Api.Model.Legacy;
+using BizSrt.Api.Model;
 
 namespace BizSrt.Api.Model.Job;
 

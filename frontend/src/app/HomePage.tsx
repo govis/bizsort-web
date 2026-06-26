@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 
 const HomeWrapper = dynamic(
-  () => import('@/company/HomeWrapper'),
+  () => import('../company/bundle').then((mod) => mod.HomeWrapper),
   { ssr: false }
 );
 

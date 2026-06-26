@@ -1,10 +1,10 @@
-using SixLabors.ImageSharp;
+﻿using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.PixelFormats;
 using Microsoft.EntityFrameworkCore;
 using BizSrt.Api.Data;
-using BizSrt.Api.Model.Legacy;
+using BizSrt.Api.Model;
 using BizSrt.Api.Data.Entities;
 
 namespace BizSrt.Api.Service;

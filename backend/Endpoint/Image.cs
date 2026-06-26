@@ -1,6 +1,6 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using BizSrt.Api.Service;
-using BizSrt.Api.Model.Legacy;
+using BizSrt.Api.Model;
 
 namespace BizSrt.Api.Endpoint;
 

@@ -3,7 +3,7 @@ using BizSrt.Api.Data;
 using BizSrt.Api.Service;
 using BizSrt.Api.Service.Company;
 using BizSrt.Api.Endpoint;
-
+using BizSrt.Api.Service.Master;
 var builder = WebApplication.CreateBuilder(args);
 
 // --- Configuration ---
@@ -20,7 +20,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // Domain Services
 builder.Services.AddScoped<BizSrt.Api.Data.Company.ICompanyService, BizSrt.Api.Data.Company.CompanyService>();
-builder.Services.AddSingleton<BizSrt.Api.Data.Cache.Company.CompanyProfilesCache>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<ILocationService, LocationService>();
+// builder.Services.AddSingleton<BizSrt.Api.Data.Cache.Company.CompanyProfilesCache>();
 builder.Services.AddSingleton<IImageService, ImageService>();
 
 builder.Services.AddCors(options =>
@@ -48,6 +50,8 @@ app.UseHttpsRedirection();
 
 // --- Endpoints ---
 app.MapCompanyEndpoints();
+app.MapCategoryEndpoints();
+app.MapLocationEndpoints();
 app.MapImageEndpoints();
 
 app.Run();

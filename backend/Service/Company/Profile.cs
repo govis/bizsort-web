@@ -1,9 +1,9 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BizSrt.Api.Data;
 using BizSrt.Api.Service;
 using BizSrt.Api.Model.Company;
-using BizSrt.Api.Model.Legacy.List;
+using BizSrt.Api.Model.List;
 using System.Text.Json;
 
 namespace BizSrt.Api.Service.Company;
@@ -105,7 +105,7 @@ public static class CompanyEndpoints
         {
              var input = JsonSerializer.Deserialize<SliceInput>(sliceInput) ?? new SliceInput();
              var result = await companyService.GetProductsAsync(company, new QueryInput { StartIndex = input.Index, Length = input.Length });
-             return Results.Ok(new SliceOutput<BizSrt.Api.Model.Legacy.EntityId<long>>(result.Series, result.StartIndex + result.Series.Length < result.TotalCount ? result.StartIndex + result.Series.Length : -1));
+             return Results.Ok(new SliceOutput<BizSrt.Api.Model.EntityId<long>>(result.Series, result.StartIndex + result.Series.Length < result.TotalCount ? result.StartIndex + result.Series.Length : -1));
         });
 
         group.MapGet("/product/view", async ([FromQuery] int company, [FromQuery] long product, [FromQuery] string? options, ICompanyService companyService) =>

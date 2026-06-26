@@ -2,6 +2,8 @@
 
 This file contains structural and naming conventions that all agents must follow to ensure consistency with the legacy architecture.
 
+**CRITICAL:** You must also reference [LEGACY_MIGRATION.md](file:///C:/Bizsort/bizsort-web/.agents/LEGACY_MIGRATION.md) for a complete overview of the legacy architecture and the ongoing modernization progress. This tracker file is the absolute source of truth for what has been ported (e.g. ViewModels, Components, Caching) and what is pending.
+
 ## Legacy Compatibility Rules
 
 ### 1. Folder Structure
@@ -28,9 +30,9 @@ This file contains structural and naming conventions that all agents must follow
 ## Backend Modernization Rules
 
 ### 1. API Semantics & Naming Conventions
-- **Legacy API Parity:** You must strictly follow the legacy API semantics for all pages and APIs you port. Ensure endpoints match the exact names, query parameters, and payload structures expected by the legacy frontend code unless explicitly asked to change them.
+- **Legacy API Parity:** You must strictly follow the legacy API semantics for all pages and APIs you port. Ensure endpoints match the exact names, query parameters, and payload structures expected by the legacy frontend code unless explicitly asked to change them. This is critical to avoid breaking the modernized frontend that relies on legacy schemas.
 - **Method Naming:** Modernized backend methods (e.g., in `Service` or `Data` layers) MUST strictly match the exact names of the legacy methods they are porting, simply appending `Async`. (e.g. legacy `ToPreview` becomes `ToPreviewAsync`, legacy `View` becomes `ViewAsync`. Do NOT invent new descriptive names like `GetCompanyPreviewsAsync`).
-- **Porting Queries:** Do not improvise or write new LINQ queries from scratch for backend APIs. All necessary LINQ queries already exist in the legacy codebase (e.g. `..\legacy\server\Data`). You must find and port the existing queries directly to ensure database constraints and logic match.
+- **No Novel Implementations:** Do not improvise or write new LINQ queries, services, or endpoints from scratch. All necessary queries and logic already exist in the legacy codebase (e.g. `..\legacy\server\Data`). You must find and port the existing queries directly to ensure database constraints and logic perfectly match.
 
 ### 2. Caching Scaffolding
 - **Legacy Caching:** The legacy backend extensively utilizes memory caching (e.g., `ReadManyExpirationCache`). When porting data access logic, you must check if the legacy system used a cache for the entity.
@@ -52,3 +54,10 @@ This file contains structural and naming conventions that all agents must follow
   - **NEVER** target internal parts like `::part(base)` to manually override `background-color` or `color`. Doing so will permanently destroy the component's built-in interaction states!
   - **ALWAYS** search the WebAwesome source code (e.g. `node_modules/@awesome.me/webawesome/dist/chunks/`) to find the exact internal CSS variables the component expects (e.g., `--wa-color-neutral-fill-loud`, `--wa-color-fill-normal`) and pipe your custom themes into those variables on the host component instead.
   - When styling slotted elements like `<wa-dropdown-item>`, use the `::slotted()` pseudo-element on the host and override the specific `--wa-color-neutral-*` CSS variables to enforce text colors.
+
+### 3. Namespace Collision & Caching Pitfalls (Backend)
+- **Importance of Existing Namespaces:** The legacy backend uses a highly structured domain-driven namespace design (`BizSrt.Api.Data.*`, `BizSrt.Api.Model.*`). It is crucial that you place your modernized files in the exact same matching folders to inherit the correct namespaces. If you invent new namespaces or place files arbitrarily, you will cause catastrophic compiler errors across the large monolith.
+- **Shared Class Names:** Be extremely cautious of identical class names that exist across different namespaces (e.g., `BizSrt.Api.Data.Entities.Category` vs. `BizSrt.Api.Model.Legacy.Category` vs `BizSrt.Api.Data.Master.Category`). The C# compiler will resolve them incorrectly or complain about ambiguous references if `using` directives overlap.
+- **Fully Qualify Entities:** When porting legacy LINQ queries or Cache accessors, always fully qualify the generic arguments, class names, or EF Core DbSet references if there's any risk of namespace collision (e.g. `System.Exception` vs `Foundation.Exception.Exception`).
+- **Anonymous Types & Type Inference:** If a LINQ `join` into an anonymous type fails type inference (`CS1941`), check if the underlying property types perfectly match. `short` vs `short?` vs `int` across different namespaces will break `GroupJoin` or `Join` clauses.
+- **Cache Singletons:** When accessing caches like `LegacyCache.Categories`, ensure you don't confuse the cache property with the underlying entity namespace. If C# confuses `BizSrt.Api.Data.Cache.LegacyCache.Categories` with a namespace resolution error, explicitly use an alias like `using LegacyCache = BizSrt.Api.Data.Cache.LegacyCache;` and call `LegacyCache.Categories`.

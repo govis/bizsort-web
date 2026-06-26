@@ -7,6 +7,21 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
  * Fetches a list of featured company entity IDs.
  * Matches legacy: getFeatured(sliceInput, ...)
  */
+export async function search(queryInput: any): Promise<any> {
+  const payload = JSON.stringify(queryInput);
+  const response = await fetch(`${API_BASE}/api/company/profile/search?queryInput=${encodeURIComponent(payload)}`);
+  
+  if (!response.ok) {
+    throw new Error(`Failed to perform search: ${response.statusText}`);
+  }
+  
+  return await response.json();
+}
+
+/**
+ * Fetches a list of featured company entity IDs.
+ * Matches legacy: getFeatured(sliceInput, ...)
+ */
 export async function getFeatured(index: number, length: number): Promise<SliceOutput<any>> {
   const sliceInput = JSON.stringify({ index, length });
   const response = await fetch(`${API_BASE}/api/company/profile/getFeatured?sliceInput=${encodeURIComponent(sliceInput)}`);

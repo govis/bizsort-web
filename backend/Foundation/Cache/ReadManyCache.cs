@@ -1,71 +1,114 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
-namespace BizSrt.Api.Foundation.Cache;
-
-public abstract class ReadManyExpirationCache<TKey, TValue> where TKey : notnull
+namespace BizSrt.Api.Foundation.Cache
 {
-    private readonly Func<List<TKey>, Task<TValue[]>> _fetchMany;
-    private readonly Func<TKey, Task<TValue?>> _fetchOne;
-    private readonly Func<TValue, TKey> _getKey;
+    public delegate TValue[] FetchMany<TValue, TKey>(List<TKey> keys);
 
-    protected readonly ConcurrentDictionary<TKey, TValue> _cache = new();
-
-    protected ReadManyExpirationCache(
-        Func<List<TKey>, Task<TValue[]>> fetchMany,
-        Func<TKey, Task<TValue?>> fetchOne,
-        Func<TValue, TKey> getKey)
+    public class ReadManyCache<TKey, TValue> : ReadOneCache<TKey, TValue>, IManyCache<TKey, TValue> where TValue : IKey<TKey>
     {
-        _fetchMany = fetchMany;
-        _fetchOne = fetchOne;
-        _getKey = getKey;
+        protected FetchMany<TValue, TKey> _fetchManyMethod;
+
+        public ReadManyCache(FetchMany<TValue, TKey> fetchManyMethod, FetchOne<TValue, TKey> fetchOneMethod)
+            : base(fetchOneMethod)
+        {
+            _fetchManyMethod = fetchManyMethod;
+        }
+
+        public TValue[] this[TKey[] keys]
+        {
+            get
+            {
+                return this[keys, false];
+            }
+        }
+
+        public TValue[] this[TKey[] keys, bool explicitOrder]
+        {
+            get
+            {
+                if (keys != null && keys.Length > 0)
+                {
+                    TValue[] values;
+                    if (explicitOrder)
+                    {
+                        //Using Dictionary to maintain sequential order
+                        var dictionary = new Dictionary<TKey, TValue>();
+                        List<TKey> pending = new List<TKey>();
+                        TValue value;
+                        foreach (TKey key in keys)
+                        {
+                            if (_cache.TryGetValue(key, out value))
+                                dictionary.Add(key, value);
+                            else //if (!pending.Contains(key))
+                            {
+                                dictionary.Add(key, default(TValue));
+                                pending.Add(key);
+                            }
+                        }
+
+                        if (pending.Count > 0)
+                        {
+                            var newValues = _fetchManyMethod(pending);
+                            foreach (var nv in newValues)
+                            {
+                                _cache.TryAdd(nv.Key, nv);
+                                dictionary[nv.Key] = nv;
+                            }
+                        }
+
+                        values = dictionary.Values.Where(v => v != null).ToArray();
+                    }
+                    else //unorderd - more lightweight
+                    {
+                        var list = new List<TValue>();
+                        List<TKey> pending = new List<TKey>();
+                        TValue value;
+                        foreach (TKey key in keys)
+                        {
+                            if (_cache.TryGetValue(key, out value))
+                                list.Add(value);
+                            else //if (!pending.Contains(key))
+                                pending.Add(key);
+                        }
+
+                        if (pending.Count > 0)
+                        {
+                            var newValues = _fetchManyMethod(pending);
+                            foreach (var nv in newValues)
+                            {
+                                _cache.TryAdd(nv.Key, nv);
+                                list.Add(nv);
+                            }
+                        }
+
+                        values = list.ToArray();
+                    }
+
+                    ReflectHits?.Invoke(values);
+
+                    return values;
+                }
+                else
+                    return new TValue[] {};
+            }
+        }
+
+        public Action<TValue[]> ReflectHits
+        {
+            get;
+            set;
+        }
     }
 
-    public async Task<TValue[]> GetManyAsync(IEnumerable<TKey> keys)
+    public class ReadManyExpirationCache<TKey, TValue> : ReadManyCache<TKey, TValue> where TValue : IKey<TKey>, IExpirationItem
     {
-        var distinctKeys = keys.Distinct().ToList();
-        var missingKeys = new List<TKey>();
-        var results = new List<TValue>();
-
-        foreach (var key in distinctKeys)
+        public ReadManyExpirationCache(FetchMany<TValue, TKey> fetchManyMethod, FetchOne<TValue, TKey> fetchOneMethod, int threshold)
+            : base(fetchManyMethod, fetchOneMethod)
         {
-            if (_cache.TryGetValue(key, out var val))
-            {
-                results.Add(val);
-            }
-            else
-            {
-                missingKeys.Add(key);
-            }
+            if (threshold > 0)
+                _manager = new Manager<TKey, TValue>(this, threshold);
         }
-
-        if (missingKeys.Count > 0)
-        {
-            var fetched = await _fetchMany(missingKeys);
-            foreach (var item in fetched)
-            {
-                var key = _getKey(item);
-                _cache[key] = item;
-                results.Add(item);
-            }
-        }
-
-        return results.ToArray();
-    }
-
-    public async Task<TValue?> GetAsync(TKey key)
-    {
-        if (_cache.TryGetValue(key, out var val))
-            return val;
-
-        var fetched = await _fetchOne(key);
-        if (fetched != null)
-        {
-            _cache[key] = fetched;
-        }
-        return fetched;
     }
 }

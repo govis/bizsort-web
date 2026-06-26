@@ -9,6 +9,7 @@ import { view } from '../service/company';
 import './home';
 import './profile';
 import './header-layout';
+import './search';
 import '@awesome.me/webawesome/dist/components/tab-group/tab-group.js';
 import '@awesome.me/webawesome/dist/components/tab/tab.js';
 import '../components/menu/page';
@@ -32,6 +33,14 @@ export function HomeWrapper() {
  */
 export function CompanyProfileWrapper({ companyId, activeTab = 'about' }: { companyId: number, activeTab?: string }) {
   return <company-profile company-id={companyId} active-tab={activeTab}></company-profile>;
+}
+
+/**
+ * Renders the Company Search web component.
+ */
+export function CompanySearchWrapper({ query, categoryId }: { query?: string, categoryId?: number }) {
+  // @ts-expect-error - Custom element not fully declared in global JSX namespace
+  return <company-search query={query} category-id={categoryId}></company-search>;
 }
 
 /**
@@ -174,3 +183,4 @@ export function CompanyLayoutWrapper({
     </company-header-layout>
   );
 }
+

@@ -22,6 +22,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public virtual DbSet<CompanyCommunity> CompanyCommunities { get; set; }
     public virtual DbSet<Community> Communities { get; set; }
     public virtual DbSet<Promotion> Promotions { get; set; }
+    public virtual DbSet<Category_Unwound> Categories_Unwound { get; set; }
+    public virtual DbSet<Location_Unwound> Locations_Unwound { get; set; }
+    public virtual DbSet<Location> Locations { get; set; }
+    public virtual DbSet<StreetName> StreetNames { get; set; }
+    public virtual DbSet<AreaName> AreaNames { get; set; }
+    public virtual DbSet<CategoryProductAttribute> CategoryProductAttributes { get; set; }
+    public virtual DbSet<BizSrt.Api.Data.Entities.SecurityProfile> SecurityProfiles { get; set; }
+    public virtual DbSet<BizSrt.Api.Data.Entities.SecurityProfilePriviledge> SecurityProfilePriviledges { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

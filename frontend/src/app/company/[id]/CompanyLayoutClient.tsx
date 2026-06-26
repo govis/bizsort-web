@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic';
 import { ReactNode } from 'react';
 
 const CompanyLayoutWrapper = dynamic(
-  () => import('@/company/CompanyLayoutWrapper'),
+  () => import('@/company/bundle').then((mod) => mod.CompanyLayoutWrapper),
   { ssr: false }
 );
 

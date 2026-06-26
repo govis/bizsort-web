@@ -9,10 +9,12 @@ import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import '@awesome.me/webawesome/dist/components/button/button.js';
 import '@awesome.me/webawesome/dist/components/input/input.js';
 
+import './category/input';
+import './location/input';
+
 /**
  * Search widget for the home page.
- * Ported from legacy component/search/home.ts — simplified to remove
- * the ViewModel, validation context, and autocomplete (stubbed for now).
+ * Uses ported <search-category-input> and <search-location-input>.
  */
 export class SearchHome extends LitElement {
   static get properties() {
@@ -108,22 +110,26 @@ export class SearchHome extends LitElement {
       flex-direction: column;
     }
 
-    .search-inputs wa-input {
+    .search-inputs search-category-input,
+    .search-inputs search-location-input {
       flex: 1;
     }
 
-    wa-input::part(base) {
+    search-category-input::part(base),
+    search-location-input::part(base) {
       background: rgba(255,255,255,0.15);
       border-color: rgba(255,255,255,0.3);
       color: white;
       border-radius: 8px;
     }
 
-    wa-input::part(input) {
+    search-category-input::part(input),
+    search-location-input::part(input) {
       color: white;
     }
 
-    wa-input::part(form-control-label) {
+    search-category-input::part(form-control-label),
+    search-location-input::part(form-control-label) {
       color: rgba(255,255,255,0.9);
       font-size: 13px;
     }
@@ -167,22 +173,20 @@ export class SearchHome extends LitElement {
         </wa-tab-group>
 
         <div class="search-inputs" @keydown="${this._handleKeydown}">
-          <wa-input
+          <search-category-input
             placeholder="Category, keyword, or name"
             label="What"
-            .value="${this._category}"
-            @wa-input="${(e: Event) => this._category = (e.target as HTMLInputElement).value}"
-          >
-            <wa-icon slot="prefix" name="search"></wa-icon>
-          </wa-input>
-          <wa-input
+            @category-selected="${(e: CustomEvent) => this._category = e.detail ? e.detail.name : ''}"
+            @category-cleared="${() => this._category = ''}"
+          ></search-category-input>
+          
+          <search-location-input
             placeholder="City, province, or postal code"
             label="Where"
-            .value="${this._location}"
-            @wa-input="${(e: Event) => this._location = (e.target as HTMLInputElement).value}"
-          >
-            <wa-icon slot="prefix" name="geo-alt"></wa-icon>
-          </wa-input>
+            geoMode
+            @location-selected="${(e: CustomEvent) => this._location = e.detail ? e.detail.name : ''}"
+            @location-cleared="${() => this._location = ''}"
+          ></search-location-input>
         </div>
 
         <slot></slot>

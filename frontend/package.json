@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@awesome.me/webawesome": "^3.8.0",
+    "@googlemaps/js-api-loader": "^2.1.1",
+    "@types/google.maps": "^3.65.2",
     "lit": "^3.3.3",
     "next": "16.2.9",
     "react": "19.2.4",

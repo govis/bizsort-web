@@ -4,7 +4,7 @@ import { use } from 'react';
 import dynamic from 'next/dynamic';
 
 const CompanyProfileWrapper = dynamic(
-  () => import('@/company/ProfileWrapper'),
+  () => import('@/company/bundle').then((mod) => mod.CompanyProfileWrapper),
   { ssr: false }
 );
 

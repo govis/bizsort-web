@@ -2,8 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using BizSrt.Api.Data;
 using BizSrt.Api.Data.Entities;
 using BizSrt.Api.Model.Company;
-using BizSrt.Api.Model.Legacy;
-using BizSrt.Api.Model.Legacy.List;
+using BizSrt.Api.Model;
+using BizSrt.Api.Model.List;
 using BizSrt.Api.Data.Cache.Company;
 
 namespace BizSrt.Api.Data.Company;
@@ -16,17 +16,17 @@ public interface ICompanyService
     Task<IEnumerable<BizSrt.Api.Model.Company.Preview>> ToPreviewAsync(SearchItem[] companies);
     Task<SliceOutput<EntityId<int>>> GetCommunitiesAsync(int companyId, SliceInput sliceInput);
     Task<SliceOutput<SearchItem>> GetAffiliationsAsync(int companyId, SliceInput sliceInput);
-    Task<QueryOutput<BizSrt.Api.Model.Legacy.EntityId<long>>> GetProductsAsync(int companyId, QueryInput queryInput);
-    Task<QueryOutput<BizSrt.Api.Model.Legacy.EntityId<long>>> GetProjectsAsync(int companyId, QueryInput queryInput);
-    Task<QueryOutput<BizSrt.Api.Model.Legacy.EntityId<long>>> GetJobsAsync(int companyId, short department, QueryInput queryInput);
+    Task<QueryOutput<BizSrt.Api.Model.EntityId<long>>> GetProductsAsync(int companyId, QueryInput queryInput);
+    Task<QueryOutput<BizSrt.Api.Model.EntityId<long>>> GetProjectsAsync(int companyId, QueryInput queryInput);
+    Task<QueryOutput<BizSrt.Api.Model.EntityId<long>>> GetJobsAsync(int companyId, short department, QueryInput queryInput);
     Task<IEnumerable<BizSrt.Api.Model.Promotion.Preview>> GetPromotionsAsync(int companyId);
-    Task<BizSrt.Api.Model.Legacy.Account?> GetInfoAsync(int id);
+    Task<BizSrt.Api.Model.Account?> GetInfoAsync(int id);
     Task<BizSrt.Api.Model.Product.Profile?> GetProductProfileAsync(int companyId, long productId);
     Task<BizSrt.Api.Model.Job.Profile?> GetJobProfileAsync(int companyId, long jobId);
     Task<BizSrt.Api.Model.Project.Profile?> GetProjectProfileAsync(int companyId, long projectId);
 }
 
-public class CompanyService(AppDbContext dbContext, CompanyProfilesCache profilesCache) : ICompanyService
+public class CompanyService(AppDbContext dbContext) : ICompanyService
 {
     public async Task<Profile?> ViewAsync(int id)
     {
@@ -53,11 +53,11 @@ public class CompanyService(AppDbContext dbContext, CompanyProfilesCache profile
             Phone = o.Phone ?? "",
             Phone1 = o.Phone1,
             Fax = o.Fax,
-            Location = new BizSrt.Api.Model.Legacy.Location 
+            Location = new BizSrt.Api.Model.Location 
             { 
                 Address = $"{o.StreetNumber} {o.Address1}, {o.PostalCode}".Trim().Trim(','),
                 GeoLocation = o.GeoLocation is NetTopologySuite.Geometries.Point p 
-                    ? new BizSrt.Api.Model.Legacy.Geolocation { Lat = p.Y, Lng = p.X } 
+                    ? new BizSrt.Api.Model.Geolocation { Lat = p.Y, Lng = p.X } 
                     : null
             }
         }).ToArray();
@@ -70,7 +70,7 @@ public class CompanyService(AppDbContext dbContext, CompanyProfilesCache profile
             WebSite = company.WebSite,
             RichText = company.RichText is not null ? System.Text.Encoding.UTF8.GetString(company.RichText) : null,
             Text = company.Text,
-            Category = company.Category > 0 ? new BizSrt.Api.Model.Legacy.Category { Id = company.Category, Name = categoryName ?? "" } : null,
+            Category = company.Category > 0 ? new BizSrt.Api.Model.Category { Id = company.Category, Name = categoryName ?? "" } : null,
             HeadOffice = offices.Length > 0 ? offices[0] : null,
             Offices = offices,
             Offerings = new Page_Offerings { View = ProductsView.NoProducts, HideOfferings = false },
@@ -138,12 +138,7 @@ public class CompanyService(AppDbContext dbContext, CompanyProfilesCache profile
     public async Task<IEnumerable<BizSrt.Api.Model.Company.Preview>> ToPreviewAsync(SearchItem[] companies)
     {
         var ids = companies.Select(c => c.Id).Distinct().ToArray();
-        var cachedProfiles = await profilesCache.GetManyAsync(ids);
-
-        var categoryIds = cachedProfiles.Select(p => p.Category).Distinct().ToArray();
-        var categories = await dbContext.Categories
-            .Where(c => categoryIds.Contains(c.Id))
-            .ToDictionaryAsync(c => c.Id, c => c.Name);
+        var cachedProfiles = BizSrt.Api.Data.Cache.LegacyCache.CompanyProfiles[ids];
 
         var result = new List<BizSrt.Api.Model.Company.Preview>();
 
@@ -152,11 +147,10 @@ public class CompanyService(AppDbContext dbContext, CompanyProfilesCache profile
             var cp = cachedProfiles.FirstOrDefault(p => p.Id == req.Id);
             if (cp is null) continue;
 
-            categories.TryGetValue(cp.Category, out var catName);
-            result.Add(cp.ToPreview(req.Office ?? 0, catName));
+            result.Add(cp.ToPreview(req.Office ?? 0));
         }
 
-        return result;
+        return await Task.FromResult(result);
     }
 
     public async Task<SliceOutput<EntityId<int>>> GetCommunitiesAsync(int companyId, SliceInput sliceInput)
@@ -190,7 +184,7 @@ public class CompanyService(AppDbContext dbContext, CompanyProfilesCache profile
         return new SliceOutput<SearchItem>(affiliations, sliceInput.Index + affiliations.Length < total ? sliceInput.Index + affiliations.Length : -1);
     }
 
-    public async Task<QueryOutput<BizSrt.Api.Model.Legacy.EntityId<long>>> GetProductsAsync(int companyId, QueryInput queryInput)
+    public async Task<QueryOutput<BizSrt.Api.Model.EntityId<long>>> GetProductsAsync(int companyId, QueryInput queryInput)
     {
         var query = dbContext.CompanyProducts
             .Join(dbContext.Products, cp => cp.Product, p => p.Id, (cp, p) => new { cp, p })
@@ -201,10 +195,10 @@ public class CompanyService(AppDbContext dbContext, CompanyProfilesCache profile
             .OrderByDescending(x => x.p.Created)
             .Skip(queryInput.StartIndex)
             .Take(queryInput.Length > 0 ? queryInput.Length : 20)
-            .Select(x => new BizSrt.Api.Model.Legacy.EntityId<long> { Id = x.cp.Product })
+            .Select(x => new BizSrt.Api.Model.EntityId<long> { Id = x.cp.Product })
             .ToArrayAsync();
 
-        return new QueryOutput<BizSrt.Api.Model.Legacy.EntityId<long>>
+        return new QueryOutput<BizSrt.Api.Model.EntityId<long>>
         {
             StartIndex = queryInput.StartIndex,
             Series = products,
@@ -212,7 +206,7 @@ public class CompanyService(AppDbContext dbContext, CompanyProfilesCache profile
         };
     }
 
-    public async Task<QueryOutput<BizSrt.Api.Model.Legacy.EntityId<long>>> GetProjectsAsync(int companyId, QueryInput queryInput)
+    public async Task<QueryOutput<BizSrt.Api.Model.EntityId<long>>> GetProjectsAsync(int companyId, QueryInput queryInput)
     {
         var query = dbContext.CompanyProjects
             .Join(dbContext.Projects, cp => cp.Project, p => p.Id, (cp, p) => new { cp, p })
@@ -223,10 +217,10 @@ public class CompanyService(AppDbContext dbContext, CompanyProfilesCache profile
             .OrderByDescending(x => x.p.Created)
             .Skip(queryInput.StartIndex)
             .Take(queryInput.Length > 0 ? queryInput.Length : 20)
-            .Select(x => new BizSrt.Api.Model.Legacy.EntityId<long> { Id = x.cp.Project })
+            .Select(x => new BizSrt.Api.Model.EntityId<long> { Id = x.cp.Project })
             .ToArrayAsync();
 
-        return new QueryOutput<BizSrt.Api.Model.Legacy.EntityId<long>>
+        return new QueryOutput<BizSrt.Api.Model.EntityId<long>>
         {
             StartIndex = queryInput.StartIndex,
             Series = projects,
@@ -234,7 +228,7 @@ public class CompanyService(AppDbContext dbContext, CompanyProfilesCache profile
         };
     }
 
-    public async Task<QueryOutput<BizSrt.Api.Model.Legacy.EntityId<long>>> GetJobsAsync(int companyId, short department, QueryInput queryInput)
+    public async Task<QueryOutput<BizSrt.Api.Model.EntityId<long>>> GetJobsAsync(int companyId, short department, QueryInput queryInput)
     {
         var query = dbContext.Jobs
             .Join(dbContext.Products, j => j.Id, p => p.Id, (j, p) => new { j, p })
@@ -250,10 +244,10 @@ public class CompanyService(AppDbContext dbContext, CompanyProfilesCache profile
             .OrderByDescending(x => x.p.Created)
             .Skip(queryInput.StartIndex)
             .Take(queryInput.Length > 0 ? queryInput.Length : 20)
-            .Select(x => new BizSrt.Api.Model.Legacy.EntityId<long> { Id = x.j.Id })
+            .Select(x => new BizSrt.Api.Model.EntityId<long> { Id = x.j.Id })
             .ToArrayAsync();
 
-        return new QueryOutput<BizSrt.Api.Model.Legacy.EntityId<long>>
+        return new QueryOutput<BizSrt.Api.Model.EntityId<long>>
         {
             StartIndex = queryInput.StartIndex,
             Series = jobs,
@@ -278,16 +272,16 @@ public class CompanyService(AppDbContext dbContext, CompanyProfilesCache profile
         return promotions;
     }
 
-    public async Task<BizSrt.Api.Model.Legacy.Account?> GetInfoAsync(int id)
+    public async Task<BizSrt.Api.Model.Account?> GetInfoAsync(int id)
     {
         var company = await dbContext.CompanyProfiles.AsNoTracking().FirstOrDefaultAsync(c => c.Id == id);
         if (company is null) return null;
 
-        return new BizSrt.Api.Model.Legacy.Account
+        return new BizSrt.Api.Model.Account
         {
             Id = company.Id,
             Name = company.Name,
-            AccountType = BizSrt.Api.Model.Legacy.AccountType.Company
+            AccountType = BizSrt.Api.Model.AccountType.Company
         };
     }
 
@@ -307,7 +301,7 @@ public class CompanyService(AppDbContext dbContext, CompanyProfilesCache profile
             RichText = cp.ProductNavigation.RichText,
             Text = cp.ProductNavigation.Text,
             WebUrl = cp.ProductNavigation.WebUrl,
-            Status = (BizSrt.Api.Model.Legacy.Status)cp.ProductNavigation.Status,
+            Status = (BizSrt.Api.Model.Status)cp.ProductNavigation.Status,
             Updated = cp.ProductNavigation.Updated
         };
     }
@@ -330,7 +324,7 @@ public class CompanyService(AppDbContext dbContext, CompanyProfilesCache profile
             StartDate = job.StartDate,
             Duration = job.Duration,
             WebUrl = job.ProductNavigation.WebUrl,
-            Status = (BizSrt.Api.Model.Legacy.Status)job.ProductNavigation.Status,
+            Status = (BizSrt.Api.Model.Status)job.ProductNavigation.Status,
             Updated = job.ProductNavigation.Updated
         };
     }
@@ -351,7 +345,7 @@ public class CompanyService(AppDbContext dbContext, CompanyProfilesCache profile
             RichText = cp.ProjectNavigation.RichText ?? "",
             Text = cp.ProjectNavigation.Text ?? "",
             TenderType = cp.ProjectNavigation.TenderType,
-            Status = (BizSrt.Api.Model.Legacy.Status)cp.ProjectNavigation.Status,
+            Status = (BizSrt.Api.Model.Status)cp.ProjectNavigation.Status,
             Updated = cp.ProjectNavigation.Updated
         };
     }

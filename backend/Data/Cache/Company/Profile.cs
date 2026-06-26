@@ -5,13 +5,17 @@ using System.Threading.Tasks;
 using BizSrt.Api.Model.Company;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
-using BizSrt.Api.Model.Legacy;
+using BizSrt.Api.Model;
 using BizSrt.Api.Foundation.Cache;
 
 namespace BizSrt.Api.Data.Cache.Company;
 
-public class CachedCompanyProfile
+public class CachedCompanyProfile : BizSrt.Api.Foundation.Cache.PartCache, BizSrt.Api.Foundation.Cache.IKey<int>, BizSrt.Api.Foundation.Cache.IExpirationItem
 {
+    public int Key => Id;
+    public int HitCount { get; set; }
+    public int LastHit { get; set; }
+
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
@@ -19,11 +23,67 @@ public class CachedCompanyProfile
     public string Text { get; set; } = string.Empty;
     public short Category { get; set; }
     
-    // Scaffolding only what's required for ToPreview for now
-    public CachedCompanyOffice? HeadOffice { get; set; }
-    public CachedCompanyOffice[] Offices { get; set; } = Array.Empty<CachedCompanyOffice>();
+    public BizSrt.Api.Model.Company.Option.Set Options { get; set; } = new();
 
-    public Preview ToPreview(int officeId = 0, string? categoryName = null)
+    private string? _multiProduct;
+    public string MultiProduct
+    {
+        get
+        {
+            return Get<int, string>(ref _multiProduct, Id, (int company) =>
+            {
+                using var dbContext = BizSrt.Api.Data.Cache.LegacyCache.GetDbContext();
+                var mp = dbContext.CompanyProducts
+                    .Where(cp => cp.Company == company && cp.UnlistedType == 0) // 0 = Listed
+                    .Join(dbContext.Products, cp => cp.Product, p => p.Id, (cp, p) => p.RichText)
+                    .FirstOrDefault(rt => rt != null && rt.Length > 0);
+                return !string.IsNullOrWhiteSpace(mp) ? mp : string.Empty;
+            });
+        }
+    }
+
+    private long[]? _products;
+    public long[] Products
+    {
+        get
+        {
+            return GetArray<int, long>(ref _products, Id, (int company) =>
+            {
+                using var dbContext = BizSrt.Api.Data.Cache.LegacyCache.GetDbContext();
+                return dbContext.CompanyProducts
+                    .Where(cp => cp.Company == company && cp.UnlistedType == 0) // 0 = Listed
+                    .Select(cp => cp.Product)
+                    .ToArray();
+            });
+        }
+    }
+
+    private CachedCompanyOffice[]? _offices;
+    public CachedCompanyOffice[] Offices
+    {
+        get
+        {
+            return GetArray<int, CachedCompanyOffice>(ref _offices, Id, (int company) =>
+            {
+                using var dbContext = BizSrt.Api.Data.Cache.LegacyCache.GetDbContext();
+                return dbContext.CompanyOffices
+                    .Where(co => co.Company == company)
+                    .Select(co => new CachedCompanyOffice
+                    {
+                        Id = co.Id,
+                        Phone = co.Phone ?? string.Empty,
+                        Address = new BizSrt.Api.Model.Location
+                        {
+                            Address = (co.StreetNumber + " " + co.Address1 + ", " + co.PostalCode).Trim().Trim(',')
+                        }
+                    }).ToArray();
+            });
+        }
+    }
+
+    public CachedCompanyOffice? HeadOffice => Offices.OrderBy(o => o.Id).FirstOrDefault();
+
+    public Preview ToPreview(int officeId = 0)
     {
         var office = officeId > 0 ? Offices.FirstOrDefault(o => o.Id == officeId) ?? HeadOffice : HeadOffice;
         
@@ -34,10 +94,13 @@ public class CachedCompanyProfile
             Location = office?.Address, 
             WebSite = WebSite, 
             Phone = office?.Phone, 
-            Text = Text, 
-            ProductsView = ProductsView.NoProducts, // Simplified for now
-            Category = Category > 0 && categoryName != null ? new Category { Id = Category, Name = categoryName } : null 
+            Text = Text,
+            ProductsView = !string.IsNullOrEmpty(MultiProduct) ? BizSrt.Api.Model.ProductsView.Multiproduct : Options.Products_Marketplace ? BizSrt.Api.Model.ProductsView.Marketplace : BizSrt.Api.Model.ProductsView.ProductList,
+            Category = Category > 0 ? BizSrt.Api.Data.Cache.LegacyCache.Categories[Category].ToModel(BizSrt.Api.Model.Group.DisplayType.Name) : null 
         };
+        
+        if (prvw.ProductsView != BizSrt.Api.Model.ProductsView.Multiproduct && Products?.Length == 0)
+            prvw.ProductsView = BizSrt.Api.Model.ProductsView.NoProducts;
         
         return prvw;
     }
@@ -46,92 +109,60 @@ public class CachedCompanyProfile
 public class CachedCompanyOffice
 {
     public int Id { get; set; }
-    public Location Address { get; set; } = new();
+    public BizSrt.Api.Model.Location Address { get; set; } = new();
     public string Phone { get; set; } = string.Empty;
 }
 
 public class CompanyProfilesCache : ReadManyExpirationCache<int, CachedCompanyProfile>
 {
-    public CompanyProfilesCache(IServiceProvider serviceProvider)
+    public CompanyProfilesCache()
         : base(
-            async (List<int> accountIds) =>
+            (List<int> accountIds) =>
             {
-                using var scope = serviceProvider.CreateScope();
-                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                using var dbContext = BizSrt.Api.Data.Cache.LegacyCache.GetDbContext();
 
-                var profiles = await dbContext.CompanyProfiles
-                    .Include(c => c.Offices)
+                var profiles = dbContext.CompanyProfiles
                     .Where(c => accountIds.Contains(c.Id))
                     .AsNoTracking()
-                    .ToListAsync();
+                    .ToList();
 
                 return profiles.Select(p => 
                 {
-                    var offices = p.Offices.Select(o => new CachedCompanyOffice
-                    {
-                        Id = o.Id,
-                        Phone = o.Phone,
-                        Address = new Location
-                        {
-                            Address = $"{o.StreetNumber} {o.Address1}, {o.PostalCode}".Trim().Trim(','),
-                            GeoLocation = o.GeoLocation is NetTopologySuite.Geometries.Point pt 
-                                ? new Geolocation { Lat = pt.Y, Lng = pt.X } 
-                                : null
-                        }
-                    }).ToArray();
-
                     return new CachedCompanyProfile
                     {
                         Id = p.Id,
                         Name = p.Name,
-                        Email = p.Email,
+                        Email = p.Email ?? string.Empty,
                         WebSite = p.WebSite ?? string.Empty,
                         Text = p.Text ?? string.Empty,
                         Category = p.Category,
-                        Offices = offices,
-                        HeadOffice = offices.OrderBy(o => o.Id).FirstOrDefault()
+                        Options = new BizSrt.Api.Model.Company.Option.Set { Value = (BizSrt.Api.Model.Company.Option.Flags)p.Options }
                     };
                 }).ToArray();
             },
-            async (int accountId) =>
+            (int accountId) =>
             {
-                using var scope = serviceProvider.CreateScope();
-                var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                using var dbContext = BizSrt.Api.Data.Cache.LegacyCache.GetDbContext();
                 
-                var p = await dbContext.CompanyProfiles
-                    .Include(c => c.Offices)
+                var p = dbContext.CompanyProfiles
                     .Where(c => c.Id == accountId)
                     .AsNoTracking()
-                    .SingleOrDefaultAsync();
+                    .SingleOrDefault();
 
                 if (p == null) return null;
-
-                var offices = p.Offices.Select(o => new CachedCompanyOffice
-                {
-                    Id = o.Id,
-                    Phone = o.Phone,
-                    Address = new Location
-                    {
-                        Address = $"{o.StreetNumber} {o.Address1}, {o.PostalCode}".Trim().Trim(','),
-                        GeoLocation = o.GeoLocation is NetTopologySuite.Geometries.Point pt 
-                            ? new Geolocation { Lat = pt.Y, Lng = pt.X } 
-                            : null
-                    }
-                }).ToArray();
 
                 return new CachedCompanyProfile
                 {
                     Id = p.Id,
                     Name = p.Name,
-                    Email = p.Email,
+                    Email = p.Email ?? string.Empty,
                     WebSite = p.WebSite ?? string.Empty,
                     Text = p.Text ?? string.Empty,
                     Category = p.Category,
-                    Offices = offices,
-                    HeadOffice = offices.OrderBy(o => o.Id).FirstOrDefault()
+                    Options = new BizSrt.Api.Model.Company.Option.Set { Value = (BizSrt.Api.Model.Company.Option.Flags)p.Options }
                 };
             },
-            profile => profile.Id)
+            1000)
     {
     }
 }
