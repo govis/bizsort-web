@@ -1,6 +1,6 @@
 # BizSort Legacy Codebase & Migration Tracking
 
-This document provides a comprehensive overview of the legacy BizSort architecture and tracks the modernization progress for the new Next.js / .NET 8 codebase. **All agents must review this file when deciding how to port or where to place code.**
+This document provides a comprehensive overview of the legacy BizSort architecture and tracks the modernization progress. **Please also refer to [LEGACY_TRACKER.md](file:///C:/Bizsort/bizsort-web/.agents/LEGACY_TRACKER.md) for a line-by-line file tracking matrix.**for the new Next.js / .NET 8 codebase. **All agents must review this file when deciding how to port or where to place code.**
 
 ## Legacy Architecture Overview
 
@@ -25,7 +25,7 @@ The legacy codebase is split into two primary areas:
 2. **ViewModel Preservation:** Do not rip out the legacy `ViewModel` pattern for inputs. Extract the logic from Lit components into modern `frontend/src/viewmodel/` classes to maintain data-flow consistency.
 3. **No Novel DB Queries:** All complex EF queries already exist in `legacy/server/Data/`. Port them exactly as they are.
 
-## Migration Progress Tracking
+## Migration progress. **Please also refer to [LEGACY_TRACKER.md](file:///C:/Bizsort/bizsort-web/.agents/LEGACY_TRACKER.md) for a line-by-line file tracking matrix.**Tracking
 
 ### 1. Backend Services & Data
 

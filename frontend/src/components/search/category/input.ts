@@ -20,6 +20,15 @@ export class SearchCategoryInput extends LitElement implements IViewAdapter {
     constructor() {
         super();
         this.model = new CategoryInputViewModel(this);
+    
+        this.scope = { id: 0, name: 'All Categories' };
+        this.placeholder = 'Search categories...';
+        this.label = '';
+        this.selected = null;
+        this._text = '';
+        this._suggestions = [];
+        this._isDropdownOpen = false;
+        this._errorText = '';
     }
     
     modelUpdated(props: string[]) {
@@ -74,28 +83,28 @@ export class SearchCategoryInput extends LitElement implements IViewAdapter {
     `;
 
     @property({ type: Object })
-    scope: IdName = { id: 0, name: 'All Categories' };
+    declare scope: IdName;
 
     @property({ type: String })
-    placeholder = 'Search categories...';
+    declare placeholder: string;
 
     @property({ type: String })
-    label = '';
+    declare label: string;
 
     @property({ type: Object })
-    selected: IdName | null = null;
+    declare selected: IdName | null;
 
     @state()
-    private _text = '';
+    declare _text: string;
 
     @state()
-    private _suggestions: Autocomplete[] = [];
+    declare _suggestions: Autocomplete[];
 
     @state()
-    private _isDropdownOpen = false;
+    declare _isDropdownOpen: boolean;
 
     @state()
-    private _errorText = '';
+    declare _errorText: string;
 
     @query('wa-input')
     private inputElement!: WaInput;

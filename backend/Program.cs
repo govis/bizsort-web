@@ -38,6 +38,8 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // --- Middleware Pipeline ---
+BizSrt.Api.Data.Cache.LegacyCache.Initialize(app.Services);
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

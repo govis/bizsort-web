@@ -33,6 +33,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Category_Unwound>().HasKey(e => new { e.Parent, e.Child });
+        modelBuilder.Entity<Location_Unwound>().HasKey(e => new { e.Parent, e.Child });
+        
         modelBuilder.Entity<CompanyProfile>(entity =>
         {
             entity.HasKey(e => e.Id);

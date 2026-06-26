@@ -21,6 +21,16 @@ export class SearchLocationInput extends LitElement implements IViewAdapter {
     constructor() {
         super();
         this.model = new LocationInputViewModel(this);
+    
+        this.scope = { id: 0, name: 'Everywhere' };
+        this.placeholder = 'Search locations...';
+        this.label = '';
+        this.selected = null;
+        this.geoMode = false;
+        this._text = '';
+        this._suggestions = [];
+        this._isDropdownOpen = false;
+        this._errorText = '';
     }
     
     modelUpdated(props: string[]) {
@@ -67,31 +77,31 @@ export class SearchLocationInput extends LitElement implements IViewAdapter {
     `;
 
     @property({ type: Object })
-    scope: IdName = { id: 0, name: 'Everywhere' };
+    declare scope: IdName;
 
     @property({ type: String })
-    placeholder = 'Search locations...';
+    declare placeholder: string;
 
     @property({ type: String })
-    label = '';
+    declare label: string;
 
     @property({ type: Object })
-    selected: any | null = null;
+    declare selected: any | null;
 
     @property({ type: Boolean })
-    geoMode = false;
+    declare geoMode: boolean;
 
     @state()
-    private _text = '';
+    declare _text: string;
 
     @state()
-    private _suggestions: any[] = [];
+    declare _suggestions: any[];
 
     @state()
-    private _isDropdownOpen = false;
+    declare _isDropdownOpen: boolean;
 
     @state()
-    private _errorText = '';
+    declare _errorText: string;
 
     @query('wa-input')
     private inputElement!: WaInput;

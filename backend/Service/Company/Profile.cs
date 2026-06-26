@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BizSrt.Api.Data;
 using BizSrt.Api.Service;
@@ -26,7 +26,7 @@ public static class CompanyEndpoints
 
         group.MapGet("/profile/getFeatured", async ([FromQuery] string sliceInput, ICompanyService companyService) =>
         {
-            var input = JsonSerializer.Deserialize<SliceInput>(sliceInput) ?? new SliceInput();
+            var input = JsonSerializer.Deserialize<DirectorySliceInput<int>>(sliceInput) ?? new DirectorySliceInput<int>();
             var result = await companyService.GetFeaturedAsync(input);
             return Results.Ok(result);
         });

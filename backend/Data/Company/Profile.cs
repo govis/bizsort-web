@@ -11,7 +11,7 @@ namespace BizSrt.Api.Data.Company;
 public interface ICompanyService
 {
     Task<Profile?> ViewAsync(int id);
-    Task<SliceOutput<SearchItem>> GetFeaturedAsync(SliceInput sliceInput, short category = 0, int location = 0);
+    Task<SliceOutput<SearchItem>> GetFeaturedAsync(DirectorySliceInput<int> sliceInput);
     Task<QueryOutput<SearchItem>> SearchAsync(SearchInput queryInput);
     Task<IEnumerable<BizSrt.Api.Model.Company.Preview>> ToPreviewAsync(SearchItem[] companies);
     Task<SliceOutput<EntityId<int>>> GetCommunitiesAsync(int companyId, SliceInput sliceInput);
@@ -81,26 +81,40 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
         return profile;
     }
 
-    public async Task<SliceOutput<SearchItem>> GetFeaturedAsync(SliceInput sliceInput, short category = 0, int location = 0)
+    public Task<SliceOutput<SearchItem>> GetFeaturedAsync(DirectorySliceInput<int> sliceInput)
     {
-        var query = dbContext.CompanyProfiles
-            .Join(dbContext.Accounts, c => c.Id, a => a.Id, (c, a) => new { c, a })
-            .Where(x => x.a.Status == 2);
+        // Apply default Location (1 = Canada) if not specified by the frontend search widget
+        if (sliceInput.Location == 0) sliceInput.Location = 1;
 
-        if (category > 0)
+        var companies = new List<int>(); 
+        int company;
+        var cached = BizSrt.Api.Data.Cache.LegacyCache.FeaturedCompanies[new Tuple<short, int>(sliceInput.Category, sliceInput.Location), sliceInput.Index == 0 && sliceInput.Length > 1];
+        var index = sliceInput.Index;
+        
+        if (sliceInput.Skip == null || sliceInput.Skip.Length < cached.Length)
         {
-            query = query.Where(x => x.c.Category == category);
+            while (companies.Count < sliceInput.Length && index < cached.Length)
+            {
+                company = cached[index];
+                if (sliceInput.Skip == null || !sliceInput.Skip.Contains(company))
+                    companies.Add(company);
+                if (++index >= cached.Length)
+                {
+                    if (cached.Length <= sliceInput.Length)
+                    {
+                        index = -1;
+                        break;
+                    }
+                    else
+                    {
+                        index = 0;
+                        sliceInput.Skip = null;
+                    }
+                }
+            }
         }
-
-        var total = await query.CountAsync();
-        var companies = await query
-            .OrderByDescending(x => x.c.Created)
-            .Skip(sliceInput.Index)
-            .Take(sliceInput.Length)
-            .Select(x => new SearchItem { Id = x.c.Id })
-            .ToArrayAsync();
-
-        return new SliceOutput<SearchItem>(companies, sliceInput.Index + companies.Length < total ? sliceInput.Index + companies.Length : -1);
+        
+        return Task.FromResult(new SliceOutput<SearchItem>(companies.Select(b => new SearchItem { Id = b }).ToArray(), index));
     }
 
     public async Task<QueryOutput<SearchItem>> SearchAsync(SearchInput queryInput)
@@ -144,7 +158,7 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
 
         foreach (var req in companies)
         {
-            var cp = cachedProfiles.FirstOrDefault(p => p.Id == req.Id);
+            var cp = cachedProfiles.FirstOrDefault(p => p != null && p.Id == req.Id);
             if (cp is null) continue;
 
             result.Add(cp.ToPreview(req.Office ?? 0));

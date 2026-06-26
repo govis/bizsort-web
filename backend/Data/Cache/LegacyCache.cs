@@ -22,6 +22,7 @@ namespace BizSrt.Api.Data.Cache
             AreaNames = new BizSrt.Api.Data.AreaNamesCache();
             StreetNames = new BizSrt.Api.Data.StreetNamesCache();
             CompanyProfiles = new BizSrt.Api.Data.Cache.Company.CompanyProfilesCache();
+            FeaturedCompanies = new BizSrt.Api.Data.Cache.Company.FeaturedCompaniesCache();
         }
 
         public static AppDbContext GetDbContext()
@@ -38,6 +39,7 @@ namespace BizSrt.Api.Data.Cache
         internal static BizSrt.Api.Data.AreaNamesCache AreaNames { get; private set; }
         internal static BizSrt.Api.Data.StreetNamesCache StreetNames { get; private set; }
         internal static BizSrt.Api.Data.Cache.Company.CompanyProfilesCache CompanyProfiles { get; private set; }
+        internal static BizSrt.Api.Data.Cache.Company.FeaturedCompaniesCache FeaturedCompanies { get; private set; }
         
         internal static Dictionary<int, BizSrt.Api.Model.LocationSettings> LocationSettings { get; private set; }
     }
