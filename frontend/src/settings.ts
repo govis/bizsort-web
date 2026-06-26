@@ -261,7 +261,7 @@ export const Service = {
     },
     google: {
         clientId: "549148705671-ja1hg0pm9bh4nqntldrk66rnpfl51cmh.apps.googleusercontent.com",
-        apiKey: "AIzaSyDdI1DHuEPefTcLwmJqZA8aozrsQDOOaAw",
+        apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
         siteKey: "6LcAKtYUAAAAAM4pMPEBo8KUxpdbVCoNPncLXILe"
     }
 };
