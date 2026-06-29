@@ -52,8 +52,16 @@ export class CompanyHome extends LitElement {
   }
 
   private _handleSearch(e: CustomEvent) {
-    // For now, log the search intent. Full search page will be wired later.
-    console.log('Search:', e.detail);
+    const { category, location } = e.detail as { category: number; location: number };
+    const featured = this.shadowRoot?.querySelector('company-featured') as any;
+    if (featured) {
+      // Mirror legacy: search-home$._reflectSelection sets selection.location to
+      // LocationSettings.country.id (1) if location is falsy/0
+      featured.selection = {
+        category: category ?? 0,
+        location: location ? location : 1
+      };
+    }
   }
 
   static styles = css`

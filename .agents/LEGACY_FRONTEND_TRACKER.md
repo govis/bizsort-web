@@ -149,7 +149,7 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunitySlider` | | |
 | [ ] | ↳ `component/company/affiliation/listview.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyAffiliationListView` | | |
-| [ ] | ↳ `component/company/card.ts` | - | - |
+| [x] | ↳ `component/company/card.ts` | `frontend/src/components/company/card.ts` | Ported as new company card. Renders preview: name, category, location, image. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<company-card>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<company-card-menu>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyCardMenu` | | |
@@ -158,7 +158,7 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<company-enrichment-action>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyEnrichment` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyEnrichmentAction` | | |
-| [ ] | ↳ `component/company/featured.ts` | - | - |
+| [x] | ↳ `component/company/featured.ts` | `frontend/src/components/company/featured.ts` | Ported as `<company-featured>`. Accepts `selection: { category, location }`, defaults to `{0, 1}` (Canada). Re-fetches on selection change via `updated()`. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyFeatured` | | |
 | [ ] | ↳ `component/company/industry/edit.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Edit` | | |
@@ -520,7 +520,7 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class InitOptions` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Selection` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class DirectoryBreadcrumb` | | |
-| [x] | ↳ `component/search/home.ts` | `frontend/src/components/search/home.ts` | Ported search home UI logic. |
+| [x] | ↳ `component/search/home.ts` | `frontend/src/components/search/home.ts` | Ported search home UI logic. Updated to track numeric `_categoryId`/`_locationId` instead of strings; dispatches numeric IDs on `search-submit`. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<search-home>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchHome` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Selection` | | |
@@ -870,6 +870,7 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class notifyPageOptions` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IHeader` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class PopulatePageOptions` | | |
+| [x] | ↳ `src/viewmodel/search/category/input.ts` | `frontend/src/viewmodel/search/category/input.ts` | Ported search category viewmodel (`class Input`, `class IInput`). |
 | [x] | ↳ `src/viewmodel/location/input.ts` | `frontend/src/viewmodel/location/input.ts` | Ported search location viewmodel. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Input` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IInput` | | |

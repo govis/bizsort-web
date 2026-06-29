@@ -1,1 +1,8 @@
+can you review the migration progress trackers and make updates if necessary
+
+rename LEGACY_TRACKER.md to LEGACY_BACKEND_TRACKER.md and generate_tracker_matrix.py to generate_backend_tracker.py, make sure generate_*_tracker.py don't write to LEGACY_FRONTEND_TRACKER.md/LEGACY_BACKEND_TRACKER.md. I believe we can remove generate_tracker.py as it was superseded by generate_tracker_matrix.py
+
+???double-check first
+when i load the company\home page (with no Category or Location selected) it still makes a call to "/api/company/profile/getFeatured?sliceInput=%7B%22index%22%3A0%2C%22length%22%3A4%7D" not passing default values for Category or Location
+
 make detailed updates to documentation about existing namespaces and their purpose, importance of following existing/legacy namespace conventions to avoid collisions and maintaining strict API parity and not inventing new LINQ queries and services and endpoints. We need to create a separate .md file to describe the legacy codebase in its entirety and to track what's been ported/modernized so far. It must be referenced at all times!  

@@ -10,7 +10,7 @@ You have been tasked with porting legacy C# code. **DO NOT WING IT.** You are st
 You MUST follow this exact, step-by-step workflow. If you skip a step, you will break the modernized frontend that relies on legacy schemas.
 
 ## Step 1: Prove It Needs Porting
-1. Check the exhaustively generated tracker: `C:\Bizsort\bizsort-web\.agents\LEGACY_TRACKER.md`.
+1. Check the exhaustively generated tracker: `C:\Bizsort\bizsort-web\.agents\LEGACY_BACKEND_TRACKER.md`.
 2. Locate the target namespace and class. If it is already marked `[x]`, **STOP IMMEDIATELY**. Do not port it again. Use the existing modern equivalent.
 
 ## Step 2: Investigate the Legacy Cache 
@@ -31,4 +31,7 @@ When porting endpoints (`backend/Endpoint/`):
 2. You must perfectly replicate the exact HTTP Verb, Route (`[Route("svc/...")]` becomes `/api/...`), query parameters, and JSON payload structures. The modernized frontend expects the exact same JSON format!
 
 ## Step 5: Update the Tracker
-When finished, update `generate_tracker_matrix.py` with your new class in the `known_ports` dictionary and run the script so `LEGACY_TRACKER.md` stays up-to-date.
+When finished, **manually** update `LEGACY_BACKEND_TRACKER.md` — mark the class as `[x]`, add the modern equivalent path, and add a migration note.
+
+> [!WARNING]
+> Do NOT run `generate_backend_tracker.py` expecting it to update `LEGACY_BACKEND_TRACKER.md`. The script writes to `LEGACY_BACKEND_TRACKER.scaffold.md` (a disposable scaffold) to avoid destroying the hand-maintained tracker. Only run it when you need to detect newly added legacy classes that aren't in the tracker yet — then cherry-pick those new rows into `LEGACY_BACKEND_TRACKER.md` manually.

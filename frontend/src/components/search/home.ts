@@ -21,22 +21,24 @@ export class SearchHome extends LitElement {
     return {
       tab: { type: String },
       narrow: { type: Boolean },
-      _category: { state: true },
-      _location: { state: true }
+      _categoryId: { state: true },
+      _locationId: { state: true }
     };
   }
 
   declare tab: string;
   declare narrow: boolean;
-  declare private _category: string;
-  declare private _location: string;
+  /** Numeric category ID (0 = any). Mirrors legacy Selection.category */
+  declare private _categoryId: number;
+  /** Numeric location ID (0 = use default country). Mirrors legacy Selection.location */
+  declare private _locationId: number;
 
   constructor() {
     super();
     this.tab = 'company';
     this.narrow = false;
-    this._category = '';
-    this._location = '';
+    this._categoryId = 0;
+    this._locationId = 0;
   }
 
   private _onTabSelect(e: CustomEvent<{ name: string }>) {
@@ -49,8 +51,9 @@ export class SearchHome extends LitElement {
       bubbles: true,
       detail: {
         tab: this.tab,
-        category: this._category,
-        location: this._location
+        // Numeric IDs — mirrors legacy Selection interface: { category: number; location: number }
+        category: this._categoryId,
+        location: this._locationId
       }
     }));
   }
@@ -176,16 +179,16 @@ export class SearchHome extends LitElement {
           <search-category-input
             placeholder="Category, keyword, or name"
             label="What"
-            @category-selected="${(e: CustomEvent) => this._category = e.detail ? e.detail.name : ''}"
-            @category-cleared="${() => this._category = ''}"
+            @category-selected="${(e: CustomEvent) => this._categoryId = e.detail ? e.detail.id : 0}"
+            @category-cleared="${() => this._categoryId = 0}"
           ></search-category-input>
           
           <search-location-input
             placeholder="City, province, or postal code"
             label="Where"
             geoMode
-            @location-selected="${(e: CustomEvent) => this._location = e.detail ? e.detail.name : ''}"
-            @location-cleared="${() => this._location = ''}"
+            @location-selected="${(e: CustomEvent) => this._locationId = e.detail ? e.detail.id : 0}"
+            @location-cleared="${() => this._locationId = 0}"
           ></search-location-input>
         </div>
 

@@ -1,4 +1,4 @@
-﻿using SixLabors.ImageSharp;
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.PixelFormats;
@@ -11,42 +11,31 @@ namespace BizSrt.Api.Service;
 
 public interface IImageService
 {
-    Task<byte[]?> GetImageAsync(ImageEntity entity, long id, int width, int height);
+    Task<(byte[]? Content, string ContentType)> GetImageAsync(ImageEntity entity, long id, int width, int height);
     Task<byte[]> GenerateCaptchaAsync(string text);
 }
 
 public class ImageService(IServiceScopeFactory serviceScopeFactory) : IImageService
 {
-    public async Task<byte[]?> GetImageAsync(ImageEntity entity, long id, int width, int height)
+    public async Task<(byte[]? Content, string ContentType)> GetImageAsync(ImageEntity entity, long id, int width, int height)
     {
-        using var scope = serviceScopeFactory.CreateScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        IMedia? media = entity switch
-        {
-            ImageEntity.Company => await dbContext.CompanyMedia.FirstOrDefaultAsync(m => m.Id == (int)id),
-            ImageEntity.Product => await dbContext.ProductMedia.FirstOrDefaultAsync(m => m.Id == id),
-            ImageEntity.Project => await dbContext.ProjectMedia.FirstOrDefaultAsync(m => m.Id == id),
-            ImageEntity.Community => await dbContext.CommunityMedia.FirstOrDefaultAsync(m => m.Id == (int)id),
-            _ => null
-        };
-
-        if (media?.Content is null) return null;
-
-        using var image = SixLabors.ImageSharp.Image.Load(media.Content);
+        var key = new BizSrt.Api.Data.Cache.ImageCacheKey(entity, id);
         
-        if (width > 0 && height > 0)
+        // Suppress exception if record not found
+        var image = BizSrt.Api.Data.Cache.LegacyCache.Images[key, BizSrt.Api.Foundation.Cache.ReadOneSuppress.RecordNotFound];
+        
+        if (image == null) return (null, string.Empty);
+        
+        // Call Resize which returns raw bytes for now
+        var content = image.Resize(width, height, out var type);
+        string contentType = type switch
         {
-            image.Mutate(x => x.Resize(new ResizeOptions
-            {
-                Size = new Size(width, height),
-                Mode = ResizeMode.Max
-            }));
-        }
-
-        using var ms = new MemoryStream();
-        await image.SaveAsJpegAsync(ms);
-        return ms.ToArray();
+            ImageType.Png => "image/png",
+            ImageType.Gif => "image/gif",
+            _ => "image/jpeg"
+        };
+        
+        return await Task.FromResult((content, contentType));
     }
 
     public async Task<byte[]> GenerateCaptchaAsync(string text)

@@ -4,7 +4,12 @@ from collections import defaultdict
 
 legacy_dir = r"C:\Bizsort\legacy\website\wwwroot"
 modern_dir = r"C:\Bizsort\bizsort-web\frontend"
-tracker_path = r"C:\Bizsort\bizsort-web\.agents\LEGACY_FRONTEND_TRACKER.md"
+# ⚠️  SCAFFOLD ONLY — this script writes to a .scaffold.md file for reference.
+# NEVER change tracker_path to point at LEGACY_FRONTEND_TRACKER.md directly.
+# LEGACY_FRONTEND_TRACKER.md is manually curated; running this script would destroy all
+# hand-maintained [x] statuses, modern equivalents, and migration notes.
+# Workflow: run this → diff against LEGACY_FRONTEND_TRACKER.md → cherry-pick new entries manually.
+tracker_path = r"C:\Bizsort\bizsort-web\.agents\LEGACY_FRONTEND_TRACKER.scaffold.md"
 
 # Categories
 # 1. Views (_routes or pages)
@@ -110,4 +115,4 @@ with open(tracker_path, "w", encoding="utf-8") as f:
             for cls in set(item['classes']):
                 f.write(f"| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class {cls}` | | |\n")
 
-print("Generated rich LEGACY_FRONTEND_TRACKER.md")
+print("Generated LEGACY_FRONTEND_TRACKER.scaffold.md — diff against LEGACY_FRONTEND_TRACKER.md and cherry-pick new entries manually.")

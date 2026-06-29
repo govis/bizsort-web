@@ -154,7 +154,10 @@ public class SearchInput : BizSrt.Api.Model.List.QueryInput
 
 public class SearchItem : EntityId<int>
 {
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public int? Office { get; set; }
+    
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
     public float Distance { get; set; }
 }
 

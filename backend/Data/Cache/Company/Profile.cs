@@ -25,6 +25,11 @@ public class CachedCompanyProfile : BizSrt.Api.Foundation.Cache.PartCache, BizSr
     
     public BizSrt.Api.Model.Company.Option.Set Options { get; set; } = new();
 
+    public int ImageId { get; set; }
+    public BizSrt.Api.Model.ImageSizeType ImageSize { get; set; }
+
+    public BizSrt.Api.Model.Image<int> Image => new BizSrt.Api.Model.Image<int> { Entity = BizSrt.Api.Model.ImageEntity.Company, ImageId = ImageId, MaxImageSize = ImageSize };
+
     private string? _multiProduct;
     public string MultiProduct
     {
@@ -36,7 +41,7 @@ public class CachedCompanyProfile : BizSrt.Api.Foundation.Cache.PartCache, BizSr
                 var mp = dbContext.CompanyProducts
                     .Where(cp => cp.Company == company && cp.UnlistedType == 0) // 0 = Listed
                     .Join(dbContext.Products, cp => cp.Product, p => p.Id, (cp, p) => p.RichText)
-                    .FirstOrDefault(rt => rt != null && rt.Length > 0);
+                    .FirstOrDefault(rt => !string.IsNullOrEmpty(rt));
                 return !string.IsNullOrWhiteSpace(mp) ? mp : string.Empty;
             });
         }
@@ -96,7 +101,8 @@ public class CachedCompanyProfile : BizSrt.Api.Foundation.Cache.PartCache, BizSr
             Phone = office?.Phone, 
             Text = Text,
             ProductsView = !string.IsNullOrEmpty(MultiProduct) ? BizSrt.Api.Model.ProductsView.Multiproduct : Options.Products_Marketplace ? BizSrt.Api.Model.ProductsView.Marketplace : BizSrt.Api.Model.ProductsView.ProductList,
-            Category = Category > 0 ? BizSrt.Api.Data.Cache.LegacyCache.Categories[Category].ToModel(BizSrt.Api.Model.Group.DisplayType.Name) : null 
+            Category = Category > 0 ? BizSrt.Api.Data.Cache.LegacyCache.Categories[Category].ToModel(BizSrt.Api.Model.Group.DisplayType.Name) : null,
+            Image = Image
         };
         
         if (prvw.ProductsView != BizSrt.Api.Model.ProductsView.Multiproduct && Products?.Length == 0)
@@ -121,22 +127,28 @@ public class CompanyProfilesCache : ReadManyExpirationCache<int, CachedCompanyPr
             {
                 using var dbContext = BizSrt.Api.Data.Cache.LegacyCache.GetDbContext();
 
-                var profiles = dbContext.CompanyProfiles
-                    .Where(c => accountIds.Contains(c.Id))
-                    .AsNoTracking()
-                    .ToList();
+                var profilesQuery = from c in dbContext.CompanyProfiles
+                                    where accountIds.Contains(c.Id)
+                                    let biId = (int?)dbContext.CompanyMedia
+                                        .Where(m => m.Company == c.Id && m.Type == (byte)BizSrt.Api.Model.MediaType.Default_Image)
+                                        .Select(m => m.Id)
+                                        .FirstOrDefault()
+                                    select new { Profile = c, ImageId = biId ?? 0 };
+
+                var profiles = profilesQuery.AsNoTracking().ToList();
 
                 return profiles.Select(p => 
                 {
                     return new CachedCompanyProfile
                     {
-                        Id = p.Id,
-                        Name = p.Name,
-                        Email = p.Email ?? string.Empty,
-                        WebSite = p.WebSite ?? string.Empty,
-                        Text = p.Text ?? string.Empty,
-                        Category = p.Category,
-                        Options = new BizSrt.Api.Model.Company.Option.Set { Value = (BizSrt.Api.Model.Company.Option.Flags)p.Options }
+                        Id = p.Profile.Id,
+                        Name = p.Profile.Name,
+                        Email = p.Profile.Email ?? string.Empty,
+                        WebSite = p.Profile.WebSite ?? string.Empty,
+                        Text = p.Profile.Text ?? string.Empty,
+                        Category = p.Profile.Category,
+                        Options = new BizSrt.Api.Model.Company.Option.Set { Value = (BizSrt.Api.Model.Company.Option.Flags)p.Profile.Options },
+                        ImageId = p.ImageId
                     };
                 }).ToArray();
             },
@@ -144,22 +156,28 @@ public class CompanyProfilesCache : ReadManyExpirationCache<int, CachedCompanyPr
             {
                 using var dbContext = BizSrt.Api.Data.Cache.LegacyCache.GetDbContext();
                 
-                var p = dbContext.CompanyProfiles
-                    .Where(c => c.Id == accountId)
-                    .AsNoTracking()
-                    .SingleOrDefault();
+                var profileQuery = from c in dbContext.CompanyProfiles
+                                   where c.Id == accountId
+                                   let biId = (int?)dbContext.CompanyMedia
+                                       .Where(m => m.Company == c.Id && m.Type == (byte)BizSrt.Api.Model.MediaType.Default_Image)
+                                       .Select(m => m.Id)
+                                       .FirstOrDefault()
+                                   select new { Profile = c, ImageId = biId ?? 0 };
+
+                var p = profileQuery.AsNoTracking().SingleOrDefault();
 
                 if (p == null) return null;
 
                 return new CachedCompanyProfile
                 {
-                    Id = p.Id,
-                    Name = p.Name,
-                    Email = p.Email ?? string.Empty,
-                    WebSite = p.WebSite ?? string.Empty,
-                    Text = p.Text ?? string.Empty,
-                    Category = p.Category,
-                    Options = new BizSrt.Api.Model.Company.Option.Set { Value = (BizSrt.Api.Model.Company.Option.Flags)p.Options }
+                    Id = p.Profile.Id,
+                    Name = p.Profile.Name,
+                    Email = p.Profile.Email ?? string.Empty,
+                    WebSite = p.Profile.WebSite ?? string.Empty,
+                    Text = p.Profile.Text ?? string.Empty,
+                    Category = p.Profile.Category,
+                    Options = new BizSrt.Api.Model.Company.Option.Set { Value = (BizSrt.Api.Model.Company.Option.Flags)p.Profile.Options },
+                    ImageId = p.ImageId
                 };
             },
             1000)

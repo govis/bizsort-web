@@ -16,7 +16,9 @@ builder.Services.AddSwaggerGen();
 
 // EF Core with Spatial Support
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(connectionString, x => x.UseNetTopologySuite()));
+    options.UseSqlServer(connectionString, x => x.UseNetTopologySuite()), 
+    ServiceLifetime.Scoped, 
+    ServiceLifetime.Singleton);
 
 // Domain Services
 builder.Services.AddScoped<BizSrt.Api.Data.Company.ICompanyService, BizSrt.Api.Data.Company.CompanyService>();

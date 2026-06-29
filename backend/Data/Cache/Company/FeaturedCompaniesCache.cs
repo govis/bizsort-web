@@ -65,8 +65,8 @@ namespace BizSrt.Api.Data.Cache.Company
 
         protected override int[] FetchItems(Tuple<short, int> key)
         {
-            using var dbContext = LegacyCache.GetDbContext();
-            
+            using var dbContext = BizSrt.Api.Data.Cache.LegacyCache.GetDbContext();
+
             var cq = from c in dbContext.CompanyProfiles
                      join a in dbContext.Accounts on c.Id equals a.Id
                      where a.Status == 2 // Active
@@ -81,25 +81,35 @@ namespace BizSrt.Api.Data.Cache.Company
 
             if (key.Item2 > 0)
             {
-                var coq = from co in dbContext.CompanyOffices
-                          join lu in dbContext.Locations_Unwound on new { Parent = key.Item2, Child = co.Location } equals new { lu.Parent, lu.Child } into lut
-                          from lu in lut.DefaultIfEmpty()
-                          where co.Location == key.Item2 || lu != null
-                          select co;
+                var coq = BizSrt.Api.Data.QueryExtensions.LocationQuery(dbContext.CompanyOffices, dbContext, key.Item2);
 
-                cq = (from c in cq
-                      join co in coq on c.Id equals co.Company
-                      select c).Distinct(); 
+                cq = from c in cq
+                     where coq.Any(co => co.Company == c.Id)
+                     select c; 
             }
 
             var qt = (from b in cq
-                      let bi = dbContext.CompanyMedia.FirstOrDefault(bi => bi.Company == b.Id && bi.Type == 1) // 1 = Default_Image
-                      where bi != null
+                      where dbContext.CompanyMedia.Any(m => m.Company == b.Id && m.Type == (byte)BizSrt.Api.Model.MediaType.Default_Image)
                       orderby b.Created descending
-                      select new { b.Id, bi.Metadata }).AsEnumerable();
+                      select b.Id).Take(500).AsEnumerable();
 
-            // Image size resolution requires Foundation.Image logic, which we port as simple check for now
-            return qt.Where(b => b.Metadata != null && b.Metadata.Length > 0).Select(b => b.Id).Take(100).ToArray();
+            var result = new System.Collections.Generic.List<int>();
+            foreach (var id in qt)
+            {
+                var bi = dbContext.CompanyMedia
+                    .Where(m => m.Company == id && m.Type == (byte)BizSrt.Api.Model.MediaType.Default_Image)
+                    .Select(m => m.Metadata)
+                    .FirstOrDefault();
+
+                if (bi != null && bi.Length > 0)
+                {
+                    result.Add(id);
+                    if (result.Count >= 100)
+                        break;
+                }
+            }
+
+            return result.ToArray();
         }
     }
 }

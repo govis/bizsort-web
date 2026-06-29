@@ -8,14 +8,28 @@ import '@awesome.me/webawesome/dist/components/spinner/spinner.js';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import '@awesome.me/webawesome/dist/components/button/button.js';
 
+/** Selection passed from search-home. Mirrors legacy company-featured.fetchSlice sliceInput.category / sliceInput.location. */
+export interface Selection {
+  category: number;
+  location: number;
+}
+
+/** Default country ID from legacy LocationSettings.country.id (Canada = 1) */
+const DEFAULT_LOCATION = 1;
+const DEFAULT_CATEGORY = 0;
+
 export class CompanyFeatured extends LitElement {
   static get properties() {
     return {
       _items: { state: true },
       _loading: { state: true },
-      _nextIndex: { state: true }
+      _nextIndex: { state: true },
+      selection: { type: Object, attribute: false }
     };
   }
+
+  /** Publicly settable by company-home when search-home fires selection-change */
+  declare selection: Selection;
 
   declare private _items: CompanyPreview[];
   declare private _loading: boolean;
@@ -26,6 +40,8 @@ export class CompanyFeatured extends LitElement {
     this._items = [];
     this._loading = false;
     this._nextIndex = 0;
+    // Default: any category, default country (matches legacy LocationSettings.country.id = 1)
+    this.selection = { category: DEFAULT_CATEGORY, location: DEFAULT_LOCATION };
   }
 
   connectedCallback() {
@@ -33,10 +49,23 @@ export class CompanyFeatured extends LitElement {
     this._fetchFeatured();
   }
 
+  updated(changed: Map<string, unknown>) {
+    // Re-fetch (and reset) when the selection (category/location) changes from search-home
+    if (changed.has('selection') && changed.get('selection') !== undefined) {
+      this._items = [];
+      this._nextIndex = 0;
+      this._fetchFeatured();
+    }
+  }
+
   private async _fetchFeatured() {
     this._loading = true;
     try {
-      const data = await getFeatured(this._nextIndex, 4);
+      // Pass category and location from selection — matches legacy fetchSlice:
+      //   sliceInput.category = this.selection.category;
+      //   sliceInput.location = this.selection.location;
+      const { category, location } = this.selection;
+      const data = await getFeatured(this._nextIndex, 4, category, location);
 
       let previews: CompanyPreview[] = [];
       if (data.series.length > 0) {

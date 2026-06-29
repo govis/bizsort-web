@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using BizSrt.Api.Service;
 using BizSrt.Api.Model;
 
@@ -10,10 +10,10 @@ public static class ImageEndpoints
     {
         var group = routes.MapGroup("/api/image").WithTags("Image");
 
-        group.MapGet("/get", async ([FromQuery] ImageEntity entity, [FromQuery] long id, [FromQuery] int w, [FromQuery] int h, IImageService imageService) =>
+        group.MapGet("/get", async ([FromQuery] ImageEntity entity, [FromQuery] long id, [FromQuery] int width, [FromQuery] int height, IImageService imageService) =>
         {
-            var imageBytes = await imageService.GetImageAsync(entity, id, w, h);
-            return imageBytes is not null ? Results.File(imageBytes, "image/jpeg") : Results.NotFound();
+            var result = await imageService.GetImageAsync(entity, id, width, height);
+            return result.Content is not null ? Results.File(result.Content, result.ContentType) : Results.NotFound();
         })
         .WithName("GetImage")
         .WithOpenApi();

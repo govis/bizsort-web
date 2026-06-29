@@ -3,7 +3,12 @@ import re
 from collections import defaultdict
 
 legacy_dir = r"C:\Bizsort\legacy\server"
-tracker_path = r"C:\Bizsort\bizsort-web\.agents\LEGACY_TRACKER.md"
+# ⚠️  SCAFFOLD ONLY — this script writes to a .scaffold.md file for reference.
+# NEVER change tracker_path to point at LEGACY_BACKEND_TRACKER.md directly.
+# LEGACY_BACKEND_TRACKER.md is manually curated; running this script would destroy all
+# hand-maintained [x] statuses, modern equivalents, and migration notes.
+# Workflow: run this → diff against LEGACY_BACKEND_TRACKER.md → cherry-pick new entries manually.
+tracker_path = r"C:\Bizsort\bizsort-web\.agents\LEGACY_BACKEND_TRACKER.scaffold.md"
 
 namespace_pattern = re.compile(r'^\s*namespace\s+([A-Za-z0-9_\.]+)', re.MULTILINE)
 class_pattern = re.compile(r'^\s*(?:public|internal|protected|private)?\s*(?:static|sealed|abstract|partial)?\s*(?:class|interface|struct|record)\s+([A-Za-z0-9_]+)', re.MULTILINE)
@@ -97,4 +102,4 @@ with open(tracker_path, "w", encoding="utf-8") as f:
             for method in sorted(set(namespaces[ns][cls])):
                 f.write(f"| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `{method}()` | | |\n")
 
-print("Generated rich LEGACY_TRACKER.md")
+print("Generated LEGACY_BACKEND_TRACKER.scaffold.md — diff against LEGACY_BACKEND_TRACKER.md and cherry-pick new entries manually.")

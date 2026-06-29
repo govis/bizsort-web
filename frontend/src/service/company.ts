@@ -20,11 +20,12 @@ export async function search(queryInput: any): Promise<any> {
 
 /**
  * Fetches a list of featured company entity IDs.
- * Matches legacy: getFeatured(sliceInput, ...)
+ * Matches legacy: getFeatured(sliceInput, ...) where sliceInput is List.DirectorySliceInput
+ * Default: category=0 (any), location=1 (Canada) per LocationSettings.country.id
  */
-export async function getFeatured(index: number, length: number): Promise<SliceOutput<any>> {
-  const sliceInput = JSON.stringify({ index, length });
-  const response = await fetch(`${API_BASE}/api/company/profile/getFeatured?sliceInput=${encodeURIComponent(sliceInput)}`);
+export async function getFeatured(index: number, length: number, category: number = 0, location: number = 1): Promise<SliceOutput<SearchItem>> {
+  const sliceInput = JSON.stringify({ index, length, category, location });
+  const response = await fetch(`${API_BASE}/api/company/profile/getFeatured?sliceInput=${sliceInput}`);
   
   if (!response.ok) {
     throw new Error(`Failed to fetch featured companies: ${response.statusText}`);
@@ -34,15 +35,16 @@ export async function getFeatured(index: number, length: number): Promise<SliceO
 }
 
 /**
- * Fetches preview details for a list of company entity IDs.
- * Matches legacy: toPreview(companies, options, ...)
+ * Ported legacy toPreview method.
+ * Hydrates an array of SearchItems (which just contain IDs) into full Preview models.
+ * Legacy backend method: Data.Company.Profile.ToPreview
+ * Legacy frontend mapping: /company/profile/toPreview
  */
-export async function toPreview(companies: any[]): Promise<CompanyPreview[]> {
+export async function toPreview(companies: SearchItem[]): Promise<CompanyPreview[]> {
   if (!companies || companies.length === 0) return [];
   
   const payload = JSON.stringify(companies);
-  // Options is omitted for now as it's not strictly required in the modernized scaffolding
-  const response = await fetch(`${API_BASE}/api/company/profile/toPreview?companies=${encodeURIComponent(payload)}`);
+  const response = await fetch(`${API_BASE}/api/company/profile/toPreview?companies=${payload}`);
   
   if (!response.ok) {
     throw new Error(`Failed to fetch company previews: ${response.statusText}`);

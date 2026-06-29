@@ -40,6 +40,7 @@ namespace BizSrt.Api.Model
 
     public class EntityId<T>
     {
+        [JsonPropertyName("id")]
         public T Id { get; set; } = default!;
     }
 
@@ -120,6 +121,23 @@ namespace BizSrt.Api.Model
     {
         [JsonPropertyName("partial")]
         public bool Partial { get; set; }
+    }
+
+    [Flags]
+    public enum MediaType : byte
+    {
+        Image = 1,
+        Default = 2,
+        Default_Image = Image + Default,
+        Content = 4,
+        Content_Image = Image + Content
+    }
+
+    public enum ImageType : byte
+    {
+        Jpeg = 1,
+        Png = 2,
+        Gif = 3
     }
 
     namespace Geocoder

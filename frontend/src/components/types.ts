@@ -112,3 +112,9 @@ export interface QueryOutput<T> {
   series: T[];
   totalCount: number;
 }
+
+export interface SearchItem {
+  id: number;
+  office?: number;
+  distance?: number;
+}

@@ -25,7 +25,7 @@ export class CompanyCard extends LitElement {
   private _getImageUrl(): string {
     if (!this.model?.image?.imageId) return '';
     const backendUrl = process.env.NEXT_PUBLIC_API_URL || '';
-    return `${backendUrl}/api/image/get?entity=${this.model.image.entity}&id=${this.model.image.imageId}&w=280&h=160`;
+    return `${backendUrl}/api/image/get?entity=${this.model.image.entity}&id=${this.model.image.imageId}&width=240&height=120`;
   }
 
   private _handleClick() {
@@ -58,7 +58,7 @@ export class CompanyCard extends LitElement {
     }
 
     .head {
-      height: 160px;
+      height: 120px;
       background-color: #cfd8dc;
       position: relative;
       overflow: hidden;
