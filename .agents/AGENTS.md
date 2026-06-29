@@ -23,7 +23,10 @@ This file contains structural and naming conventions that all agents must follow
   - `BizSrt.Api.Endpoint`
   - `BizSrt.Api.Data`
 
-### 4. Subagent Concurrency (Claude API Limits)
+### 4. Database Schema Remapping
+- **Business -> Company:** The legacy database heavily used the `Business` domain terminology (e.g. `Businesses` table, `BusinessOffices`). This has been completely modernized to `Company`. When porting queries, remap legacy table names to `CompanyProfiles`, `CompanyMedia`, `CompanyOffices`, etc., and ensure LINQ aliases use updated abbreviations (`bi` becomes `cm`, `bo` becomes `co`).
+
+### 5. Subagent Concurrency (Claude API Limits)
 - **NEVER** launch more than one subagent in parallel.
 - If a task requires multiple subagents, you must invoke them sequentially. Wait for the first subagent to finish and report back before using `invoke_subagent` for the next one.
 

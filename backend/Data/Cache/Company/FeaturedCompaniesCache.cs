@@ -96,12 +96,12 @@ namespace BizSrt.Api.Data.Cache.Company
             var result = new System.Collections.Generic.List<int>();
             foreach (var id in qt)
             {
-                var bi = dbContext.CompanyMedia
+                var cm = dbContext.CompanyMedia
                     .Where(m => m.Company == id && m.Type == (byte)BizSrt.Api.Model.MediaType.Default_Image)
                     .Select(m => m.Metadata)
                     .FirstOrDefault();
 
-                if (bi != null && bi.Length > 0)
+                if (cm != null && cm.Length > 0)
                 {
                     result.Add(id);
                     if (result.Count >= 100)

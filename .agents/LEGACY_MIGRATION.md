@@ -22,8 +22,9 @@ The legacy codebase is split into two primary areas:
 ## Modernization Principles
 
 1. **Strict API Parity:** You must not invent new REST schemas. Your ported .NET Endpoints must exactly match what the legacy TypeScript `src/service/` layers expect.
-2. **ViewModel Preservation:** Do not rip out the legacy `ViewModel` pattern for inputs. Extract the logic from Lit components into modern `frontend/src/viewmodel/` classes to maintain data-flow consistency.
-3. **No Novel DB Queries:** All complex EF queries already exist in `legacy/server/Data/`. Port them exactly as they are.
+2. **Schema Name Remapping (Business -> Company):** During modernization, all instances of `Business` in the database schema and object models have been renamed to `Company` (e.g., `Businesses` table became `CompanyProfiles`, `BusinessOffices` became `CompanyOffices`, and LINQ variables `bi` -> `cm`, `bo` -> `co`). All database indexes have also been renamed to use the `Company*` prefix.
+3. **ViewModel Preservation:** Do not rip out the legacy `ViewModel` pattern for inputs. Extract the logic from Lit components into modern `frontend/src/viewmodel/` classes to maintain data-flow consistency.
+4. **No Novel DB Queries:** All complex EF queries already exist in `legacy/server/Data/`. Port them exactly as they are.
 4. **EF Core 8 Query Translation (APPLY vs JOIN):** Legacy EF6 queries that heavily utilized the `let` keyword with multiple conditions (e.g., `let x = dbContext...FirstOrDefault() where x != null && x.Prop != null`) were natively translated into a single optimized `OUTER APPLY`. EF Core 8 parsing can sometimes regress these patterns into multiple redundant scalar subqueries. When porting these explicit "APPLY" patterns, either use standard `join` statements (with `.Distinct()` if necessary) OR explicitly structure `from...Take(1)` subqueries to guarantee performant SQL generation.
 
    **How to Hint EF Core 8 to generate `CROSS APPLY` / `OUTER APPLY`:**

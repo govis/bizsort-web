@@ -84,11 +84,11 @@ namespace BizSrt.Api.Data.Cache
                     case ImageEntity.Company:
                         if (key.Id > 0)
                         {
-                            var bi = dbContext.CompanyMedia.AsNoTracking().FirstOrDefault(m => m.Id == (int)key.Id);
-                            if (bi != null && bi.Content != null)
+                            var cm = dbContext.CompanyMedia.AsNoTracking().FirstOrDefault(m => m.Id == (int)key.Id);
+                            if (cm != null && cm.Content != null)
                             {
                                 // Skipping metadata parsing for now, returning dummy Jpeg type
-                                image = new CachedImage(bi.Content, ImageType.Jpeg, 0, 0);
+                                image = new CachedImage(cm.Content, ImageType.Jpeg, 0, 0);
                             }
                         }
                         break;
