@@ -105,7 +105,7 @@ export class SearchLocationInput extends LitElement implements IViewAdapter {
     declare _errorText: string;
 
     @query('wa-input')
-    private inputElement!: WaInput;
+    private declare inputElement: WaInput;
 
     private _debounceTimer: number | null = null;
     private _googleAutocomplete: google.maps.places.Autocomplete | null = null;
