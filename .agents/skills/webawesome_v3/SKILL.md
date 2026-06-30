@@ -39,3 +39,28 @@ WebAwesome v3 dropped the framework prefix for standard DOM events on form contr
 - WebAwesome manages interaction states (hover, active, focus) heavily using `color-mix()` on its internal CSS variables.
 - **NEVER** manually target internal shadow parts (like `::part(base)`) to overwrite core properties like `background-color` or `color`. This permanently breaks the component's interactive states.
 - **ALWAYS** inspect the WebAwesome source code for the specific internal CSS variables (e.g., `--wa-color-neutral-fill-loud`, `--wa-color-fill-normal`) and override those variables on the host element or via `::slotted()` rules to ensure state logic remains intact.
+
+## 6. `<wa-tag>` and Removable/Closable Attributes
+
+- To make a `<wa-tag>` display an 'x' close button, use the **`with-remove`** attribute (not `removable` or `closable` as seen in older versions or other frameworks).
+- When `with-remove` is present, it will fire the `@wa-remove` custom event when the close button is clicked.
+
+## 7. `<wa-input>` Deep Theming
+
+- WebAwesome dynamically changes which variables it listens to based on its `appearance` attribute (filled, outlined, default). Overriding just `--wa-form-control-background-color` will not pierce the shadow DOM if it falls back to a neutral palette variant!
+- To fully customize a `<wa-input>`'s text, borders, placeholders, and backgrounds reliably across all appearances, you must override both the form control variables AND the underlying neutral palette variables simultaneously:
+```css
+wa-input {
+    /* Backgrounds */
+    --wa-form-control-background-color: transparent;
+    --wa-color-neutral-fill-quiet: transparent;
+    
+    /* Text & Placeholders */
+    --wa-form-control-value-color: var(--your-color);
+    --wa-form-control-placeholder-color: var(--your-color);
+    --wa-color-neutral-on-quiet: var(--your-color); /* Used for slotted icons */
+    
+    /* Borders */
+    --wa-form-control-border-color: var(--your-color);
+}
+```

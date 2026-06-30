@@ -95,6 +95,20 @@ export class SearchLocationInput extends LitElement implements IViewAdapter {
         .selected-container wa-button {
             margin-left: -4px;
         }
+
+        wa-input {
+            /* Backgrounds (covers outlined and filled appearances) */
+            --wa-form-control-background-color: transparent;
+            --wa-color-neutral-fill-quiet: transparent;
+            
+            /* Text & Placeholders */
+            --wa-form-control-value-color: var(--search-home-text-color, var(--text-color-on-primary));
+            --wa-form-control-placeholder-color: var(--search-home-text-color, var(--text-color-on-primary));
+            --wa-color-neutral-on-quiet: var(--search-home-text-color, var(--text-color-on-primary)); /* Prefix icons */
+            
+            /* Borders */
+            --wa-form-control-border-color: var(--search-home-text-color, var(--text-color-on-primary));
+        }
     `;
 
     @property({ type: Object })

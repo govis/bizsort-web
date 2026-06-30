@@ -87,6 +87,26 @@ export class SearchCategoryInput extends LitElement implements IViewAdapter {
         .selected-container wa-button {
             margin-left: -4px;
         }
+
+        wa-tag {
+            --wa-color-neutral-on-quiet: var(--search-home-text-color, var(--text-color-on-primary));
+            --wa-color-neutral-fill-quiet: transparent;
+            --wa-color-neutral-border-normal: transparent;
+        }
+
+        wa-input {
+            /* Backgrounds (covers outlined and filled appearances) */
+            --wa-form-control-background-color: transparent;
+            --wa-color-neutral-fill-quiet: transparent;
+            
+            /* Text & Placeholders */
+            --wa-form-control-value-color: var(--search-home-text-color, var(--text-color-on-primary));
+            --wa-form-control-placeholder-color: var(--search-home-text-color, var(--text-color-on-primary));
+            --wa-color-neutral-on-quiet: var(--search-home-text-color, var(--text-color-on-primary)); /* Prefix icons */
+            
+            /* Borders */
+            --wa-form-control-border-color: var(--search-home-text-color, var(--text-color-on-primary));
+        }
     `;
 
     @property({ type: Object })
@@ -179,17 +199,14 @@ export class SearchCategoryInput extends LitElement implements IViewAdapter {
             </group-autocomplete>
 
             ${this.selected && this.selected.id ? html`
-                <div class="selected-chip" style="display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 14px; color: var(--wa-color-primary-text);">
-                    <span class="category-selected">${this.selected.name}</span>
-                    <wa-button 
-                        variant="default"
-                        size="small"
-                        is-icon-button
-                        @click=${this.handleClear}
-                        title="Clear selection">
-                        <wa-icon name="x" library="system"></wa-icon>
-                    </wa-button>
-                </div>
+                <wa-tag 
+                    variant="neutral" 
+                    size="medium" 
+                    with-remove 
+                    @wa-remove=${this.handleClear}
+                >
+                    ${this.selected.name}
+                </wa-tag>
             ` : ''}
         `;
     }
