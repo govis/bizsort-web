@@ -1,4 +1,4 @@
-import type { CompanyPreview, SliceOutput } from '../components/types.js';
+import type { CompanyPreview, SliceOutput, SearchItem } from '../components/types.js';
 import { FetchOneCache, Cache, SessionCacheType } from '../session/cache';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';

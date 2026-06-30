@@ -1,4 +1,5 @@
-import { LitElement, html, css } from 'lit';
+/// <reference types="google.maps" />
+import { LitElement, html, css, PropertyValues } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { IdName, Autocomplete } from '../../../model/foundation';
 import { autocomplete as fetchLocations } from '../../../service/location';
