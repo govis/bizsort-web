@@ -58,7 +58,13 @@ This file contains structural and naming conventions that all agents must follow
   - **ALWAYS** search the WebAwesome source code (e.g. `node_modules/@awesome.me/webawesome/dist/chunks/`) to find the exact internal CSS variables the component expects (e.g., `--wa-color-neutral-fill-loud`, `--wa-color-fill-normal`) and pipe your custom themes into those variables on the host component instead.
   - When styling slotted elements like `<wa-dropdown-item>`, use the `::slotted()` pseudo-element on the host and override the specific `--wa-color-neutral-*` CSS variables to enforce text colors.
 
-### 3. Namespace Collision & Caching Pitfalls (Backend)
+### 3. Lit & TypeScript Gotchas (Class Field Shadowing)
+- **CRITICAL:** When compiling Lit components with `useDefineForClassFields: true` (standard in Next.js/Vite TS configs), you MUST use the `declare` keyword for all `@property()` and `@state()` fields.
+  - **Bad:** `@property() active = false;` (TS will compile this to a native class field, completely destroying Lit's reactive getters/setters, causing the component to silently fail to re-render when state changes).
+  - **Good:** `@property() declare active: boolean;` (Initializations should be moved to the `constructor()`).
+- **First Render DOM Access:** `@query` elements and other DOM nodes do not exist when `render()` is first called. If you need to pass a DOM node to a child component (e.g., passing `.anchorElement=${this.inputElement}` to a popup), `this.inputElement` will be undefined on the first render. You must call `this.requestUpdate()` inside `firstUpdated()` to force a second render so the child receives the actual DOM node.
+
+### 4. Namespace Collision & Caching Pitfalls (Backend)
 - **Importance of Existing Namespaces:** The legacy backend uses a highly structured domain-driven namespace design (`BizSrt.Api.Data.*`, `BizSrt.Api.Model.*`). It is crucial that you place your modernized files in the exact same matching folders to inherit the correct namespaces. If you invent new namespaces or place files arbitrarily, you will cause catastrophic compiler errors across the large monolith.
 - **Shared Class Names:** Be extremely cautious of identical class names that exist across different namespaces (e.g., `BizSrt.Api.Data.Entities.Category` vs. `BizSrt.Api.Model.Legacy.Category` vs `BizSrt.Api.Data.Master.Category`). The C# compiler will resolve them incorrectly or complain about ambiguous references if `using` directives overlap.
 - **Fully Qualify Entities:** When porting legacy LINQ queries or Cache accessors, always fully qualify the generic arguments, class names, or EF Core DbSet references if there's any risk of namespace collision (e.g. `System.Exception` vs `Foundation.Exception.Exception`).

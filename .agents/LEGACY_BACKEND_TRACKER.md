@@ -1136,7 +1136,7 @@
 | [ ] | ↳ `class CachedCompanyProfile` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `Reset()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `ToPreview()` | | |
-| [x] | ↳ `class CachedImage` | `backend/Data/Cache/ImageCache.cs` | Ported to `CachedImage` returning raw bytes without resizing. |
+| [ ] | ↳ `class CachedImage` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `Equals()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `GetHashCode()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `resize()` | | |
@@ -1244,7 +1244,7 @@
 | [ ] | ↳ `class CompanyProductCache` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `Reset()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `ToPreview()` | | |
-| [x] | ↳ `class CompanyProfilesCache` | `BizSrt.Api.Data.Cache.Company.CompanyProfilesCache` | Ported successfully. Note: Modified to project `.Select(m => m.Id)` during `CompanyMedia` lookup to prevent EF Core 8 from fetching the entire `varbinary(max)` image payload across the network, fixing a major `toPreview` performance leak. |
+| [ ] | ↳ `class CompanyProfilesCache` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `Reset()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `ToPreview()` | | |
 | [ ] | ↳ `class CompanyQueryOutput` | - | - |
@@ -1265,7 +1265,7 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `Reset()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `ToPreview()` | | |
 | [x] | ↳ `class FeaturedCache` | `BizSrt.Api.Data.Cache.Company.FeaturedCompaniesCache` | Ported successfully. |
-| [x] | ↳ `class FeaturedCompanyCache` | `BizSrt.Api.Data.Cache.Company.FeaturedCompaniesCache` | Ported successfully. Note: EF Core 8 translates `Distinct()` on entities by fetching all columns. Rewritten to use `.Any()` and appended `.Take(500)` combined with `IX_CompanyProfiles_Created` nonclustered index to bypass complex nested loop key lookups and scan/sort performance hits on cold cache execution. |
+| [x] | ↳ `class FeaturedCompanyCache` | `BizSrt.Api.Data.Cache.Company.FeaturedCompaniesCache` | Ported successfully. Combined with FeaturedCache<T> logic. |
 | [ ] | ↳ `class FeaturedJobCache` | - | - |
 | [ ] | ↳ `class FeaturedProductCache` | - | - |
 | [ ] | ↳ `class FeaturedProjectCache` | - | - |
@@ -1280,7 +1280,7 @@
 | [ ] | ↳ `class Image` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `Get()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `GetCaptcha()` | | |
-| [x] | ↳ `class ImagesCache` | `backend/Data/Cache/ImageCache.cs` | Ported to `ImagesCache` for `CompanyMedia`. |
+| [ ] | ↳ `class ImagesCache` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `Equals()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `GetHashCode()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `resize()` | | |
@@ -2348,7 +2348,7 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `Stop()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `TimeOp()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `ToString()` | | |
-| [x] | ↳ `class Image` | - | Logic ported to `ImageService.cs` leveraging `LegacyCache.Images`. |
+| [ ] | ↳ `class Image` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `ContentType()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `FileType()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `GetPixels()` | | |
@@ -3591,7 +3591,7 @@
 | [ ] | ↳ `class MessageService` | - | - |
 | [ ] | ↳ `class Service` | - | - |
 | | **Namespace: `Service.Company`** | | |
-| [x] | ↳ `class ProfileService` | `BizSrt.Api.Service.CompanyProfileService` | Ported successfully, handling GetFeatured and ToPreview. |
+| [ ] | ↳ `class ProfileService` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `GetFeatured()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `ToPreview()` | | |
 | [ ] | ↳ `class PromotionService` | - | - |
@@ -3611,7 +3611,7 @@
 | | **Namespace: `Service.Company.Project`** | | |
 | [ ] | ↳ `class Service` | - | - |
 | | **Namespace: `Service.Image`** | | |
-| [x] | ↳ `class Service` | `backend/Endpoint/Image.cs` | Mapped `/api/image/get` returning raw file contents. |
+| [ ] | ↳ `class Service` | - | - |
 | | **Namespace: `Service.Interface`** | | |
 | [ ] | ↳ `class IData` | - | - |
 | [ ] | ↳ `class ISession` | - | - |

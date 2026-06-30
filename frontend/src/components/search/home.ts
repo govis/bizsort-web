@@ -1,7 +1,4 @@
 import { LitElement, html, css } from 'lit';
-import { setBasePath } from '@awesome.me/webawesome/dist/utilities/base-path.js';
-
-setBasePath('https://cdn.jsdelivr.net/npm/@awesome.me/webawesome@3.8.0/dist/');
 
 import '@awesome.me/webawesome/dist/components/tab-group/tab-group.js';
 import '@awesome.me/webawesome/dist/components/tab/tab.js';
@@ -12,11 +9,16 @@ import '@awesome.me/webawesome/dist/components/input/input.js';
 import './category/input';
 import './location/input';
 
+import { SearchHome$ } from '../../viewmodel/search/home';
+import { IViewAdapter } from '../../viewmodel';
+import { SearchCategoryInput } from './category/input';
+import { SearchLocationInput } from './location/input';
+
 /**
  * Search widget for the home page.
  * Uses ported <search-category-input> and <search-location-input>.
  */
-export class SearchHome extends LitElement {
+export class SearchHome extends LitElement implements IViewAdapter {
   static get properties() {
     return {
       tab: { type: String },
@@ -28,10 +30,9 @@ export class SearchHome extends LitElement {
 
   declare tab: string;
   declare narrow: boolean;
-  /** Numeric category ID (0 = any). Mirrors legacy Selection.category */
   declare private _categoryId: number;
-  /** Numeric location ID (0 = use default country). Mirrors legacy Selection.location */
   declare private _locationId: number;
+  model: SearchHome$;
 
   constructor() {
     super();
@@ -39,6 +40,21 @@ export class SearchHome extends LitElement {
     this.narrow = false;
     this._categoryId = 0;
     this._locationId = 0;
+    this.model = new SearchHome$(this);
+  }
+  modelUpdated(props: string[]) {
+    // Re-render when viewmodel selection changes
+    if (props.includes('selection')) {
+        this.requestUpdate();
+    }
+  }
+
+  firstUpdated() {
+    const category = this.shadowRoot?.querySelector('search-category-input') as SearchCategoryInput;
+    const location = this.shadowRoot?.querySelector('search-location-input') as SearchLocationInput;
+    if (category && location) {
+      this.model.attachInputs(category.model, location.model);
+    }
   }
 
   private _onTabSelect(e: CustomEvent<{ name: string }>) {
@@ -46,16 +62,18 @@ export class SearchHome extends LitElement {
   }
 
   private _search() {
-    this.dispatchEvent(new CustomEvent('search-submit', {
-      composed: true,
-      bubbles: true,
-      detail: {
-        tab: this.tab,
-        // Numeric IDs — mirrors legacy Selection interface: { category: number; location: number }
-        category: this._categoryId,
-        location: this._locationId
-      }
-    }));
+    if (this.model && this.model.validate()) {
+      const selection = this.model.selection;
+      this.dispatchEvent(new CustomEvent('search-submit', {
+        composed: true,
+        bubbles: true,
+        detail: {
+          tab: this.tab,
+          category: selection ? selection.category : 0,
+          location: selection ? selection.location : 0
+        }
+      }));
+    }
   }
 
   private _handleKeydown(e: KeyboardEvent) {
@@ -186,7 +204,6 @@ export class SearchHome extends LitElement {
           <search-location-input
             placeholder="City, province, or postal code"
             label="Where"
-            geoMode
             @location-selected="${(e: CustomEvent) => this._locationId = e.detail ? e.detail.id : 0}"
             @location-cleared="${() => this._locationId = 0}"
           ></search-location-input>

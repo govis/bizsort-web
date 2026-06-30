@@ -4,3 +4,19 @@ dotnet run --project apphost/BizSrt.AppHost.csproj --no-build
 API URL: http://localhost:5000
 Swagger UI: http://localhost:5000/swagger
 
+cd backend
+dotnet run
+
+cd frontend
+npm run dev
+
+Reset Next.js HMR:
+
+1. Stop the dev server ( Ctrl+C )
+2. Delete the  .next  cache folder:
+Windows Command Prompt / PowerShell:
+rmdir /s /q .next
+(If you are using git bash or WSL:  rm -rf .next )
+3. Start the dev server fresh:
+npm run dev
+

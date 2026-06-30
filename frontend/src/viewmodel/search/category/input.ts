@@ -1,6 +1,7 @@
 import { IViewAdapter, Validateable, ViewModel } from '../../../viewmodel'
 import { IdName, Autocomplete } from '../../../model/foundation'
 import { autocomplete as fetchCategories } from '../../../service/category'
+import { Autocomplete as AutocompleteViewModel } from '../../group/autocomplete'
 
 export interface ReflectTokenOptions {
     token?: any;
@@ -55,6 +56,12 @@ export class Input extends ViewModel  {
         if (this._text != text) {
             this._text = text;
             this.notifyView(['text']);
+            if (this._autocomplete) {
+                console.log('[CategoryInputViewModel] populating autocomplete with text:', text);
+                this._autocomplete.populate(text);
+            } else {
+                console.warn('[CategoryInputViewModel] _autocomplete is null/undefined during set text');
+            }
         }
     }
 
@@ -73,7 +80,36 @@ export class Input extends ViewModel  {
         this.selected = this._scope;
     }
 
-    async fetchSuggestions(query: string): Promise<Autocomplete[]> {
-        return await fetchCategories(this._scope ? this._scope.id : 0, query, this._scope);
+    protected _autocomplete: AutocompleteViewModel;
+    get autocomplete(): AutocompleteViewModel {
+        return this._autocomplete;
+    }
+
+    public initialized: boolean = false;
+
+    initialize() {
+        if (!this.initialized) {
+            this._autocomplete = new AutocompleteViewModel(this.view);
+            this._autocomplete.initialize({
+                master: this,
+                populate: (text, callback) => {
+                    console.log('[CategoryInputViewModel] Calling fetchCategories API with text:', text);
+                    fetchCategories(this._scope ? this._scope.id : 0, text, this._scope)
+                        .then(items => {
+                            console.log('[CategoryInputViewModel] API returned items:', items);
+                            callback(items || []);
+                        })
+                        .catch(err => {
+                            console.error('[CategoryInputViewModel] Failed to fetch categories:', err);
+                            callback([]);
+                        });
+                },
+                itemSelected: (category) => {
+                    this.text = ''; // Clear Text *before* Selected notify
+                    this.selected = category;
+                }
+            });
+            this.initialized = true;
+        }
     }
 }

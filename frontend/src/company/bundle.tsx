@@ -4,6 +4,9 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useRouter, useSelectedLayoutSegment } from 'next/navigation';
 import type { Company } from '@/components/types';
 import { view } from '../service/company';
+import { setBasePath } from '@awesome.me/webawesome/dist/utilities/base-path.js';
+
+setBasePath('https://cdn.jsdelivr.net/npm/@awesome.me/webawesome@3.8.0/dist/');
 
 // -- 1. Lit Web Component Imports (Registers custom elements for this bundle) --
 import './home';

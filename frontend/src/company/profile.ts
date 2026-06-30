@@ -1,11 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { repeat } from 'lit/directives/repeat.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
-import { setBasePath } from '@awesome.me/webawesome/dist/utilities/base-path.js';
 import type { Company, Office } from '../components/types.js';
-
-// Set base path for Web Awesome icons to load correctly
-setBasePath('https://cdn.jsdelivr.net/npm/@awesome.me/webawesome@3.8.0/dist/');
 
 // Web Awesome components
 import '@awesome.me/webawesome/dist/components/select/select.js';

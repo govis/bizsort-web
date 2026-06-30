@@ -1,8 +1,5 @@
 import { LitElement, html, css } from 'lit';
-import { setBasePath } from '@awesome.me/webawesome/dist/utilities/base-path.js';
 import type { CompanyPreview } from '../types.js';
-
-setBasePath('https://cdn.jsdelivr.net/npm/@awesome.me/webawesome@3.8.0/dist/');
 
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
 

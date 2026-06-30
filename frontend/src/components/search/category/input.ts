@@ -8,10 +8,12 @@ import '@awesome.me/webawesome/dist/components/dropdown/dropdown.js';
 import '@awesome.me/webawesome/dist/components/dropdown-item/dropdown-item.js';
 import '@awesome.me/webawesome/dist/components/button/button.js';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
+import '@awesome.me/webawesome/dist/components/popup/popup.js';
 import type WaInput from '@awesome.me/webawesome/dist/components/input/input.js';
 import { Input as CategoryInputViewModel } from '../../../viewmodel/search/category/input';
 import { IViewAdapter } from '../../../viewmodel';
 import type WaDropdown from '@awesome.me/webawesome/dist/components/dropdown/dropdown.js';
+import '../../group/autocomplete';
 
 @customElement('search-category-input')
 export class SearchCategoryInput extends LitElement implements IViewAdapter {
@@ -26,8 +28,6 @@ export class SearchCategoryInput extends LitElement implements IViewAdapter {
         this.label = '';
         this.selected = null;
         this._text = '';
-        this._suggestions = [];
-        this._isDropdownOpen = false;
         this._errorText = '';
     }
     
@@ -46,15 +46,22 @@ export class SearchCategoryInput extends LitElement implements IViewAdapter {
         :host {
             display: block;
             width: 100%;
+            position: relative;
         }
 
-        wa-dropdown {
+        .dropdown-panel {
             width: 100%;
-        }
-
-        wa-menu {
             max-height: 300px;
             overflow-y: auto;
+            background-color: var(--wa-color-surface-raised, #fff);
+            border: 1px solid var(--wa-color-surface-border, #ddd);
+            border-radius: var(--wa-border-radius-m, 4px);
+            box-shadow: var(--wa-shadow-m, 0 4px 6px rgba(0,0,0,0.1));
+        }
+        
+        wa-popup {
+            width: 100%;
+            --z-index: 9999;
         }
 
         .selected-container {
@@ -98,76 +105,35 @@ export class SearchCategoryInput extends LitElement implements IViewAdapter {
     declare _text: string;
 
     @state()
-    declare _suggestions: Autocomplete[];
-
-    @state()
-    declare _isDropdownOpen: boolean;
-
-    @state()
     declare _errorText: string;
 
     @query('wa-input')
     private inputElement!: WaInput;
 
-    @query('wa-dropdown')
-    private dropdownElement!: WaDropdown;
-
     private _debounceTimer: number | null = null;
 
     private handleInput(e: Event) {
         const input = e.target as WaInput;
-        this._text = input.value || '';
-        this.selected = null; // Clear selection if user types
+        const text = input.value || '';
         this._errorText = '';
 
         if (this._debounceTimer) clearTimeout(this._debounceTimer);
         
-        if (this._text.trim().length > 0) {
-            this._debounceTimer = window.setTimeout(() => this.fetchSuggestions(), 300);
-        } else {
-            this._suggestions = [];
-            this._isDropdownOpen = false;
-        }
-    }
-
-    private async fetchSuggestions() {
-        try {
-            const results = await fetchCategories(this.scope.id, this._text, this.scope);
-            this._suggestions = results || [];
-            this._isDropdownOpen = this._suggestions.length > 0;
-        } catch (err) {
-            console.error('Failed to fetch category suggestions', err);
-            this._suggestions = [];
-            this._isDropdownOpen = false;
-        }
-    }
-
-    private handleSelect(e: CustomEvent) {
-        const item = e.detail.item;
-        const id = Number(item.value);
-        const suggestion = this._suggestions.find(s => s.id === id);
-        
-        if (suggestion) {
-            this.selected = { id: suggestion.id, name: suggestion.name };
-            this._text = suggestion.name;
-            this._suggestions = [];
-            this._isDropdownOpen = false;
-            this._errorText = '';
-            
-            this.dispatchEvent(new CustomEvent('category-selected', {
-                detail: this.selected,
-                bubbles: true,
-                composed: true
-            }));
-        }
+        this._debounceTimer = window.setTimeout(() => {
+            this.model.text = text;
+            if (this.model.autocomplete) {
+                this.model.autocomplete.active = text.trim().length > 0;
+            }
+        }, 300);
     }
 
     private handleClear(e: Event) {
         e.stopPropagation();
         this.selected = null;
-        this._text = '';
-        this._suggestions = [];
-        this._isDropdownOpen = false;
+        this.model.text = '';
+        if (this.model.autocomplete) {
+            this.model.autocomplete.active = false;
+        }
         if (this.inputElement) {
             this.inputElement.value = '';
             this.inputElement.focus();
@@ -177,10 +143,6 @@ export class SearchCategoryInput extends LitElement implements IViewAdapter {
             bubbles: true,
             composed: true
         }));
-    }
-
-    private handleHide() {
-        this._isDropdownOpen = false;
     }
 
     // Expose validation mechanism
@@ -193,48 +155,42 @@ export class SearchCategoryInput extends LitElement implements IViewAdapter {
         return true;
     }
 
+    protected firstUpdated() {
+        this.model.initialize();
+        this.requestUpdate(); // Force re-render to pass this.inputElement to group-autocomplete
+    }
+
     render() {
         return html`
-            <wa-dropdown 
-                .open=${this._isDropdownOpen} 
-                @wa-hide=${this.handleHide}
-                stay-open-on-select>
-                
+            <group-autocomplete .model=${this.model.autocomplete}>
                 <wa-input
-                    slot="trigger"
+                    id="search-input"
                     exportparts="base, input, form-control-label"
                     placeholder=${this.placeholder}
                     label=${this.label}
-                    .value=${this.selected ? this.selected.name : this._text}
-                    @wa-input=${this.handleInput}
-                    ?readonly=${!!this.selected}
+                    .value=${this._text}
+                    @input=${this.handleInput}
+                    @focus=${() => { if (this.model.autocomplete && this.model.autocomplete.items.length > 0) this.model.autocomplete.active = true; }}
                     help-text=${this._errorText}
                     ?invalid=${!!this._errorText}
                 >
-                    ${this.selected ? html`
-                        <div slot="prefix" class="selected-container">
-                            <wa-button 
-                            variant="default"
-                            is-icon-button
-                            @click=${this.handleClear}
-                            title="Clear selection">
-                            <wa-icon name="x" library="system"></wa-icon>
-                        </wa-button>
-                        </div>
-                    ` : html`
-                        <wa-icon slot="prefix" name="search" library="system"></wa-icon>
-                    `}
+                    <wa-icon slot="prefix" name="search" library="system"></wa-icon>
                 </wa-input>
+            </group-autocomplete>
 
-                <div @wa-select=${this.handleSelect}>
-                    ${this._suggestions.map(s => html`
-                        <wa-dropdown-item value="${s.id}">
-                            ${s.name}
-                            ${s.path ? html`<span class="path-text">in ${s.path.join(', ')}</span>` : ''}
-                        </wa-dropdown-item>
-                    `)}
+            ${this.selected && this.selected.id ? html`
+                <div class="selected-chip" style="display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 14px; color: var(--wa-color-primary-text);">
+                    <span class="category-selected">${this.selected.name}</span>
+                    <wa-button 
+                        variant="default"
+                        size="small"
+                        is-icon-button
+                        @click=${this.handleClear}
+                        title="Clear selection">
+                        <wa-icon name="x" library="system"></wa-icon>
+                    </wa-button>
                 </div>
-            </wa-dropdown>
+            ` : ''}
         `;
     }
 }

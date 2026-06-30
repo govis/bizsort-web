@@ -1,10 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { property, state } from 'lit/decorators.js';
-import { setBasePath } from '@awesome.me/webawesome/dist/utilities/base-path.js';
 import { search, toPreview } from '../service/company';
 import type { CompanyPreview } from '../components/types';
-
-setBasePath('https://cdn.jsdelivr.net/npm/@awesome.me/webawesome@3.8.0/dist/');
 
 import '@awesome.me/webawesome/dist/components/spinner/spinner.js';
 import '../components/company/card';

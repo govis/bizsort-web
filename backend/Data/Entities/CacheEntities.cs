@@ -27,7 +27,7 @@ public class Location : BizSrt.Api.Foundation.Cache.IKey<int>
     public string Name { get; set; } = string.Empty;
     public bool UserDefined { get; set; }
     public DateTime Created { get; set; }
-    public int SortOrder { get; set; }
+    public byte SortOrder { get; set; }
 }
 
 public class StreetName : BizSrt.Api.Foundation.Cache.IKey<int>

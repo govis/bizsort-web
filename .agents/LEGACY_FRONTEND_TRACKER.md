@@ -42,11 +42,11 @@
 | [ ] | ↳ `component/article/card.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ArticleCard` | | |
 | [ ] | ↳ `component/article/editor.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ArticleEditorDialogLink` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ArticleEditor` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ArticleEditorDialogMedia` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ArticleEditorTemplate` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ArticleSectionPlaceholder` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ArticleEditorDialogLink` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ArticleEditorTemplate` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ArticleEditor` | | |
 | [ ] | ↳ `component/article/form.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Form` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityArticleForm` | | |
@@ -57,18 +57,18 @@
 | [ ] | ↳ `component/article/listview.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ArticleListView` | | |
 | [ ] | ↳ `component/article/pinned.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ArticlePinnedView` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ArticlePinned` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ArticlePinnedView` | | |
 | [ ] | ↳ `component/article/text/editor.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ArticleTextEditor` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class TextEditorContextMenu` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ArticleTextEditor` | | |
 | [ ] | ↳ `component/article/view.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ArticleView` | | |
 | [ ] | ↳ `component/article/viewTemplate.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ArticleViewTemplate` | | |
 | [ ] | ↳ `component/category/checkedit.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MultiCheckEdit` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class TypeItem` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MultiCheckEdit` | | |
 | [ ] | ↳ `component/category/form.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CategoryForm` | | |
 | [ ] | ↳ `component/category/listview.ts` | - | - |
@@ -80,8 +80,8 @@
 | [ ] | ↳ `component/community/card.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityCard` | | |
 | [ ] | ↳ `component/community/category/edit.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityCategoryEdit` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Category` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityCategoryEdit` | | |
 | [ ] | ↳ `component/community/category/form.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityCategoryForm` | | |
 | [ ] | ↳ `component/community/category/listview.ts` | - | - |
@@ -90,9 +90,9 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityCategoryMenuButton` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MenuList` | | |
 | [ ] | ↳ `component/community/category/menuSelect.ts` | - | - |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Category` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityCategoryMenuSelect` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CategorySelect` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Category` | | |
 | [ ] | ↳ `component/community/company/listview.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityCompanyListView` | | |
 | [ ] | ↳ `component/community/itemComment/form.ts` | - | - |
@@ -105,60 +105,60 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityJoin2Post` | | |
 | [ ] | ↳ `component/community/listingType/edit.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Edit` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityTypeEdit` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityType` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityTypeEdit` | | |
 | [ ] | ↳ `component/community/listview.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityListView` | | |
 | [ ] | ↳ `component/community/member/action.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityMemberAction` | | |
 | [ ] | ↳ `component/community/member/confirm.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityMemberConfirm` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Confirm` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityMemberConfirm` | | |
 | [ ] | ↳ `component/community/member/form.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MemberForm` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityMemberForm` | | |
 | [ ] | ↳ `component/community/member/listview.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityMemberListItem` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityModeratorListView` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityMemberListView` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityModeratorListView` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityMemberListItem` | | |
 | [ ] | ↳ `component/community/member/type/edit.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Edit` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MemberType` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityMemberTypeEdit` | | |
 | [ ] | ↳ `component/community/message/form.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityMessageForm` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityMessageOverlay` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Config` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Form` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityMessageForm` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityMessageOverlay` | | |
 | [ ] | ↳ `component/community/message/listitem.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityMessageListItem` | | |
 | [ ] | ↳ `component/community/message/listview.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityMessageListView` | | |
 | [ ] | ↳ `component/community/requests.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityRequestListView` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityRequestListItem` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityRequestListView` | | |
 | [ ] | ↳ `component/community/share/action.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<community-share-action>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityShareAction` | | |
 | [ ] | ↳ `component/community/share/confirm.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityShareConfirm` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Confirm` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityShareConfirm` | | |
 | [ ] | ↳ `component/community/share/menulist.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MenuList` | | |
 | [ ] | ↳ `component/community/slider.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunitySlider` | | |
 | [ ] | ↳ `component/company/affiliation/listview.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyAffiliationListView` | | |
-| [x] | ↳ `component/company/card.ts` | `frontend/src/components/company/card.ts` | Ported as new company card. Renders preview: name, category, location, image. |
+| [ ] | ↳ `component/company/card.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<company-card>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<company-card-menu>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyCardMenu` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyCard` | | |
 | [ ] | ↳ `component/company/enrichment.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<company-enrichment-action>` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyEnrichment` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyEnrichmentAction` | | |
-| [x] | ↳ `component/company/featured.ts` | `frontend/src/components/company/featured.ts` | Ported as `<company-featured>`. Accepts `selection: { category, location }`, defaults to `{0, 1}` (Canada). Re-fetches on selection change via `updated()`. |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyEnrichment` | | |
+| [ ] | ↳ `component/company/featured.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyFeatured` | | |
 | [ ] | ↳ `component/company/industry/edit.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Edit` | | |
@@ -172,12 +172,12 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Confirm` | | |
 | [ ] | ↳ `component/company/member/listview.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyMemberListView` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyAdministratorListView` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyMemberListItem` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyAdministratorListView` | | |
 | [ ] | ↳ `component/company/member/type/edit.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Edit` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyMemberTypeEdit` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MemberType` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Edit` | | |
 | [ ] | ↳ `component/company/office/edit.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Edit` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyOfficeEdit` | | |
@@ -185,17 +185,17 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyOfficeListView` | | |
 | [ ] | ↳ `component/company/serviceType/edit.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Edit` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class EditBase` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MultiCheckEdit` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyServiceTypeEdit` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class EditBase` | | |
 | [ ] | ↳ `component/company/slider.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanySlider` | | |
 | [ ] | ↳ `component/company/transactionType/edit.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Edit` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyTransactionTypeEdit` | | |
 | [ ] | ↳ `component/confirm/dialog.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ConfirmDialog` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class DialogBase` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ConfirmDialog` | | |
 | [ ] | ↳ `component/directory/action.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<directory-action>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class DirectoryAction` | | |
@@ -215,32 +215,32 @@
 | [ ] | ↳ `component/folder/drilldown.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class DrilldownMenu` | | |
 | [ ] | ↳ `component/folder/list.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IList` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class List` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ITreeList` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class TreeList` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ListWebComponent` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class TreeList` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ITreeList` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class List` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IList` | | |
 | [ ] | ↳ `component/folder/menu.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ListSelect` | | |
 | [ ] | ↳ `component/folder/treelist.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class TreeListItems` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class TreeListWebComponent` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class TreeListItemInner` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class TreeListItem` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class TreeListItemInner` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class TreeListItems` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class TreeList` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class TreeListWebComponent` | | |
 | [ ] | ↳ `component/group/autocomplete.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class AutocompleteInitOptions` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IAutocompleteMaster` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Autocomplete` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class GroupAutocomplete` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class AutocompleteInitOptions` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IAutocompletePopulate` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class GroupAutocomplete` | | |
 | [ ] | ↳ `component/group/edit.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Edit` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class GroupEdit` | | |
 | [ ] | ↳ `component/group/select.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Config` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class GroupSelectComponent` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class GroupSelect` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class GroupSelectComponent` | | |
 | [ ] | ↳ `component/gwc/google-map/googleMap.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class GoogleMap` | | |
 | [ ] | ↳ `component/gwc/google-map/googleMapMarker.ts` | - | - |
@@ -260,11 +260,11 @@
 | [ ] | ↳ `component/image/head/edit.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ImageHeadEdit` | | |
 | [ ] | ↳ `component/image/view.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IImage` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ImageView` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IImage` | | |
 | [ ] | ↳ `component/job/card.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<job-card>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<job-card-menu>` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<job-card>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class JobCard` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class JobCardMenu` | | |
 | [ ] | ↳ `component/job/featured.ts` | - | - |
@@ -292,20 +292,20 @@
 | [ ] | ↳ `component/list/filter.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<list-filter-applied>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<list-filter-available>` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<list-filter-applied-item>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<list-filter-item>` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<list-filter-applied-item>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ListFilterAppliedItem` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ListFilterAvailable` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ListFilterApplied` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ListFilterItem` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ListFilterApplied` | | |
 | [ ] | ↳ `component/list/header.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ListHeader` | | |
 | [ ] | ↳ `component/list/pager.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ListPager` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IPageButton` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IButton` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class PagerButton` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class InitOptions` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IButton` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IPageButton` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ListPager` | | |
 | [ ] | ↳ `component/list/slice.ts` | - | - |
 | [ ] | ↳ `component/list/slider.ts` | - | - |
 | [ ] | ↳ `component/list/spinner.ts` | - | - |
@@ -313,16 +313,16 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ItemProperty` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class View` | | |
 | [ ] | ↳ `component/location/edit.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class LocationEdit` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Edit` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IEdit` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class LocationEdit` | | |
 | [ ] | ↳ `component/location/input.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<location-input>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class LocationInput` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Input` | | |
 | [ ] | ↳ `component/location/search/box.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchLocationSelect` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class LocationSearchBox` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchLocationSelect` | | |
 | [ ] | ↳ `component/map/view.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MapView` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MapViewOverlay` | | |
@@ -331,8 +331,8 @@
 | [ ] | ↳ `component/marketplace/category/listview.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MarketplaceCategoryListView` | | |
 | [ ] | ↳ `component/marketplace/category/menuButton.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MarketplaceCategoryMenuButton` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MenuList` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MarketplaceCategoryMenuButton` | | |
 | [ ] | ↳ `component/marketplace/listview.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MarketplaceListView` | | |
 | [ ] | ↳ `component/marketplace/product/card.ts` | - | - |
@@ -343,25 +343,25 @@
 | [ ] | ↳ `component/marketplace/product/listview.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MarketplaceProductListView` | | |
 | [ ] | ↳ `component/md/button.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<outlined-button>` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<elevated-button>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<filled-button>` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class OutlinedButton` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ElevatedButton` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<elevated-button>` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<outlined-button>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class FilledButton` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ElevatedButton` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class HTMLElementTagNameMap` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class OutlinedButton` | | |
 | [ ] | ↳ `component/md/collapsibleFab.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<collapsible-fab>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CollapsibleFab` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class HTMLElementTagNameMap` | | |
 | [ ] | ↳ `component/md/iconButton.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<icon-button>` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class HTMLElementTagNameMap` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IconButton` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class HTMLElementTagNameMap` | | |
 | [ ] | ↳ `component/md/menuButton.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<menu-button>` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MenuButton` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class HTMLElementTagNameMap` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MenuButton` | | |
 | [ ] | ↳ `component/md/roundFab.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<round-fab>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class RoundFab` | | |
@@ -369,8 +369,8 @@
 | [ ] | ↳ `component/md/tabBar.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<navigation-tab>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<tab-bar>` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class TabBar` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class NavigationTab` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class TabBar` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class HTMLElementTagNameMap` | | |
 | [ ] | ↳ `component/message/action.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<message-action>` | | |
@@ -397,19 +397,19 @@
 | [ ] | ↳ `component/mwc/textField.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class TextField` | | |
 | [ ] | ↳ `component/mwc/textareaSuffix.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class TextArea1` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class TextArea2` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class TextArea1` | | |
 | [ ] | ↳ `component/naics/listview.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class NAICsListView` | | |
 | [ ] | ↳ `component/news/form.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class NewsForm` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityNewsMediaContainer` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Form` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityNewsForm` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class NewsAttachmentEdit` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Form` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class NewsForm` | | |
 | [ ] | ↳ `component/news/listitem.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class NewsListItem` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class NewsAttachmentPreview` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class NewsListItem` | | |
 | [ ] | ↳ `component/news/listview.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class NewsListView` | | |
 | [ ] | ↳ `component/organization/card.ts` | - | - |
@@ -420,10 +420,10 @@
 | [ ] | ↳ `component/organization/listview.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class OrganizationListView` | | |
 | [ ] | ↳ `component/page.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ValidateOptions` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ISearchBox` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IPageModel` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class PageElement` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ValidateOptions` | | |
 | [ ] | ↳ `component/person/listview.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class PersonListItem` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class PersonListView` | | |
@@ -438,8 +438,8 @@
 | [ ] | ↳ `component/preview/listitem.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class PreviewListItem` | | |
 | [ ] | ↳ `component/product/card.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<product-card>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<product-card-menu>` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<product-card>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProductCardMenu` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProductCard` | | |
 | [ ] | ↳ `component/product/featured.ts` | - | - |
@@ -450,28 +450,28 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProductListView` | | |
 | [ ] | ↳ `component/product/serviceType/edit.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyType` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Edit` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProductServiceTypeEdit` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Edit` | | |
 | [ ] | ↳ `component/product/slider.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProductSlider` | | |
 | [ ] | ↳ `component/product/type/edit.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Edit` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProductType` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class DropdownEdit` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Edit` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProductTypeEdit` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class DropdownEdit` | | |
 | [ ] | ↳ `component/project/card.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<project-card>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<project-image>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<project-card-menu>` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<project-card>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProjectCardMenu` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProjectImage` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProjectCard` | | |
 | [ ] | ↳ `component/project/featured.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProjectFeatured` | | |
 | [ ] | ↳ `component/project/listingType/edit.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Edit` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProjectTypeEdit` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProjectType` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Edit` | | |
 | [ ] | ↳ `component/project/listview.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProjectListView` | | |
 | [ ] | ↳ `component/project/tender/action.ts` | - | - |
@@ -485,11 +485,11 @@
 | [ ] | ↳ `component/promotion/listview.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class PromotionListView` | | |
 | [ ] | ↳ `component/richtext/editor/converter.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ITextBlock` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Converter` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IBlockContext` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ITextBlockStyle` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ITextBlock` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ITextBlockAttributes` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IBlockContext` | | |
 | [ ] | ↳ `component/richtext/editor/range.ts` | - | - |
 | [ ] | ↳ `component/richtext/input.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class RichtextInput` | | |
@@ -515,12 +515,12 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchGroup` | | |
 | [ ] | ↳ `component/search/header.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<search-header>` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SeoMetadata` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchHeader` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class InitOptions` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Selection` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SeoMetadata` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class InitOptions` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class DirectoryBreadcrumb` | | |
-| [x] | ↳ `component/search/home.ts` | `frontend/src/components/search/home.ts` | Ported search home UI logic. Updated to track numeric `_categoryId`/`_locationId` instead of strings; dispatches numeric IDs on `search-submit`. |
+| [x] | ↳ `component/search/home.ts` | `frontend/src/components/search/home.ts` | Ported search home UI logic. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<search-home>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchHome` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Selection` | | |
@@ -528,14 +528,14 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchInput` | | |
 | [x] | ↳ `component/search/location/input.ts` | `frontend/src/components/search/location/input.ts` | Ported location input lit component. Converted to WebAwesome. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<search-location-input>` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ReflectTokenOptions` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchLocationInput` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Input` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ReflectTokenOptions` | | |
 | [ ] | ↳ `component/search/options.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<search-options>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<search-option>` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchOptions` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchOption` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchOptions` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class HTMLElementTagNameMap` | | |
 | [ ] | ↳ `component/user/account/create.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<account-create>` | | |
@@ -553,11 +553,11 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class PasswordReset` | | |
 | [ ] | ↳ `component/user/signin/facebook.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<facebook-signin>` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Window` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class FacebookSignin` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Window` | | |
 | [ ] | ↳ `component/user/signin/form.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<signin-form>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<signin-form-overlay>` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<signin-form>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SigninFormOverlay` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SigninForm` | | |
 | [ ] | ↳ `component/user/signin/google.ts` | - | - |
@@ -570,96 +570,96 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class WebsiteListView` | | |
 | | **Models & ViewModels** | | |
 | [x] | ↳ `src/model.ts` | `frontend/src/model.ts` | Ported core models. |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProductType` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class DictionaryItem` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SecurityProfile` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Account` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Image` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyType` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class AccountId` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class WebAppImage` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Currency` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CachedImage` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ImageCollection` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ISecurityProfile` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class PreviewOptions` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IAddress` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ImageSize` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class DictionaryItem` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class RawImage` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProductStats` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class AccountName` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class WebAppImage` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ISecurityProfile` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProductStats` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IImage` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CachedImage` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyType` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class PreviewOptions` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class RawImage` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class AccountId` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProductType` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Image` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ImageSize` | | |
 | [ ] | ↳ `src/model/addon.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class NAIC` | | |
 | [ ] | ↳ `src/model/address1.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IStartEndIdx` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IAddress` | | |
 | [ ] | ↳ `src/model/admin.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class QueryInput` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ImageCollection` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ValueTimestamp` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Image` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ValueTimestamp` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class QueryInput` | | |
 | [ ] | ↳ `src/model/admin/category.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Category_List` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CategoryLocationSearchInput` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Category` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Category_List` | | |
 | [ ] | ↳ `src/model/admin/community.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Request` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Entry` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Moderators` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Preview` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IdType` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class WebApp` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Category` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class QueryOutput` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class EmailInvite` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Attributes` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Entry` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Profile` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class UserInvite` | | |
-| [ ] | ↳ `src/model/admin/company.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class EntityEdit` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Collection` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Enrichment` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ApiKey` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Preview` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class WebApp` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Ref` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MultiProduct` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ApiKeys` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class EntitySave` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Attributes` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Category` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class EmailInvite` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class QueryOutput` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Moderators` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class WebApp` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Attributes` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Request` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Preview` | | |
+| [ ] | ↳ `src/model/admin/company.ts` | - | - |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Collection` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Ref` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Enrichment` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class AddEmail` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Office` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Profile` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Office` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ApiKey` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class QueryOutput` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class WebApp` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class OfficeCollection` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Attributes` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class PreviewOptions` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ApiKeys` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Preview` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class EntityEdit` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MultiProduct` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class EntitySave` | | |
 | [ ] | ↳ `src/model/admin/job.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Profile` | | |
 | [ ] | ↳ `src/model/admin/marketplace.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProductOption` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Category_Products` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Product` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CategoryProductCollection` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Category` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CategoryProduct` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Categories_Products` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProductOptionCollection` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Profile` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProductOption` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Category` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Category_Products` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CategoryProductCollection` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProductOptionCollection` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CategoryProduct` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Product` | | |
 | [ ] | ↳ `src/model/admin/organization.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Department` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Profile` | | |
 | [ ] | ↳ `src/model/admin/personal.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class EntityEdit` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Reward` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Preview` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class RewardRef` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class RewardRef_Company` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class EntitySave` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchOutput` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class RewardCollection` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Account` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Profile` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Account` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class RewardRef` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class RewardCollection` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Reward` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchOutput` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Preview` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class EntityEdit` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class EntitySave` | | |
 | [ ] | ↳ `src/model/admin/product.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Profile` | | |
 | [ ] | ↳ `src/model/admin/project.ts` | - | - |
@@ -672,124 +672,124 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Config` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProductAttribute` | | |
 | [ ] | ↳ `src/model/community.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanySearchItem` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProjectSearchItem` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Preview` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ICommunityOptions` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProductSearchItem` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Category` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class QueryInput` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Membership` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class QueryOutput` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MembershipStatus` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Membership` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanySearchItem` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Profile` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Set` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class QueryInput` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Category` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MembershipRequest` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class RichView` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class PreviewOptions` | | |
-| [ ] | ↳ `src/model/company.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchItem` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Preview` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchInput` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class QueryOutput` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchOutput` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchItemDistance` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Office` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Account` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProductSearchItem` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProjectSearchItem` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Set` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ICommunityOptions` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class PreviewOptions` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Preview` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class RichView` | | |
+| [ ] | ↳ `src/model/company.ts` | - | - |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchInput` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Profile` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Account` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchItem` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Office` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class QueryOutput` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Set` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchItemDistance` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchOutput` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Preview` | | |
 | [ ] | ↳ `src/model/finance.ts` | - | - |
 | [x] | ↳ `src/model/foundation.ts` | `frontend/src/model/foundation.ts` | Ported foundational models. |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IdName` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SliceOutput` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchOutput` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class LocationQueryInput` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ResolvedLocation` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ILocation` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Geolocation` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Address` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Facet` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class FacetName` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class EntityId` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Node` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class DeserializeOptions` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class FacetFilter` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class LocationRef` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class QueryInput` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class INodeType` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class QueryOutput` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class NodeRef` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class NodeIdName` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class DirectorySliceInput` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SliceInput` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchInput` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Location` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class FacetValue` | | |
-| [ ] | ↳ `src/model/job.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Preview` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchInput` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class LocationRef` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Facet` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class NodeRef` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class INodeType` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class EntityId` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchOutput` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchItemDistance` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SliceOutput` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SliceInput` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class QueryInput` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ILocation` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class FacetFilter` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class DeserializeOptions` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class DirectorySliceInput` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class FacetValue` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchInput` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class NodeIdName` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ResolvedLocation` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class FacetName` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class QueryOutput` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Node` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Address` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Geolocation` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IdName` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class LocationQueryInput` | | |
+| [ ] | ↳ `src/model/job.ts` | - | - |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchInput` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Profile` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchItemDistance` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchOutput` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class PreviewOptions` | | |
-| [ ] | ↳ `src/model/marketplace.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Product` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Preview` | | |
+| [ ] | ↳ `src/model/marketplace.ts` | - | - |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Profile` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Category` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class QueryOutput` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Profile` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class PreviewOptions` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Preview` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Product` | | |
 | [ ] | ↳ `src/model/marketplace/product.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class OptionValue` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Preview` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Option` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class PriceType` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class OptionPrice` | | |
-| [ ] | ↳ `src/model/message.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Entry` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Option` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class OptionValue` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class PriceType` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Preview` | | |
+| [ ] | ↳ `src/model/message.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MessageSearchInput` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchItem` | | |
-| [ ] | ↳ `src/model/organization.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Department` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Profile` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Preview` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Entry` | | |
+| [ ] | ↳ `src/model/organization.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class PreviewOptions` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Department` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Preview` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Profile` | | |
 | [ ] | ↳ `src/model/person.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Profile` | | |
 | [ ] | ↳ `src/model/product.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Preview` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchInput` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchOutput` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchItemDistance` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Profile` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchItemDistance` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchOutput` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class PreviewOptions` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Preview` | | |
 | [ ] | ↳ `src/model/project.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Preview` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchInput` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class QueryInput` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchOutput` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchItemDistance` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Profile` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class QueryInput` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchItemDistance` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchOutput` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class PreviewOptions` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Preview` | | |
 | [ ] | ↳ `src/model/promotion.ts` | - | - |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class PreviewOptions` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Preview` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Profile` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class PreviewOptions` | | |
 | [ ] | ↳ `src/model/user/community.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Profile` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Article` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Profile` | | |
 | [ ] | ↳ `src/model/user/company.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IPage_Projects` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IPage_Promotions` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IPage_Articles` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IPage_Offerings` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IPage_Jobs` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Profile` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Account` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IPage_Marketplace` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Office` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Account` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IPage_Projects` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IPage_Articles` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IPage_News` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IPage_Offerings` | | |
 | [ ] | ↳ `src/model/user/job.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Profile` | | |
 | [ ] | ↳ `src/model/user/project.ts` | - | - |
@@ -797,26 +797,26 @@
 | [ ] | ↳ `src/model/website.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Preview` | | |
 | [x] | ↳ `src/viewmodel.ts` | `frontend/src/viewmodel.ts` | Ported base viewmodels without jQuery. |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IViewAdapter` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class PropertyChangeEventArgs` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class InitOptions` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ValidationContext` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Validateable` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ValidationOptions` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ViewModel` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IDialog` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ErrorInfo` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IValidateStep` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SubmitOptions` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IHTMLElements` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IElements` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SubmitOptions` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MultiValidator` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Validateable` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ValidationContext` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ViewModel` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class InputValidator` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IDialogInitialize` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ValidationOptions` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IValidateStep` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class InitOptions` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class PropertyChangeEventArgs` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IDialog` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IViewAdapter` | | |
 | [ ] | ↳ `src/viewmodel/category/edit.ts` | - | - |
 | [ ] | ↳ `src/viewmodel/category/form.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Form` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class TypeItem` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Form` | | |
 | [ ] | ↳ `src/viewmodel/category/view.ts` | - | - |
 | [ ] | ↳ `src/viewmodel/community/category/edit.ts` | - | - |
 | [ ] | ↳ `src/viewmodel/community/category/form.ts` | - | - |
@@ -834,30 +834,30 @@
 | [ ] | ↳ `src/viewmodel/company/product/edit.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Edit` | | |
 | [ ] | ↳ `src/viewmodel/confirm/dialog.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ViewModel` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Dialog` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IMessageArgs` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ViewModel` | | |
 | [ ] | ↳ `src/viewmodel/editable.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Submittable` | | |
 | [ ] | ↳ `src/viewmodel/htmlparser.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IFeature` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class StyleInstance` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class StyleCollection` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IStyleCollection` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IFeatureContext` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Converter` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IToHtml` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IStyleAttributes` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ITag` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Parser` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IContext` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IConverter` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IOptions` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IFontFeature` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IFromHtml` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IFeature` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Converter` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Parser` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IStyleAttributes` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class StyleInstance` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IConverter` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class StyleCollection` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IOptions` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IStyleCollection` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IFontFeature` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ITag` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IFeatureContext` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IContext` | | |
 | [ ] | ↳ `src/viewmodel/imagehelper.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ImageHelper` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ImageSize` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ImageHelper` | | |
 | [ ] | ↳ `src/viewmodel/list/folder/edit.ts` | - | - |
 | [ ] | ↳ `src/viewmodel/list/folder/form.ts` | - | - |
 | [ ] | ↳ `src/viewmodel/list/folder/view.ts` | - | - |
@@ -865,34 +865,33 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IFolder` | | |
 | [ ] | ↳ `src/viewmodel/list/view.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IViewable` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Data` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Pager` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class notifyPageOptions` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IHeader` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class PopulatePageOptions` | | |
-| [x] | ↳ `src/viewmodel/search/category/input.ts` | `frontend/src/viewmodel/search/category/input.ts` | Ported search category viewmodel (`class Input`, `class IInput`). |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class notifyPageOptions` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Data` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IHeader` | | |
 | [x] | ↳ `src/viewmodel/location/input.ts` | `frontend/src/viewmodel/location/input.ts` | Ported search location viewmodel. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Input` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IInput` | | |
 | [ ] | ↳ `src/viewmodel/naics/view.ts` | - | - |
 | [ ] | ↳ `src/viewmodel/richtext.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IFeature` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class StyleInstance` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Converter` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IToHtml` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IContext` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class StyleCollection` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IFromHtml` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IFeature` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Converter` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class StyleInstance` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class StyleCollection` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IContext` | | |
 | [ ] | ↳ `src/viewmodel/signin/form.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Action` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Options` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SuccessAction` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Options` | | |
 | | **Client-side Caches** | | |
 | [ ] | ↳ `src/state.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Action` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Dispatch` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Store` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class AnyAction` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Store` | | |
 | [ ] | ↳ `src/state/app.ts` | - | - |
 | [ ] | ↳ `src/state/community.ts` | - | - |
 | [ ] | ↳ `src/state/company.ts` | - | - |
@@ -903,9 +902,9 @@
 | [ ] | ↳ `src/service/addon/naics.ts` | - | - |
 | [ ] | ↳ `src/service/admin/community.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class cache` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CachedCommunity` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CachedCommunityRequest` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class requestCache` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CachedCommunity` | | |
 | [ ] | ↳ `src/service/admin/company.ts` | - | - |
 | [ ] | ↳ `src/service/admin/job.ts` | - | - |
 | [ ] | ↳ `src/service/admin/marketplace.ts` | - | - |
@@ -913,8 +912,8 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CachedMarketplace` | | |
 | [ ] | ↳ `src/service/admin/master.ts` | - | - |
 | [ ] | ↳ `src/service/admin/message.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class conversationCache` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CachedConversation` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class conversationCache` | | |
 | [ ] | ↳ `src/service/admin/organization.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class cache` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CachedOrganization` | | |
@@ -929,9 +928,9 @@
 | [ ] | ↳ `src/service/community.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class communityCache` | | |
 | [x] | ↳ `src/service/company.ts` | `frontend/src/service/company.ts` | Ported company service helpers. |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Affiliations` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Communities` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Featured` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Communities` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Affiliations` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class companyCache` | | |
 | [ ] | ↳ `src/service/geocoder.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class AddressOptions` | | |
@@ -943,8 +942,8 @@
 | [ ] | ↳ `src/service/marketplace.ts` | - | - |
 | [ ] | ↳ `src/service/master.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class cache` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class userCache` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CachedDictionary` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class userCache` | | |
 | [ ] | ↳ `src/service/person.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class personCache` | | |
 | [ ] | ↳ `src/service/product.ts` | - | - |
@@ -958,14 +957,14 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class StoredSession` | | |
 | [ ] | ↳ `src/session/cache.ts` | - | - |
 | [ ] | ↳ `src/session/cookie.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Cookie` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CookieCollection` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Cookie` | | |
 | [ ] | ↳ `src/session/signin/oauth.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IOAuth2` | | |
 | [ ] | ↳ `src/session/user.ts` | - | - |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ICompany` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Company` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class User` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ICompany` | | |
 | | **Other / Global** | | |
 | [ ] | ↳ `addon/category/browser.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CategoryBrowser` | | |
@@ -1022,12 +1021,12 @@
 | [ ] | ↳ `admin/community/projects.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class AdminCommunityProjects` | | |
 | [ ] | ↳ `admin/community/settings.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class WebAppConfig` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MobileWebConfig` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityMobileWebConfig` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class AdminCommunitySettingsAction` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class AdminCommunitySettings` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityWebAppConfig` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MobileWebConfig` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class WebAppConfig` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityMobileWebConfig` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class AdminCommunitySettings` | | |
 | [ ] | ↳ `admin/company/affiliations.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class AdminCompanyAffiliations` | | |
 | [ ] | ↳ `admin/company/bundle.ts` | - | - |
@@ -1060,15 +1059,15 @@
 | [ ] | ↳ `admin/company/promotions.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class AdminCompanyPromotions` | | |
 | [ ] | ↳ `admin/company/settings.ts` | - | - |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyAPIConfig` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyMobileWebConfig` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ApiConfig` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyPageConfig` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MobileWebConfig` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class AdminCompanySettings` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyWebAppConfig` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class WebAppConfig` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class AdminCompanySettingsAction` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MobileWebConfig` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyAPIConfig` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyPageConfig` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class AdminCompanySettings` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ApiConfig` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyWebAppConfig` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyMobileWebConfig` | | |
 | [ ] | ↳ `admin/company/tenders.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class AdminCompanyTenders` | | |
 | [ ] | ↳ `admin/feed-header.ts` | - | - |
@@ -1097,8 +1096,8 @@
 | [ ] | ↳ `admin/organization/bundle.ts` | - | - |
 | [ ] | ↳ `admin/organization/category/edit.ts` | - | - |
 | [ ] | ↳ `admin/organization/departments.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class AdminOrganizationDepartments` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class AdminOrganizationCategories` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class AdminOrganizationDepartments` | | |
 | [ ] | ↳ `admin/organization/header-layout.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<admin-organization-header-layout>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class AdminOrganizationHeaderLayout` | | |
@@ -1136,8 +1135,8 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class AdminPromotionProfile` | | |
 | [ ] | ↳ `admin/website/bundle.ts` | - | - |
 | [ ] | ↳ `admin/website/edit.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class AdminWebsiteEdit` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class WebsitePageSettings` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class AdminWebsiteEdit` | | |
 | [ ] | ↳ `admin/website/edit/header-layout.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class AdminWebsiteEditHeaderLayout` | | |
 | [ ] | ↳ `admin/website/header-layout.ts` | - | - |
@@ -1148,8 +1147,8 @@
 | [ ] | ↳ `admin/website/type.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class AdminWebsiteType` | | |
 | [ ] | ↳ `admin/website/upload.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class AdminWebsiteUpload` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class FileUpload` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class AdminWebsiteUpload` | | |
 | [ ] | ↳ `community/article/messages.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CommunityArticleMessages` | | |
 | [ ] | ↳ `community/articles.ts` | - | - |
@@ -1218,13 +1217,13 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Selection` | | |
 | [ ] | ↳ `directory.ts` | - | - |
 | [ ] | ↳ `editor/marketplace/category.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class EditorMarketplaceCategoryAdd` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class EditorMarketplaceCategoryPreview` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class EditorMarketplaceCategoryTemplate` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class EditorMarketplaceCategory` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class EditorMarketplaceCategoryTemplate` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class EditorMarketplaceCategoryPreview` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class EditorMarketplaceCategoryAdd` | | |
 | [ ] | ↳ `editor/marketplace/product.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class EditorMarketplaceProductAdd` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class EditorMarketplaceProductPreview` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class EditorMarketplaceProductAdd` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class EditorMarketplaceProduct` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class EditorMarketplaceProductTemplate` | | |
 | [ ] | ↳ `job/bundle.ts` | - | - |
@@ -1267,19 +1266,19 @@
 | [ ] | ↳ `src/application.ts` | - | - |
 | [x] | ↳ `src/exception.ts` | `frontend/src/exception.ts` | Ported exception models. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ArgumentException` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CustomError` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class UnknownException` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class OperationException` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class DataException` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class UnknownException` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SessionException` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CustomError` | | |
 | [ ] | ↳ `src/global.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IEventHandler` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Action` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Mixin` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Event` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IPropertyBag` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IEventHandler` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Constructor` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Function` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IPropertyBag` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Mixin` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Event` | | |
 | [ ] | ↳ `src/global/ajax.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IronRequestElement` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class RequestOptions` | | |
@@ -1304,35 +1303,35 @@
 | [ ] | ↳ `src/global/url.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IUrlBase` | | |
 | [ ] | ↳ `src/navigation.ts` | - | - |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class INavigationOptions` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IUrlParams` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Window` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class INavigationOptions` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SPARouter` | | |
 | [ ] | ↳ `src/navigation/routes.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class INavigationContext` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IRoute` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Routes` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Route` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Routes` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IRoute` | | |
 | [ ] | ↳ `src/navigation/token.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchMarker` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class INavigationProps` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchMarker` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Token` | | |
 | [ ] | ↳ `src/page.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IUser` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IPage` | | |
 | [ ] | ↳ `src/resource.ts` | - | - |
 | [ ] | ↳ `src/seo/metadata.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class PageModel` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MetaBreadcrumb` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Metadata` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MetaBreadcrumb` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class PageModel` | | |
 | [ ] | ↳ `src/seo/title.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IDirectoryEntity` | | |
 | [x] | ↳ `src/settings.ts` | `frontend/src/settings.ts` | Ported settings. |
 | [ ] | ↳ `src/settings/validation.ts` | - | - |
 | [ ] | ↳ `src/view/webComponent.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Elements` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IViewModel` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class WebComponent` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IViewModel` | | |
 | [ ] | ↳ `terms.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Terms` | | |
 | [ ] | ↳ `user/dashboard.ts` | - | - |
@@ -1343,13 +1342,13 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<user-message-header-layout>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class UserMessageHeaderLayout` | | |
 | [ ] | ↳ `user/messages.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class UserMessages` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ConversationId` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MessageInput` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ConversationId` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class UserMessages` | | |
 | [ ] | ↳ `user/profile.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class UserProfile` | | |
 | [ ] | ↳ `user/rewards.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class UserRewards` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class UserRewardsListView` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class UserRewards` | | |
 | [ ] | ↳ `web-main.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class WebMain` | | |

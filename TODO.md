@@ -11,6 +11,8 @@ The core profile page is ported, but the following featured sections need to be 
 ## 2. Header & Search Enhancements
 - ~~**Condensing Header**: Implement the legacy scroll-condensing behavior in `company-header-layout` (where the logo dynamically resizes and hides when the user scrolls down).~~ ✅ (Completed)
 - ~~**Location-Aware Category Search**: Update the `search-category-menu` stub to support "in [city]" and "near [postal code]" utilizing geolocation data, matching the legacy functionality.~~ ✅ (Completed)
+- **Implement `reflectToken` on Search Inputs**: Implement the `reflectToken` logic on both `CategoryInputViewModel` and `LocationInputViewModel`. This is currently blocked by missing dependencies and will need to be scaffolded later.
+- **Implement `Validateable` Rules for Location Input**: The `LocationInputViewModel` needs to port its `Validateable` rules, including calling `_geoinput.validate()` and `_geoinput.resolve()` which hits the backend `/api/location/resolve` endpoint to translate Google Places into database IDs.
 
 ## 3. SEO Metadata (Advanced)
 - We have basic Next.js metadata, but we need to port the extensive **JSON-LD** schema, breadcrumbs, and canonical URLs that the legacy app generated for rich search engine indexing.
