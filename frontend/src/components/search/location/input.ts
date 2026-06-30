@@ -3,7 +3,7 @@ import { LitElement, html, css, PropertyValues } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
 import { IdName, Autocomplete } from '../../../model/foundation';
 import { autocomplete as fetchLocations } from '../../../service/location';
-import { Loader } from '@googlemaps/js-api-loader';
+import { setOptions, importLibrary } from '@googlemaps/js-api-loader';
 
 import '@awesome.me/webawesome/dist/components/input/input.js';
 import '@awesome.me/webawesome/dist/components/dropdown/dropdown.js';
@@ -129,13 +129,12 @@ export class SearchLocationInput extends LitElement implements IViewAdapter {
         if (!apiKey) return;
 
         try {
-            const loader = new Loader({
-                apiKey,
-                version: "weekly",
-                libraries: ["places"]
+            setOptions({
+                key: apiKey,
+                v: "weekly"
             });
 
-            await (loader as any).importLibrary('places');
+            await importLibrary('places');
             
             // Wait for the wa-input to expose its internal input
             await this.updateComplete;
