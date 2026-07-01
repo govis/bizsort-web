@@ -14,16 +14,22 @@ import './header-layout';
 export class CompanySearch extends LitElement {
   static get properties() {
     return {
-      query: { type: String },
+      searchQuery: { type: String, attribute: 'search-query' },
       categoryId: { type: Number, attribute: 'category-id' },
+      locationId: { type: Number, attribute: 'location-id' },
+      searchNear: { type: String, attribute: 'search-near' },
+      transactionType: { type: Number, attribute: 'transaction-type' },
       _results: { state: true },
       _loading: { state: true },
       _error: { state: true }
     };
   }
 
-  declare query?: string;
+  declare searchQuery?: string;
   declare categoryId?: number;
+  declare locationId?: number;
+  declare searchNear?: string;
+  declare transactionType?: number;
   declare private _results: CompanyPreview[];
   declare private _loading: boolean;
   declare private _error?: string;
@@ -35,16 +41,18 @@ export class CompanySearch extends LitElement {
   }
 
   willUpdate(changedProperties: Map<string | number | symbol, unknown>) {
-    if (changedProperties.has('query') || changedProperties.has('categoryId')) {
+    if (changedProperties.has('searchQuery') || changedProperties.has('categoryId')) {
+      if (!this.categoryId && !this.searchQuery) {
+        this._error = "Invalid Search: Please provide either a category or a search query to continue.";
+        this._results = [];
+        return;
+      }
+      this._error = undefined;
       this._performSearch();
     }
   }
 
   private async _performSearch() {
-    if (!this.query && !this.categoryId) {
-      this._results = [];
-      return;
-    }
 
     this._loading = true;
     this._error = undefined;
@@ -54,9 +62,10 @@ export class CompanySearch extends LitElement {
       const searchOutput = await search({
         index: 0,
         length: 24,
-        searchQuery: this.query || undefined,
+        searchQuery: this.searchQuery || undefined,
         category: this.categoryId || undefined,
-        transactionType: 1 // 1 is Company view in legacy
+        location: this.locationId || undefined,
+        transactionType: this.transactionType || 1 // 1 is Company view in legacy
       });
 
       if (searchOutput && searchOutput.series && searchOutput.series.length > 0) {
@@ -134,12 +143,12 @@ export class CompanySearch extends LitElement {
           bizSORT
         </div>
         
-        <search-box slot="navbar" query="\${this.query || ''}"></search-box>
+        <search-box slot="navbar" query="\${this.searchQuery || ''}"></search-box>
 
         <div class="content">
           <div class="page-header">
             <h1>Search Results</h1>
-            <p>\${this.query ? \`Showing results for "\${this.query}"\` : (this.categoryId ? \`Showing results for category\` : 'Enter a search term')}</p>
+            <p>\${this.searchQuery ? \`Showing results for "\${this.searchQuery}"\` : (this.categoryId ? \`Showing results for category\` : 'Enter a search term')}</p>
           </div>
 
           \${this._loading 
@@ -154,7 +163,7 @@ export class CompanySearch extends LitElement {
                       \`)}
                     </div>
                   \`
-                : (this.query || this.categoryId) ? html\`<div class="empty-state">No companies found matching your criteria.</div>\` : ''
+                : (this.searchQuery || this.categoryId) ? html\`<div class="empty-state">No companies found matching your criteria.</div>\` : ''
           }
         </div>
       </company-header-layout>

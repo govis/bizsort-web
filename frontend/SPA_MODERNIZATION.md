@@ -25,6 +25,28 @@ The following table demonstrates how the custom concepts from the legacy archite
 | Redux `connect(store)` | **Direct Fetch / React Context** | Global state for window size is replaced by modern APIs like `ResizeObserver`. Data fetching is done via native `fetch` within Lit components, avoiding complex global stores. |
 | Programmatic Nav (`Shell.go()`) | `window.location.href` / `next/navigation` | Client-side transitions are handled by Next.js `<Link>` tags or `useRouter()`. |
 | SEO Context Updates | **Next.js `generateMetadata`** | Instead of updating `document.title` and canonical links from a client-side ViewModel, Next.js generates static SEO metadata dynamically via server components. |
+| URL Serialization | **Next.js Middleware** | Legacy `Token` JSON serialization in query strings is caught by Middleware and 301 redirected to modern semantic URLs. |
+| Global Shell UI | **Next.js `loading.tsx` / `layout.tsx`** | Legacy `<img src="bizsort-logo.svg">` placeholders map to `<Suspense>` boundaries via `loading.tsx`. Global overlays (like `message-toast` or `signin-form`) are mounted directly in the `RootLayout` (`layout.tsx`). |
+| Auth Routing (`_validateToken`) | **Next.js Middleware & `cookies()`** | Client-side auth checks that abort navigation are replaced with edge middleware redirecting to `/login` before rendering. |
+| Initial State (`reflectToken`) | **Server-to-Client React Props** | Components dynamically reacting to global URL state now receive `params` directly as strictly typed React props from the server, bound to the component via Lit's `willUpdate`. |
+
+## Deep Dive: Revamping the Legacy Routing Engine
+
+The legacy system was a heavily orchestrated Client-Side SPA built during the Polymer 2/3 era. The core mechanism relied on three primary files located in `..\legacy\website\wwwroot\`:
+
+### 1. `src/navigation/routes.ts` & `web-main.ts` (Routing Config & Shell)
+- **Legacy**: `web-main.ts` acted as the main application shell and router configuration, exposing the `Routes` class to map regex paths (like `^/company-profile`) to Web Components (e.g., `company-profile`) and bundle names for lazy loading. It also listened to browser `popstate` events to natively handle "Back" and "Forward" navigation.
+- **Modern Next.js**: The entire custom regex engine is replaced by Next.js **File-System Based Routing**. Folders in `frontend/src/app/` automatically define the route structure. For example, `{ path: '^/company-profile', elementName: 'company-profile' }` directly translates to `frontend/src/app/company/[id]/page.tsx`.
+
+### 2. `src/navigation/token.ts` & `navigation.js` (The `Token` Definition)
+- **Legacy**: Navigation state wasn't just a URL path; it was serialized into complex JSON `Token` objects containing `Action` enums (e.g., `View`, `Edit`), entity IDs, and even nested `Forward` or `Cancel` tokens. `navigation.js` intercepted programmatic navigation, serialized the `Token` into a URL query string (`?t=...`), and triggered `history.pushState()`.
+- **Modern Next.js**: 
+  - **Simple Navigation**: Handled by standard semantic URL paths (e.g., `/company/123`).
+  - **Translating Legacy Tokens**: To maintain backwards compatibility (e.g., bookmarks pointing to `?t={json}`), we use **Next.js Middleware (`middleware.ts`)** to intercept requests on the Edge. It parses the legacy JSON string, maps the legacy IDs, and instantly issues an HTTP 301 redirect to the modern folder-based route, cleanly funneling legacy traffic without polluting the application logic.
+
+### 3. `component/page/view.ts` (`PageView` Component)
+- **Legacy**: The heart of the routing engine. It listened for URL changes, determined the target element, dynamically imported the necessary JS bundle via `import()`, manually created the new DOM node, and orchestrated CSS `@keyframes` animations to swap views. It dynamically attached the `Token` to the new element's model (data injection).
+- **Modern Next.js**: Next.js automatically handles chunking, lazy loading, and DOM swapping out of the box. Data flows strictly top-down: the Server Component (`page.tsx`) fetches the required data and renders a Client Boundary wrapper, passing the data as React props. The wrapper then renders the Lit component, relying on standard Lit reactivity (`willUpdate`).
 
 ## Hybrid Component Strategy (React + Lit)
 

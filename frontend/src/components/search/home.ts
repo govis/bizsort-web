@@ -61,7 +61,7 @@ export class SearchHome extends LitElement implements IViewAdapter {
     this.tab = e.detail.name;
   }
 
-  private _search() {
+  private async _search() {
     if (this.model && this.model.validate()) {
       const selection = this.model.selection;
       this.dispatchEvent(new CustomEvent('search-submit', {
@@ -73,6 +73,24 @@ export class SearchHome extends LitElement implements IViewAdapter {
           location: selection ? selection.location : 0
         }
       }));
+    } else {
+      // Validation failed. Wait for Lit to flush the custom validity states to the DOM
+      const category = this.shadowRoot?.querySelector('search-category-input') as any;
+      const location = this.shadowRoot?.querySelector('search-location-input') as any;
+      
+      if (category) await category.updateComplete;
+      if (location) await location.updateComplete;
+
+      const catInput = category?.shadowRoot?.querySelector('wa-input');
+      const locInput = location?.shadowRoot?.querySelector('wa-input');
+
+      // The browser natively only supports one validation popup at a time.
+      // We explicitly report the first invalid one so it doesn't get overwritten.
+      if (catInput && !catInput.checkValidity()) {
+          catInput.reportValidity();
+      } else if (locInput && !locInput.checkValidity()) {
+          locInput.reportValidity();
+      }
     }
   }
 

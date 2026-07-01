@@ -2,6 +2,8 @@
 
 This document outlines the standardized workflow for porting legacy Polymer/Material components to the modernized **Next.js 16 + Lit 3.3 + Web Awesome** stack.
 
+👉 **For a complete overview of the architectural paradigm shift (from the legacy SPA router to Next.js App Router), please read [SPA_MODERNIZATION.md](file:///C:/Bizsort/bizsort-web/frontend/SPA_MODERNIZATION.md).**
+
 ## 1. Architectural Mapping
 
 | Legacy Concept | Modern Implementation | Notes |
@@ -139,6 +141,22 @@ if (!customElements.get('my-component')) {
 - Use `willUpdate()` for reactive data fetching instead of `stateChanged()` (no Redux store).
 - Register custom elements conditionally with `if (!customElements.get(...))` to avoid duplicate registration errors.
 
+### Validation Error Handling (Declarative vs Imperative)
+In the legacy system, `src/view/webComponent.ts` acted as an intermediary, aggressively traversing the DOM to call imperative functions like `setCustomValidity()`, `reportValidity()`, or manually toggle error CSS classes whenever a validation rule failed in a ViewModel.
+
+In the modernized architecture, we rely entirely on **declarative state bindings** via Web Awesome properties:
+1. The ViewModel (e.g., `LocationInputViewModel`) triggers a validation failure via `this.errorInfo.setError(...)`.
+2. This triggers `notifyView(['errorInfo'])`, calling `modelUpdated()` on the Lit component.
+3. The component extracts the message and sets a local reactive `@state() _errorText` property.
+4. The component's `render()` function directly binds this string to the `<wa-input>` component's native properties:
+   ```html
+   <wa-input
+       help-text=${this._errorText}
+       ?invalid=${!!this._errorText}
+   >
+   ```
+This natively paints the field red and shows the error text, completely eliminating the need for `webComponent.ts` or imperative DOM manipulation.
+
 ## 5. React Integration
 
 Since the project uses Next.js, Lit components must be wrapped in React for use in the App Router.
@@ -175,6 +193,55 @@ declare global {
 }
 
 export default MyComponentWrapper;
+```
+
+### Server Components Data Fetching Pattern (Dynamic SEO & Legacy Tokens)
+In the legacy app, complex routes relied on resolving JSON "navigation tokens" on the client, which harmed SEO and caused loading spinners. In this Next.js architecture, this logic must be moved to Server Components (`page.tsx`) to generate dynamic metadata and fetch data before passing it to the Lit client boundaries.
+
+**Pattern Example:**
+1. Fetch data in `generateMetadata` on the server.
+2. Fetch data again in the `page.tsx` Server Component (Next.js automatically dedupes the request).
+3. Pass the resolved JSON payload down to the Client Boundary (`'use client'`).
+
+```tsx
+// frontend/src/app/complex-route/page.tsx (Server Component)
+import type { Metadata } from 'next';
+import ComplexRouteClient from './ComplexRouteClient';
+
+export async function generateMetadata({ searchParams }): Promise<Metadata> {
+  const token = searchParams.token;
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/resolve?token=${token}`);
+  const data = await res.json();
+  
+  return {
+    title: data.seoTitle,
+    description: data.seoDescription,
+  };
+}
+
+export default async function ComplexRoutePage({ searchParams }) {
+  const token = searchParams.token;
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/resolve?token=${token}`);
+  const payload = await res.json();
+
+  // Pass resolved payload to Client Boundary
+  return <ComplexRouteClient initialData={payload} />;
+}
+```
+
+```tsx
+// frontend/src/app/complex-route/ComplexRouteClient.tsx (Client Boundary)
+'use client';
+import dynamic from 'next/dynamic';
+
+const LegacyLitWrapper = dynamic(
+  () => import('@/company/bundle').then((mod) => mod.LegacyLitWrapper),
+  { ssr: false }
+);
+
+export default function ComplexRouteClient({ initialData }) {
+  return <LegacyLitWrapper resolvedData={initialData} />;
+}
 ```
 
 ## 6. CSS Guidelines

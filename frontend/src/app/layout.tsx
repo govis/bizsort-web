@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "@awesome.me/webawesome/dist/styles/themes/default.css";
+import SignInFormStub from "../components/global/SignInFormStub";
+import MessageToastStub from "../components/global/MessageToastStub";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,6 +36,8 @@ export default function RootLayout({
     >
       <body style={{ minHeight: '100%', display: 'flex', flexDirection: 'column', margin: 0 }}>
         {children}
+        <SignInFormStub />
+        <MessageToastStub />
       </body>
     </html>
   );

@@ -1,5 +1,5 @@
-import { ErrorInfo, IViewAdapter, Validateable, ViewModel, ErrorMessageType } from '../../viewmodel'
-import { ResolvedLocation } from '../../model/foundation'
+import { ErrorInfo, IViewAdapter, Validateable, ViewModel, ErrorMessageType } from '../../../viewmodel'
+import { ResolvedLocation } from '../../../model/foundation'
 
 export interface IInput extends ViewModel {
     validateable: Validateable;
@@ -7,10 +7,10 @@ export interface IInput extends ViewModel {
     reset: () => void;
 }
 
-import { Autocomplete as AutocompleteViewModel } from '../group/autocomplete'
-import { autocomplete as fetchLocations, get as getLocation } from '../../service/location'
-import { Location as LocationSettings } from '../../settings'
-import { IdName } from '../../model/foundation'
+import { Autocomplete as AutocompleteViewModel } from '../../group/autocomplete'
+import { autocomplete as fetchLocations, get as getLocation } from '../../../service/location'
+import { Location as LocationSettings } from '../../../settings'
+import { IdName } from '../../../model/foundation'
 
 export class Input extends ViewModel implements IInput {
     public initialized: boolean = false;
@@ -24,6 +24,30 @@ export class Input extends ViewModel implements IInput {
     constructor(view: IViewAdapter) {
         super(view);
         this._geoinput = new GeocoderInput(this);
+
+        this._validateable = new Validateable(this, null, null, (proceed: (valid: boolean) => void) => {
+            if (this._geoMode) {
+                this._geoinput.validate((valid: boolean) => {
+                    if (valid) {
+                        //Resolve Location.id on the server
+                        this._geoinput.resolve(false, (match: boolean, location: any) => {
+                            proceed(match || location ? true : false);
+                        });
+                    }
+                    else
+                        proceed(false);
+                });
+            }
+            else if (!this._selected || !this._selected.id) {
+                this.validateable.errorInfo.setError(this._geoinput.errorElementName, "Please select a location from the list");
+                proceed(false);
+            }
+            else {
+                if (this._selected.name && this.text != this._selected.name)
+                    this.setText(this._selected.name);
+                proceed(true);
+            }
+        });
 
         if (LocationSettings.country && LocationSettings.country.id) {
             if (LocationSettings.country.name) {
@@ -166,6 +190,7 @@ export class GeocoderInput {
     public geoCoded: any = null;
     public geoValidated: any = null;
     public inputElement: any = null;
+    public errorElementName: string = 'locationInput';
     protected _autocomplete: google.maps.places.Autocomplete | null = null;
     
     get autocompleteObj(): google.maps.places.Autocomplete | null {
@@ -174,6 +199,22 @@ export class GeocoderInput {
 
     constructor(public viewModel: ViewModel) {
         this.errorInfo = new ErrorInfo(viewModel.validateable);
+    }
+
+    validate(callback: (valid: boolean) => void) {
+        // Ported stub: check if geocoded data is valid
+        if (this.geoCoded || this.geoValidated || (this.inputElement && this.inputElement.value)) {
+            callback(true);
+        } else {
+            this.errorInfo.setError(this.errorElementName, "Please enter a valid location");
+            callback(false);
+        }
+    }
+
+    resolve(flag: boolean, callback: (match: boolean, location: any) => void) {
+        // Ported stub: normally hits /api/location/resolve with Google Places ID
+        // For now, immediately resolve with the geoValidated location
+        callback(true, this.geoValidated);
     }
 
     initAutocomplete(inputElement: any, types: string[] = ['geocode']) {

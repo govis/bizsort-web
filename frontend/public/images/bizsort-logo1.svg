@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 128 128" version="1.1" xmlns="http://www.w3.org/2000/svg">
+<style type="text/css">
+	.yellow{fill:#FDD836;filter:url(#shadow)}
+	.green{fill:#4DAF4E;filter:url(#shadow)}
+	.blue{fill:#38A4DD;filter:url(#shadow)}
+	.text{fill:#FFFFFF;stroke:#FFFFFF;stroke-miterlimit:10;}
+</style>
+<defs>
+  <filter id="shadow1" filterUnits="userSpaceOnUse">
+    <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="shadow"/>
+    <feOffset in="shadow" dx="2" dy="2" result="shadow"/>
+    <feComposite operator="over" in="SourceGraphic" in2="shadow"/>
+  </filter>
+  <filter id="shadow" filterUnits="userSpaceOnUse">
+    <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="shadow"/>
+    <feOffset in="shadow" dx="2" dy="2" result="shadow"/>
+    <feMerge>
+      <feMergeNode in="shadow" />
+      <feMergeNode in="SourceGraphic" />
+    </feMerge>
+  </filter>
+</defs>
+<g>
+  <!--z-->
+  <!--<polygon class="st0" points="118.8,43.9 118.8,94.6 84.3,94.6"/>-->
+  <polygon class="yellow" points="118.8,43.9 118.8,94.6 84.3,94.6"/>
+  <!--<polyline class="yellow" points="118.8,40.5 118.8,94.6 82.3,94.6"/>-->
+  <!--<polygon class="st0" points="83.7,92.9 83.7,43.6 117.2,43.6"/>-->
+  <polyline class="yellow" points="82.3,94.6 82.3,40.8 118.8,40.8"/>
+  <!--i-->
+  <!--<rect class="st0" x="62.3" y="43.6" width="13.6" height="50.8"/>-->
+  <!--<rect class="green" x="62.3" y="43.6" width="13.6" height="50.8"/>-->
+  <rect class="green" x="59.7" y="41.1" width="16.2" height="53.6"/>
+  <!--b-->
+  <!--<path class="st0" d="M54.2,69c0,13.9-12.5,25-27.8,25c0-25.1,0-25,0-50C41.6,43.9,54.2,55.1,54.2,69z"/>-->
+  <path class="blue" d="M54.7,68c0,14.9-13.2,26.7-29.3,26.7c0-26.9,0-26.7,0-53.6C41.4,41.1,54.7,53.1,54.7,68z"/>
+  <!--<rect class="st0" x="11.6" y="6.5" width="14.1" height="87.3"/>-->
+  <rect class="blue" x="9.2" y="4.1" width="16.2" height="90.6"/>
+  <text x="6" y="128" textLength="120" font-size="34" fill="white">SORT</text>
+</g>
+</svg>

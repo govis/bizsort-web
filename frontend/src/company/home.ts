@@ -49,7 +49,23 @@ export class CompanyHome extends LitElement {
   }
 
   private _handleSearch(e: CustomEvent) {
-    const { category, location } = e.detail as { category: number; location: number };
+    const { category, location, query, near, transactionType } = e.detail as any;
+    
+    // If a specific category or search query is provided, navigate to the search page (modern equivalent of CompanyNavigation.search)
+    if (category || query) {
+      const searchParams = new URLSearchParams();
+      if (category) searchParams.append('categoryId', category.toString());
+      if (location) searchParams.append('locationId', location.toString());
+      if (query) searchParams.append('searchQuery', query);
+      if (near) searchParams.append('searchNear', JSON.stringify(near)); // Near is usually a serialized object or string
+      if (transactionType) searchParams.append('transactionType', transactionType.toString());
+      
+      // Navigate to Next.js route
+      window.location.href = `/search?${searchParams.toString()}`;
+      return;
+    }
+
+    // Otherwise (empty search), behave like browse mode and update the featured section below
     const featured = this.shadowRoot?.querySelector('company-featured') as any;
     if (featured) {
       // Mirror legacy: search-home$._reflectSelection sets selection.location to

@@ -12,7 +12,7 @@ import '@awesome.me/webawesome/dist/components/button/button.js';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import '@awesome.me/webawesome/dist/components/popup/popup.js';
 import type WaInput from '@awesome.me/webawesome/dist/components/input/input.js';
-import { Input as LocationInputViewModel } from '../../../viewmodel/location/input';
+import { Input as LocationInputViewModel } from '../../../viewmodel/search/location/input';
 import { IViewAdapter } from '../../../viewmodel';
 import type WaDropdown from '@awesome.me/webawesome/dist/components/dropdown/dropdown.js';
 import '../../group/autocomplete';
@@ -42,7 +42,7 @@ export class SearchLocationInput extends LitElement implements IViewAdapter {
             this.selected = this.model.geoLocation;
         }
         if (props.includes('errorInfo')) {
-            this._errorText = this.model.validateable.errorInfo.getError('self') || '';
+            this._errorText = this.model.validateable.errorInfo.getError('locationInput') || this.model.validateable.errorInfo.getError('self') || '';
         }
         if (props.includes('geoMode') && this.geoMode !== this.model.geoMode) {
             this.geoMode = this.model.geoMode;
@@ -52,10 +52,18 @@ export class SearchLocationInput extends LitElement implements IViewAdapter {
         }
     }
 
-    updated(changedProperties: PropertyValues) {
+    updated(changedProperties: Map<string, any>) {
         super.updated(changedProperties);
         if (changedProperties.has('geoMode') && this.geoMode !== this.model.geoMode) {
             this.model.geoMode = this.geoMode;
+        }
+        if (changedProperties.has('_errorText') && this.inputElement) {
+            this.inputElement.setCustomValidity(this._errorText || '');
+        }
+        if (changedProperties.has('geoMode')) {
+            if (this.geoMode && !this._googleAutocomplete) {
+                this.initGooglePlaces();
+            }
         }
     }
     static styles = css`
@@ -148,13 +156,7 @@ export class SearchLocationInput extends LitElement implements IViewAdapter {
         this.requestUpdate();
     }
 
-    updated(changedProperties: Map<string, any>) {
-        if (changedProperties.has('geoMode')) {
-            if (this.geoMode && !this._googleAutocomplete) {
-                this.initGooglePlaces();
-            }
-        }
-    }
+
 
     private async initGooglePlaces() {
         const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
@@ -260,8 +262,6 @@ export class SearchLocationInput extends LitElement implements IViewAdapter {
                     .value=${this.selected && this.selected.id ? this.selected.name : this._text}
                     @input=${this.handleInput}
                     @focus=${() => { if (!this.geoMode && this.model.autocomplete && this.model.autocomplete.items.length > 0) this.model.autocomplete.active = true; }}
-                    help-text=${this._errorText}
-                    ?invalid=${!!this._errorText}
                 >
                     ${this.selected && this.selected.id ? html`
                         <div slot="prefix" class="selected-container">

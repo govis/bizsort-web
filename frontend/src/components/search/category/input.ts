@@ -41,6 +41,7 @@ export class SearchCategoryInput extends LitElement implements IViewAdapter {
         if (props.includes('errorInfo')) {
             this._errorText = this.model.validateable.errorInfo.getError('self') || '';
         }
+        this.requestUpdate();
     }
     static styles = css`
         :host {
@@ -128,7 +129,7 @@ export class SearchCategoryInput extends LitElement implements IViewAdapter {
     declare _errorText: string;
 
     @query('wa-input')
-    private inputElement!: WaInput;
+    private declare inputElement: WaInput;
 
     private _debounceTimer: number | null = null;
 
@@ -180,6 +181,13 @@ export class SearchCategoryInput extends LitElement implements IViewAdapter {
         this.requestUpdate(); // Force re-render to pass this.inputElement to group-autocomplete
     }
 
+    updated(changedProperties: Map<string, any>) {
+        super.updated(changedProperties);
+        if (changedProperties.has('_errorText') && this.inputElement) {
+            this.inputElement.setCustomValidity(this._errorText || '');
+        }
+    }
+
     render() {
         return html`
             <group-autocomplete .model=${this.model.autocomplete}>
@@ -191,8 +199,6 @@ export class SearchCategoryInput extends LitElement implements IViewAdapter {
                     .value=${this._text}
                     @input=${this.handleInput}
                     @focus=${() => { if (this.model.autocomplete && this.model.autocomplete.items.length > 0) this.model.autocomplete.active = true; }}
-                    help-text=${this._errorText}
-                    ?invalid=${!!this._errorText}
                 >
                     <wa-icon slot="prefix" name="search" library="system"></wa-icon>
                 </wa-input>
