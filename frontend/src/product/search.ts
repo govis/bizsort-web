@@ -1,22 +1,22 @@
 import { LitElement, html, css } from 'lit';
 import { state } from 'lit/decorators.js';
-import { search, toPreview } from '../service/company';
+import { search, toPreview } from '../service/product';
 import { Filterable, Searchview } from '../viewmodel/list/view';
 import type { IViewAdapter } from '../viewmodel';
 import type { Action } from '../global';
 
 import '@awesome.me/webawesome/dist/components/spinner/spinner.js';
-import '../components/company/card';
-import '../components/company/listview';
+import '../components/product/card';
+import '../components/product/listview';
 import '../components/list/pager';
 import '../components/list/header';
 import '../components/list/filter';
-import './header-layout';
+import '../company/header-layout';
 
-class CompanySearchViewModel extends Filterable(Searchview) {
+class ProductSearchViewModel extends Filterable(Searchview) {
   fetchList(queryInput: any, callback: Action<any>, faultCallback: Action<any>) {
-    if (this.searchParams && (this.searchParams as any).transactionType !== 3) {
-      queryInput.transactionType = (this.searchParams as any).transactionType || 0;
+    if (this.searchParams && (this.searchParams as any).productType !== 0) {
+      queryInput.productType = (this.searchParams as any).productType || 0;
     }
     super.fetchList(queryInput, callback, faultCallback, search as any);
   }
@@ -42,17 +42,17 @@ class CompanySearchViewModel extends Filterable(Searchview) {
 }
 
 /**
- * Company Search page.
- * Ported from legacy company/search.ts.
+ * Product Search page.
+ * Ported from legacy company/product.ts.
  */
-export class CompanySearch extends LitElement implements IViewAdapter {
+export class ProductSearch extends LitElement implements IViewAdapter {
   static get properties() {
     return {
       searchQuery: { type: String, attribute: 'search-query' },
       categoryId: { type: Number, attribute: 'category-id' },
       locationId: { type: Number, attribute: 'location-id' },
       searchNear: { type: String, attribute: 'search-near' },
-      transactionType: { type: Number, attribute: 'transaction-type' }
+      productType: { type: Number, attribute: 'product-type' }
     };
   }
 
@@ -60,12 +60,11 @@ export class CompanySearch extends LitElement implements IViewAdapter {
   declare categoryId?: number;
   declare locationId?: number;
   declare searchNear?: string;
-  declare transactionType?: number;
+  declare productType?: number;
   
   @state()
   declare _errorText?: string;
   
-  // ListView stub properties
   private _items: any[] = [];
   set items(val: any[]) {
     this._items = val;
@@ -74,33 +73,25 @@ export class CompanySearch extends LitElement implements IViewAdapter {
   get items() { return this._items; }
   
   setItemOption(name: string, option: any) {
-    const listview = this.shadowRoot?.querySelector('company-listview') as any;
+    const listview = this.shadowRoot?.querySelector('product-listview') as any;
     if (listview && listview.viewModel) {
       listview.viewModel.setItemOption(name, option);
     }
   }
   
-  viewModel: CompanySearchViewModel;
+  viewModel: ProductSearchViewModel;
 
   constructor() {
     super();
-    this.viewModel = new CompanySearchViewModel(this);
+    this.viewModel = new ProductSearchViewModel(this);
     this.viewModel.pager.pageSize = 24; 
   }
 
-  connectedCallback() {
-    super.connectedCallback();
-    // In Lit, we don't initialize DOM-dependent viewModels here because shadowRoot is empty.
-  }
-
   firstUpdated() {
-    // Now that the shadow DOM is rendered, we can initialize the ViewModel 
-    // so it can find 'list-header', 'list-filter-available', etc.
     this.viewModel.initialize({
       listView: this as any
     });
     
-    // Trigger the initial search now that filters are wired up
     if (this.categoryId || this.searchQuery) {
       this._updateSearchParams();
       this.viewModel.search();
@@ -125,14 +116,14 @@ export class CompanySearch extends LitElement implements IViewAdapter {
       searchQuery: this.searchQuery,
       searchNear: this.searchNear,
       locationId: this.locationId,
-      transactionType: this.transactionType
+      productType: this.productType
     } as any;
   }
 
   willUpdate(changedProperties: Map<string | number | symbol, unknown>) {
     if (changedProperties.has('searchQuery') || changedProperties.has('categoryId') || 
         changedProperties.has('locationId') || changedProperties.has('searchNear') || 
-        changedProperties.has('transactionType')) {
+        changedProperties.has('productType')) {
         
       if (!this.categoryId && !this.searchQuery) {
         this._errorText = "Invalid Search: Please provide either a category or a search query to continue.";
@@ -140,7 +131,6 @@ export class CompanySearch extends LitElement implements IViewAdapter {
       }
       this._errorText = undefined;
       
-      // Only search if the component has already been initialized (post-firstUpdated)
       if (this.hasUpdated) {
         this._updateSearchParams();
         this.viewModel.search();
@@ -168,13 +158,6 @@ export class CompanySearch extends LitElement implements IViewAdapter {
       flex-direction: column;
     }
 
-    .results-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 1.5rem;
-      justify-items: center;
-    }
-
     .empty-state, .error-state, .loading-state {
       text-align: center;
       padding: 4rem 1rem;
@@ -195,33 +178,26 @@ export class CompanySearch extends LitElement implements IViewAdapter {
       color: #1a237e;
       margin: 0 0 0.5rem 0;
     }
-
-    .page-header p {
-      color: var(--wa-color-neutral-600);
-      margin: 0;
-    }
   `;
 
   render() {
     return html`
-      <company-header-layout title-text="Search Results">
+      <company-header-layout title-text="Product Search">
         <div slot="logo" style="display: flex; align-items: center; height: 100%; justify-content: center; color: white; font-weight: bold; font-size: 1.2rem;">
           bizSORT
         </div>
         
-        <search-box slot="navbar" query="${this.searchQuery || ''}"></search-box>
-
         <div class="content">
           <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end;">
             <div>
-              <h1>Search Results</h1>
-              <list-header entity="companies"></list-header>
+              <h1>Product Search Results</h1>
+              <list-header entity="products"></list-header>
             </div>
             <list-filter-available></list-filter-available>
           </div>
           <list-filter-applied style="margin-bottom: 1rem;"></list-filter-applied>
 
-          <company-listview .items="${this._items}"></company-listview>
+          <product-listview .items="${this._items}"></product-listview>
           
           ${this.isLoading 
             ? html`<div class="loading-state"><wa-spinner></wa-spinner> Loading results...</div>`
@@ -229,7 +205,7 @@ export class CompanySearch extends LitElement implements IViewAdapter {
               ? html`<div class="error-state">Error: ${this._errorText}</div>`
               : this.viewModel.pager.itemCount > 0
                 ? html`<list-pager .master="${this.viewModel.pager}"></list-pager>`
-                : (this.searchQuery || this.categoryId) ? html`<div class="empty-state">No companies found matching your criteria.</div>` : ''
+                : (this.searchQuery || this.categoryId) ? html`<div class="empty-state">No products found matching your criteria.</div>` : ''
           }
         </div>
       </company-header-layout>
@@ -237,6 +213,6 @@ export class CompanySearch extends LitElement implements IViewAdapter {
   }
 }
 
-if (!customElements.get('company-search')) {
-  customElements.define('company-search', CompanySearch);
+if (!customElements.get('product-search')) {
+  customElements.define('product-search', ProductSearch);
 }

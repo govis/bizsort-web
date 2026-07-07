@@ -30,9 +30,35 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public virtual DbSet<CategoryProductAttribute> CategoryProductAttributes { get; set; }
     public virtual DbSet<BizSrt.Api.Data.Entities.SecurityProfile> SecurityProfiles { get; set; }
     public virtual DbSet<BizSrt.Api.Data.Entities.SecurityProfilePriviledge> SecurityProfilePriviledges { get; set; }
+    public virtual DbSet<CompanyOfficeId> CompanyOfficeIds { get; set; }
+    public virtual DbSet<ProductIdKeyless> ProductIdsKeyless { get; set; }
+    public virtual DbSet<ProjectIdKeyless> ProjectIdsKeyless { get; set; }
+
+    public virtual DbSet<CompanyFacet> CompanyFacets { get; set; }
+    public virtual DbSet<CompanyFacetValue> CompanyFacetValues { get; set; }
+    public virtual DbSet<CompanyProductFacet> CompanyProductFacets { get; set; }
+    public virtual DbSet<ProductFacetValue> ProductFacetValues { get; set; }
+
+    public IQueryable<CompanyOfficeId> CompanyOfficeLocation(int location)
+    {
+        return CompanyOfficeIds.FromSqlInterpolated($"SELECT * FROM dbo.CompanyOfficeLocation({location})");
+    }
+
+    public IQueryable<ProductIdKeyless> ProductTextSearch(string searchQuery)
+    {
+        return ProductIdsKeyless.FromSqlInterpolated($"SELECT Id FROM dbo.ProductTextSearch({searchQuery})");
+    }
+
+    public IQueryable<ProjectIdKeyless> ProjectTextSearch(string searchQuery)
+    {
+        return ProjectIdsKeyless.FromSqlInterpolated($"SELECT Id FROM dbo.ProjectTextSearch({searchQuery})");
+    }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<CompanyOfficeId>().HasNoKey();
+        modelBuilder.Entity<ProductIdKeyless>().HasNoKey();
+        modelBuilder.Entity<ProjectIdKeyless>().HasNoKey();
         modelBuilder.Entity<Category_Unwound>().HasKey(e => new { e.Parent, e.Child });
         modelBuilder.Entity<Location_Unwound>().HasKey(e => new { e.Parent, e.Child });
         

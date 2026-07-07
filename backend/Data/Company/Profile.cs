@@ -5,6 +5,7 @@ using BizSrt.Api.Model.Company;
 using BizSrt.Api.Model;
 using BizSrt.Api.Model.List;
 using BizSrt.Api.Data.Cache.Company;
+using BizSrt.Api.Data.Extensions;
 
 namespace BizSrt.Api.Data.Company;
 
@@ -12,7 +13,7 @@ public interface ICompanyService
 {
     Task<Profile?> ViewAsync(int id);
     Task<SliceOutput<SearchItem>> GetFeaturedAsync(DirectorySliceInput<int> sliceInput);
-    Task<QueryOutput<SearchItem>> SearchAsync(SearchInput queryInput);
+    Task<SearchOutput<SearchItem>> SearchAsync(SearchInput queryInput);
     Task<IEnumerable<BizSrt.Api.Model.Company.Preview>> ToPreviewAsync(SearchItem[] companies);
     Task<SliceOutput<EntityId<int>>> GetCommunitiesAsync(int companyId, SliceInput sliceInput);
     Task<SliceOutput<SearchItem>> GetAffiliationsAsync(int companyId, SliceInput sliceInput);
@@ -117,36 +118,182 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
         return Task.FromResult(new SliceOutput<SearchItem>(companies.Select(b => new SearchItem { Id = b }).ToArray(), index));
     }
 
-    public async Task<QueryOutput<SearchItem>> SearchAsync(SearchInput queryInput)
+    public async Task<SearchOutput<SearchItem>> SearchAsync(SearchInput queryInput)
     {
-        var query = dbContext.CompanyProfiles
+        if (!string.IsNullOrWhiteSpace(queryInput.SearchQuery) || queryInput.SearchNear != null)
+        {
+            return await ExecuteCompanySearchSpAsync(queryInput);
+        }
+
+        var activeCompanies = dbContext.CompanyProfiles
             .Join(dbContext.Accounts, c => c.Id, a => a.Id, (c, a) => new { c, a })
-            .Where(x => x.a.Status == 2);
+            .Where(x => x.a.Status == 2)
+            .Select(x => x.c);
+
+        IQueryable<CompanyProfile> query = activeCompanies;
 
         if (queryInput.Category > 0)
         {
-            query = query.Where(x => x.c.Category == queryInput.Category);
+            query = query.Where(c => 
+                (c.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == c.Category))
+                && (queryInput.TransactionType == 0 || (c.TransactionType & queryInput.TransactionType) > 0)
+                ||
+                (from cp in dbContext.CompanyProducts
+                 join p in dbContext.Products on cp.Product equals p.Id
+                 where (p.Type == 0 || (cp.UnlistedType == 1 && p.Status == 2)) &&
+                       (cp.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == cp.Category))
+                 select cp).Any(cp => cp.Company == c.Id)
+            );
+        }
+        else if (queryInput.TransactionType > 0)
+        {
+            query = query.Where(c => (c.TransactionType & queryInput.TransactionType) > 0);
         }
 
-        if (!string.IsNullOrWhiteSpace(queryInput.SearchQuery))
+        query = query.ApplyFacets(dbContext, queryInput.InclFacets, queryInput.ExclFacets);
+
+        IQueryable<SearchItem> resultQuery;
+
+        if (queryInput.Location > 0)
         {
-            query = query.Where(x => x.c.Name.Contains(queryInput.SearchQuery));
+            var coq = from c in query
+                      join co in dbContext.CompanyOfficeLocation(queryInput.Location) on c.Id equals co.Id
+                      select new { Company = c, co.Office };
+
+            resultQuery = coq
+                .OrderByDescending(x => x.Company.Created)
+                .Select(x => new SearchItem { Id = x.Company.Id, Office = x.Office > 0 ? (int?)x.Office : null });
+            
+            query = coq.Select(x => x.Company);
+        }
+        else
+        {
+            resultQuery = query
+                .OrderByDescending(c => c.Created)
+                .Select(c => new SearchItem { Id = c.Id });
         }
 
         var total = await query.CountAsync();
-        var companies = await query
-            .OrderByDescending(x => x.c.Created)
+
+        BizSrt.Api.Model.Semantic.FacetName[]? facets = null;
+        if (queryInput.InclFacets != null)
+        {
+            var pfq = await (from c in query
+                             join pf in dbContext.CompanyFacets on c.Id equals pf.Company
+                             join pfv in dbContext.CompanyFacetValues on pf.FacetValue equals pfv.Id
+                             group pfv by new { pfv.Name, pfv.Id } into pfg
+                             select new BizSrt.Api.Data.Extensions.FacetExtensions.ValueCount { Name = pfg.Key.Name, Value = pfg.Key.Id, Count = pfg.Count() })
+                            .ToArrayAsync();
+
+            facets = BizSrt.Api.Data.Extensions.FacetExtensions.GetFacets(pfq, queryInput.InclFacets, total);
+        }
+
+        var companies = await resultQuery
             .Skip(queryInput.StartIndex)
             .Take(queryInput.Length > 0 ? queryInput.Length : 20)
-            .Select(x => new SearchItem { Id = x.c.Id })
             .ToArrayAsync();
 
-        return new QueryOutput<SearchItem>
+        return new SearchOutput<SearchItem>
         {
             StartIndex = queryInput.StartIndex,
             Series = companies,
-            TotalCount = total
+            TotalCount = total,
+            Facets = facets
         };
+    }
+
+    private async Task<SearchOutput<SearchItem>> ExecuteCompanySearchSpAsync(SearchInput queryInput)
+    {
+        var connection = dbContext.Database.GetDbConnection();
+        var wasClosed = connection.State == System.Data.ConnectionState.Closed;
+
+        if (wasClosed)
+            await connection.OpenAsync();
+
+        try
+        {
+            using var command = connection.CreateCommand();
+            command.CommandText = "CompanySearch";
+            command.CommandType = System.Data.CommandType.StoredProcedure;
+
+            var pTransactionType = command.CreateParameter();
+            pTransactionType.ParameterName = "@TransactionType";
+            pTransactionType.Value = (short)queryInput.TransactionType;
+            command.Parameters.Add(pTransactionType);
+
+            var pCategory = command.CreateParameter();
+            pCategory.ParameterName = "@Category";
+            pCategory.Value = queryInput.Category;
+            command.Parameters.Add(pCategory);
+
+            var pQuery = command.CreateParameter();
+            pQuery.ParameterName = "@Query";
+            pQuery.Value = queryInput.SearchQuery ?? (object)DBNull.Value;
+            command.Parameters.Add(pQuery);
+
+            var pLocation = command.CreateParameter();
+            pLocation.ParameterName = "@Location";
+            pLocation.Value = queryInput.Location;
+            command.Parameters.Add(pLocation);
+
+            if (queryInput.Location == 0 && queryInput.SearchNear != null)
+            {
+                var pLat = command.CreateParameter();
+                pLat.ParameterName = "@Lattitude";
+                pLat.Value = queryInput.SearchNear.Lat;
+                command.Parameters.Add(pLat);
+
+                var pLng = command.CreateParameter();
+                pLng.ParameterName = "@Longitude";
+                pLng.Value = queryInput.SearchNear.Lng;
+                command.Parameters.Add(pLng);
+
+                var pDist = command.CreateParameter();
+                pDist.ParameterName = "@Distance";
+                pDist.Value = 100;
+                command.Parameters.Add(pDist);
+            }
+
+            if (queryInput.StartIndex > 0)
+            {
+                var pStart = command.CreateParameter();
+                pStart.ParameterName = "@StartIndex";
+                pStart.Value = queryInput.StartIndex;
+                command.Parameters.Add(pStart);
+            }
+
+            var pLength = command.CreateParameter();
+            pLength.ParameterName = "@Length";
+            pLength.DbType = System.Data.DbType.Int32;
+            pLength.Direction = System.Data.ParameterDirection.InputOutput;
+            pLength.Value = queryInput.Length > 0 ? queryInput.Length : 20;
+            command.Parameters.Add(pLength);
+
+            var companies = new List<SearchItem>();
+            
+            using var reader = await command.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                companies.Add(new SearchItem
+                {
+                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                    Office = reader.GetInt32(reader.GetOrdinal("Office")) > 0 ? reader.GetInt32(reader.GetOrdinal("Office")) : null,
+                    Distance = queryInput.SearchNear != null ? (float)reader.GetDouble(reader.GetOrdinal("Distance")) : 0f
+                });
+            }
+
+            return new SearchOutput<SearchItem>
+            {
+                StartIndex = queryInput.StartIndex,
+                Series = companies.ToArray(),
+                TotalCount = pLength.Value != DBNull.Value ? Convert.ToInt32(pLength.Value) : 0
+            };
+        }
+        finally
+        {
+            if (wasClosed)
+                await connection.CloseAsync();
+        }
     }
 
     public async Task<IEnumerable<BizSrt.Api.Model.Company.Preview>> ToPreviewAsync(SearchItem[] companies)
@@ -200,9 +347,11 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
 
     public async Task<QueryOutput<BizSrt.Api.Model.EntityId<long>>> GetProductsAsync(int companyId, QueryInput queryInput)
     {
+        var pq = dbContext.Products.GetFiltered(dbContext, queryInput);
+
         var query = dbContext.CompanyProducts
-            .Join(dbContext.Products, cp => cp.Product, p => p.Id, (cp, p) => new { cp, p })
-            .Where(x => x.cp.Company == companyId && x.p.Status == 2);
+            .Join(pq, cp => cp.Product, p => p.Id, (cp, p) => new { cp, p })
+            .Where(x => x.cp.Company == companyId && x.cp.UnlistedType == 1 && x.p.Status == 2);
 
         var total = await query.CountAsync();
         var products = await query
@@ -222,9 +371,11 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
 
     public async Task<QueryOutput<BizSrt.Api.Model.EntityId<long>>> GetProjectsAsync(int companyId, QueryInput queryInput)
     {
+        var pq = dbContext.Projects.GetFiltered(dbContext, queryInput);
+
         var query = dbContext.CompanyProjects
-            .Join(dbContext.Projects, cp => cp.Project, p => p.Id, (cp, p) => new { cp, p })
-            .Where(x => x.cp.Company == companyId && x.p.Status == 2);
+            .Join(pq, cp => cp.Project, p => p.Id, (cp, p) => new { cp, p })
+            .Where(x => x.cp.Company == companyId && x.cp.UnlistedType == 1 && x.p.Status == 2);
 
         var total = await query.CountAsync();
         var projects = await query
@@ -244,8 +395,10 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
 
     public async Task<QueryOutput<BizSrt.Api.Model.EntityId<long>>> GetJobsAsync(int companyId, short department, QueryInput queryInput)
     {
+        var pq = dbContext.Products.GetFiltered(dbContext, queryInput);
+
         var query = dbContext.Jobs
-            .Join(dbContext.Products, j => j.Id, p => p.Id, (j, p) => new { j, p })
+            .Join(pq, j => j.Id, p => p.Id, (j, p) => new { j, p })
             .Where(x => x.j.Company == companyId && x.p.Status == 2);
 
         if (department > 0)

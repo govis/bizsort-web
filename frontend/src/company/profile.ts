@@ -19,6 +19,7 @@ import './header-layout';
 import '../components/layout/card';
 import '../components/menu/page';
 import '../components/search/category/menu';
+import '../components/map/view';
 
 export class CompanyProfile extends LitElement {
   static get properties() {
@@ -189,6 +190,7 @@ export class CompanyProfile extends LitElement {
       min-height: 350px;
       display: flex;
       flex-direction: column;
+      position: relative;
     }
 
     .map-frame {
@@ -261,6 +263,16 @@ export class CompanyProfile extends LitElement {
       font-size: 3rem;
       margin-bottom: 1rem;
     }
+
+    .map-click-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      cursor: pointer;
+    }
   `;
 
   render() {
@@ -292,6 +304,7 @@ export class CompanyProfile extends LitElement {
         ${this.activeTab === 'news' ? this._renderStubTab('news', this._company.news?.label || 'News') : ''}
         ${this.activeTab === 'articles' ? this._renderArticlesTab() : ''}
       </div>
+      <map-view id="mapView"></map-view>
     `;
   }
 
@@ -379,6 +392,10 @@ export class CompanyProfile extends LitElement {
                 marginheight="0"
                 marginwidth="0">
               </iframe>
+              <div class="map-click-overlay" @click="${() => {
+                const map = this.shadowRoot?.getElementById('mapView') as any;
+                if (map) map.open(this._company?.offices);
+              }}" title="View Full Map"></div>
             ` : html`
               <div class="map-unavailable">
                 <wa-icon name="map"></wa-icon>

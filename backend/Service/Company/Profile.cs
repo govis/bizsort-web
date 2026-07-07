@@ -38,6 +38,7 @@ public static class CompanyEndpoints
             return Results.Ok(result);
         });
 
+
         group.MapGet("/profile/getCommunities", async ([FromQuery] int company, [FromQuery] string sliceInput, ICompanyService companyService) =>
         {
             var input = JsonSerializer.Deserialize<SliceInput>(sliceInput) ?? new SliceInput();

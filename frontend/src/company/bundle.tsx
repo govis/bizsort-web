@@ -41,9 +41,9 @@ export function CompanyProfileWrapper({ companyId, activeTab = 'about' }: { comp
 /**
  * Renders the Company Search web component.
  */
-export function CompanySearchWrapper({ query, categoryId }: { query?: string, categoryId?: number }) {
+export function CompanySearchWrapper({ query, categoryId, locationId, searchNear, transactionType }: { query?: string, categoryId?: number, locationId?: number, searchNear?: string, transactionType?: number }) {
   // @ts-expect-error - Custom element not fully declared in global JSX namespace
-  return <company-search query={query} category-id={categoryId}></company-search>;
+  return <company-search search-query={query} category-id={categoryId} location-id={locationId} search-near={searchNear} transaction-type={transactionType}></company-search>;
 }
 
 /**

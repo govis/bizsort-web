@@ -25,7 +25,8 @@ The legacy codebase is split into two primary areas:
 2. **Schema Name Remapping (Business -> Company):** During modernization, all instances of `Business` in the database schema and object models have been renamed to `Company` (e.g., `Businesses` table became `CompanyProfiles`, `BusinessOffices` became `CompanyOffices`, and LINQ variables `bi` -> `cm`, `bo` -> `co`). All database indexes have also been renamed to use the `Company*` prefix.
 3. **ViewModel Preservation:** Do not rip out the legacy `ViewModel` pattern for inputs. Extract the logic from Lit components into modern `frontend/src/viewmodel/` classes to maintain data-flow consistency.
 4. **No Novel DB Queries:** All complex EF queries already exist in `legacy/server/Data/`. Port them exactly as they are.
-4. **EF Core 8 Query Translation (APPLY vs JOIN):** Legacy EF6 queries that heavily utilized the `let` keyword with multiple conditions (e.g., `let x = dbContext...FirstOrDefault() where x != null && x.Prop != null`) were natively translated into a single optimized `OUTER APPLY`. EF Core 8 parsing can sometimes regress these patterns into multiple redundant scalar subqueries. When porting these explicit "APPLY" patterns, either use standard `join` statements (with `.Distinct()` if necessary) OR explicitly structure `from...Take(1)` subqueries to guarantee performant SQL generation.
+5. **LINQ Building Blocks:** Legacy code constructed complex LINQ queries using reusable building blocks (e.g. `Company.GetActive()`, `Company.GetFiltered()`, `CompanyProduct.GetActive()`). When porting search methods for Company and Company Product profiles, implement these building blocks as reusable extension methods to maintain the legacy architecture.
+6. **EF Core 8 Query Translation (APPLY vs JOIN):** Legacy EF6 queries that heavily utilized the `let` keyword with multiple conditions (e.g., `let x = dbContext...FirstOrDefault() where x != null && x.Prop != null`) were natively translated into a single optimized `OUTER APPLY`. EF Core 8 parsing can sometimes regress these patterns into multiple redundant scalar subqueries. When porting these explicit "APPLY" patterns, either use standard `join` statements (with `.Distinct()` if necessary) OR explicitly structure `from...Take(1)` subqueries to guarantee performant SQL generation.
 
    **How to Hint EF Core 8 to generate `CROSS APPLY` / `OUTER APPLY`:**
    In SQL Server, `APPLY` operates like a `foreach` loop: it evaluates the right-hand table expression once for every single row returned by the left-hand table. EF Core will naturally generate a `CROSS APPLY` (like an INNER JOIN) or `OUTER APPLY` (like a LEFT JOIN) when you use correlated subqueries in your LINQ—specifically using a second `from` clause.
@@ -98,6 +99,6 @@ The legacy codebase is split into two primary areas:
 
 ### Pending Tasks
 
-- [ ] Port remaining company pages: `company/search.ts`, `company/profile.ts`, `company/header-layout.ts`.
+- [x] Port remaining company pages: `company/search.ts`, `company/profile.ts`, `company/header-layout.ts`.
 - [ ] Fix Google Maps API Loader version incompatibility in `components/search/location/input.ts` (uses deprecated `Loader` class — must switch to functional `setOptions()`/`importLibrary()` API).
 - [ ] Further migration of remaining legacy frontend modules (see `LEGACY_FRONTEND_TRACKER.md`).

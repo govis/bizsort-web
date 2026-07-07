@@ -93,6 +93,22 @@ export interface CompanyPreview {
   category?: Category;
 }
 
+export interface ProductType {
+  itemKey: number;
+  itemText: string;
+}
+
+export interface ProductPreview {
+  id: number;
+  name: string;
+  type?: ProductType;
+  category?: Category;
+  image?: ImageRef;
+  text?: string;
+  webUrl?: string;
+  date?: string;
+}
+
 // List/slice types (for paginated queries)
 export interface SliceInput {
   index: number;

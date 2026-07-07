@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Text.Json.Serialization;
 using BizSrt.Api.Model;
 
@@ -58,4 +58,32 @@ public class Preview : IdName<long>
 
     [JsonPropertyName("date")]
     public DateTime Date { get; set; }
+}
+
+public class SearchInput : BizSrt.Api.Model.List.QueryInput
+{
+    [JsonPropertyName("productType")]
+    public short ProductType { get; set; }
+
+    [JsonPropertyName("category")]
+    public short Category { get; set; }
+
+    [JsonPropertyName("location")]
+    public int Location { get; set; }
+
+    [JsonPropertyName("searchNear")]
+    public Geolocation? SearchNear { get; set; }
+
+    [JsonPropertyName("inclFacets")]
+    public BizSrt.Api.Model.Semantic.FacetFilter? InclFacets { get; set; }
+
+    [JsonPropertyName("exclFacets")]
+    public BizSrt.Api.Model.Semantic.FacetFilter? ExclFacets { get; set; }
+}
+
+public class SearchItem : EntityId<long>
+{
+    [JsonPropertyName("distance")]
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
+    public float Distance { get; set; }
 }

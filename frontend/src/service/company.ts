@@ -8,8 +8,13 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
  * Matches legacy: getFeatured(sliceInput, ...)
  */
 export async function search(queryInput: any): Promise<any> {
-  const payload = JSON.stringify(queryInput);
-  const response = await fetch(`${API_BASE}/api/company/profile/search?queryInput=${encodeURIComponent(payload)}`);
+  const queryCopy = { ...queryInput };
+  if (queryCopy.searchQuery) {
+    // Only encode the user-provided string to avoid HTTP parser truncation (e.g. '&', '=')
+    queryCopy.searchQuery = encodeURIComponent(queryCopy.searchQuery);
+  }
+  const payload = JSON.stringify(queryCopy);
+  const response = await fetch(`${API_BASE}/api/company/profile/search?queryInput=${payload}`);
   
   if (!response.ok) {
     throw new Error(`Failed to perform search: ${response.statusText}`);

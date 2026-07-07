@@ -293,6 +293,8 @@ namespace BizSrt.Api.Model
             public int StartIndex { get; set; }
             [JsonPropertyName("length")]
             public int Length { get; set; }
+            [JsonPropertyName("searchQuery")]
+            public string? SearchQuery { get; set; }
         }
 
         public class QueryOutput<T>
@@ -303,6 +305,12 @@ namespace BizSrt.Api.Model
             public T[] Series { get; set; } = Array.Empty<T>();
             [JsonPropertyName("totalCount")]
             public int TotalCount { get; set; }
+        }
+
+        public class SearchOutput<T> : QueryOutput<T>
+        {
+            [JsonPropertyName("facets")]
+            public BizSrt.Api.Model.Semantic.FacetName[]? Facets { get; set; }
         }
 
         public class SliceInput

@@ -148,15 +148,20 @@ public class SearchInput : BizSrt.Api.Model.List.QueryInput
     [JsonPropertyName("searchNear")]
     public Geolocation? SearchNear { get; set; }
 
-    [JsonPropertyName("searchQuery")]
-    public string? SearchQuery { get; set; }
+    [JsonPropertyName("inclFacets")]
+    public BizSrt.Api.Model.Semantic.FacetFilter? InclFacets { get; set; }
+
+    [JsonPropertyName("exclFacets")]
+    public BizSrt.Api.Model.Semantic.FacetFilter? ExclFacets { get; set; }
 }
 
 public class SearchItem : EntityId<int>
 {
+    [JsonPropertyName("office")]
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public int? Office { get; set; }
     
+    [JsonPropertyName("distance")]
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
     public float Distance { get; set; }
 }

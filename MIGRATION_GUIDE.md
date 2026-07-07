@@ -63,6 +63,7 @@ To avoid breaking ported logic, the .NET 10 backend must maintain exact JSON par
 2. **DTO Mapping**: Perform heavy lifting in the Backend Service (e.g., `CompanyService.cs`) rather than the frontend.
 3. **Address Construction**: Join individual DB fields (StreetNumber, StreetName, etc.) into a single `Address` string in the DTO to match legacy frontend expectations.
 4. **Head Office**: In legacy, `headOffice` is a getter returning `offices[0]`. The backend now returns it as a separate field in the `Profile` DTO for convenience.
+5. **URL Payload Encoding**: The legacy API endpoints expect raw JSON strings in the query parameters (e.g. `?queryInput={"startIndex":0}`). To maintain readability in DevTools and avoid unreadable escape sequences (`%7B%22...`), do **not** use `encodeURIComponent` on the entire JSON string. Instead, use standard `JSON.stringify()`, but be sure to selectively `encodeURIComponent()` only the user-provided string fields (like `searchQuery`) *before* stringifying. This preserves literal JSON brackets while safely encoding characters like `&` or `=` that would otherwise truncate the HTTP request.
 
 ## 4. Frontend Component Structure
 
@@ -156,6 +157,20 @@ In the modernized architecture, we rely entirely on **declarative state bindings
    >
    ```
 This natively paints the field red and shows the error text, completely eliminating the need for `webComponent.ts` or imperative DOM manipulation.
+
+### Global Error Handling (Legacy \`Page.handleError\`)
+In the legacy architecture, network exceptions or API failures were often caught and passed to a global singleton via \`Page.handleError(ex, { ajax: true })\`. This imperative approach took control away from the local component, globally traversing the DOM or redirecting the user based on the error.
+
+In the modernized Next.js architecture, the global \`Page.handleError\` singleton is entirely removed. Instead, we use:
+1. **Local Declarative State**: API failures are caught in the viewmodel/component and surfaced via standard \`_error\` state properties, triggering a declarative re-render to display the error message locally within the UI component.
+2. **Next.js Error Boundaries**: For catastrophic or unrecoverable errors, we rely on standard \`console.error(ex)\` logs and allow Next.js React Error Boundaries (\`error.tsx\`) to natively catch the exception and degrade the UI gracefully, rather than relying on a custom global JS singleton.
+
+### ViewModel Modernization (Data Binding & Lifecycle)
+In the legacy architecture, the `ViewModel` base class (in `src/viewmodel.ts`) implemented a manual pub/sub event bus (`_propertyChange = new Event<PropertyChangeEventArgs>()`) for granular data binding, and an `initialize()` method to manually bootstrap views.
+
+In the modernized architecture, Lit handles reactivity and component lifecycles natively:
+1. **Reactivity**: We removed the `PropertyChange` event bus. The modernized `ViewModel` relies on `notifyView(props: string[])` which delegates to the view adapter's `modelUpdated(props)` method. Lit components then safely read the updated data into `@state()` or `@property()` fields and trigger their native asynchronous `requestUpdate()` rendering loop to efficiently update the virtual DOM.
+2. **Lifecycle**: The base `initialize()` method was entirely stripped from the `ViewModel` because Lit handles initialization natively via standard web component callbacks like `connectedCallback()` and `firstUpdated()`.
 
 ## 5. React Integration
 
@@ -266,5 +281,14 @@ Legacy source files are located at `..\legacy\website\wwwroot\`. Key directories
 - `src/service/` — Service layer and API calls
 - `src/navigation.js` — SPA routing and navigation tokens
 
+## 8. Backend API & LINQ Guidelines
+
+When porting legacy C# code that constructs complex LINQ queries (especially those using `FacetSet` filtering, SQL Table-Valued Functions (TVFs) like `CompanyOfficeLocation`, or hierarchical category unwinding):
+
+- **Use Reusable Extension Methods**: Do not inline complex `Where` or `Join` clauses repeatedly in endpoint methods.
+- **Implement `.GetFiltered()`**: Following the legacy codebase architecture, implement and use `public static IQueryable<T> GetFiltered(this IQueryable<T> query, AppDbContext dbContext, QueryInput queryInput)` extension methods (e.g., in `BizSrt.Api.Data.Extensions.QueryExtensions`).
+- **Building Blocks**: Use these extension methods as composable "building blocks" that take the base `IQueryable<T>` (e.g., `dbContext.CompanyProfiles` or `dbContext.CompanyProducts`) and append the required SQL TVF joins for location searching or facet filtering before returning the modified query to the service method.
+- **Stored Procedure Fallbacks**: When porting `Search` methods, ensure you maintain parity with the legacy dual-path architecture. If a user provides a `SearchQuery` or `SearchNear` parameter, bypass the complex LINQ queries entirely and execute the underlying database stored procedures (e.g., `CompanySearch`, `ProductSearch`) directly using `dbContext.Database.GetDbConnection().CreateCommand()`. The legacy complex LINQ structures should only be used when browsing by category without text search.
+
 ---
-*Last updated: June 18, 2026*
+*Last updated: July 07, 2026*
