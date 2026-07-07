@@ -15,10 +15,28 @@ import '../company/header-layout';
 
 class ProductSearchViewModel extends Filterable(Searchview) {
   fetchList(queryInput: any, callback: Action<any>, faultCallback: Action<any>) {
-    if (this.searchParams && (this.searchParams as any).productType !== 0) {
-      queryInput.productType = (this.searchParams as any).productType || 0;
+    if (!this.searchParams) {
+      faultCallback(new Error('No search params'));
+      return;
     }
-    super.fetchList(queryInput, callback, faultCallback, search as any);
+
+    // Build the final queryInput with search params
+    queryInput.category = (this.searchParams as any).categoryId || 0;
+    if ((this.searchParams as any).searchQuery)
+      queryInput.searchQuery = (this.searchParams as any).searchQuery;
+    if ((this.searchParams as any).productType)
+      queryInput.productType = (this.searchParams as any).productType || 0;
+
+    if ((this.searchParams as any).searchNear) {
+      queryInput.searchNear = (this.searchParams as any).searchNear;
+    } else {
+      queryInput.location = (this.searchParams as any).locationId || 0;
+    }
+
+    // Bridge async service function → callback pattern
+    search(queryInput).then((data: any) => {
+      callback(data);
+    }).catch(faultCallback);
   }
 
   fetchPage(page: any[], callback: Action<Object[]>, faultCallback: Action<any>) {
@@ -40,6 +58,7 @@ class ProductSearchViewModel extends Filterable(Searchview) {
     }).catch(faultCallback);
   }
 }
+
 
 /**
  * Product Search page.
@@ -105,8 +124,8 @@ export class ProductSearch extends LitElement implements IViewAdapter {
   getViewModel(name: string) {
     if (name === 'listView') return this;
     if (name === 'listHeader') return this.shadowRoot?.querySelector('list-header');
-    if (name === 'filterAvail') return this.shadowRoot?.querySelector('list-filter-available');
-    if (name === 'filterApplied') return this.shadowRoot?.querySelector('list-filter-applied');
+    if (name === 'filterAvail') return (this.shadowRoot?.querySelector('list-filter-available') as any)?.viewModel;
+    if (name === 'filterApplied') return (this.shadowRoot?.querySelector('list-filter-applied') as any)?.viewModel;
     return null;
   }
 

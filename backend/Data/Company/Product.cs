@@ -56,15 +56,28 @@ public class CompanyProductService : ICompanyProductService
 
         query = query.ApplyFacets(dbContext, queryInput.InclFacets, queryInput.ExclFacets);
 
-        // Sorting
-        query = query.OrderByDescending(p => p.Created);
+        // Materialize all matching IDs in a single round-trip to avoid running the expensive
+        // correlated subquery 3 times (count + facets + page).
+        // Project only the Id so SQL Server can use covering indexes.
+        var allMatchingIds = await query
+            .OrderByDescending(p => p.Created)
+            .Select(p => p.Id)
+            .ToArrayAsync();
 
-        var total = await query.CountAsync();
+        var total = allMatchingIds.Length;
+        var pageIds = allMatchingIds
+            .Skip(queryInput.StartIndex)
+            .Take(queryInput.Length > 0 ? queryInput.Length : 20)
+            .ToArray();
+
+        var products = pageIds.Select(id => new SearchItem { Id = id }).ToArray();
 
         BizSrt.Api.Model.Semantic.FacetName[]? facets = null;
         if (queryInput.InclFacets != null)
         {
-            var pfq = await (from p in query
+            // Facet aggregation over the materialized ID set — no re-scan of the base query
+            var pfq = await (from p in dbContext.Products
+                             where allMatchingIds.Contains(p.Id)
                              join pf in dbContext.CompanyProductFacets on p.Id equals pf.Product
                              join pfv in dbContext.ProductFacetValues on pf.FacetValue equals pfv.Id
                              group pfv by new { pfv.Name, pfv.Id } into pfg
@@ -73,12 +86,6 @@ public class CompanyProductService : ICompanyProductService
 
             facets = BizSrt.Api.Data.Extensions.FacetExtensions.GetFacets(pfq, queryInput.InclFacets, total);
         }
-
-        var products = await query
-            .Select(p => new SearchItem { Id = p.Id })
-            .Skip(queryInput.StartIndex)
-            .Take(queryInput.Length > 0 ? queryInput.Length : 20)
-            .ToArrayAsync();
 
         return new SearchOutput<SearchItem>
         {

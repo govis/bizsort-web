@@ -1,5 +1,6 @@
 import type { CompanyPreview, SliceOutput, SearchItem } from '../components/types.js';
 import { FetchOneCache, Cache, SessionCacheType } from '../session/cache';
+import { Semantic } from '../model/foundation';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
 
@@ -20,8 +21,12 @@ export async function search(queryInput: any): Promise<any> {
     throw new Error(`Failed to perform search: ${response.statusText}`);
   }
   
-  return await response.json();
+  const data = await response.json();
+  // Mirror legacy: back-populate each FacetValue.name reference so the filter UI works
+  if (data.facets) Semantic.Facet.deserialize(data.facets);
+  return data;
 }
+
 
 /**
  * Fetches a list of featured company entity IDs.

@@ -15,19 +15,43 @@ import './header-layout';
 
 class CompanySearchViewModel extends Filterable(Searchview) {
   fetchList(queryInput: any, callback: Action<any>, faultCallback: Action<any>) {
-    if (this.searchParams && (this.searchParams as any).transactionType !== 3) {
-      queryInput.transactionType = (this.searchParams as any).transactionType || 0;
+    console.log('[CompanySearch] fetchList called, searchParams=', this.searchParams, 'queryInput=', queryInput);
+    console.log('[CompanySearch] _filterApplied=', (this as any)._filterApplied, '_filterAvail=', (this as any)._filterAvail);
+
+    if (!this.searchParams) {
+      faultCallback(new Error('No search params'));
+      return;
     }
-    super.fetchList(queryInput, callback, faultCallback, search as any);
+
+    // Build the final queryInput with search params (mirrors what Searchview.fetchList does)
+    queryInput.category = (this.searchParams as any).categoryId || 0;
+    if ((this.searchParams as any).searchQuery)
+      queryInput.searchQuery = (this.searchParams as any).searchQuery;
+    if ((this.searchParams as any).transactionType !== undefined && (this.searchParams as any).transactionType !== 3)
+      queryInput.transactionType = (this.searchParams as any).transactionType || 0;
+
+    if ((this.searchParams as any).searchNear) {
+      queryInput.searchNear = (this.searchParams as any).searchNear;
+    } else {
+      queryInput.location = (this.searchParams as any).locationId || 0;
+    }
+
+    // Bridge async service function → callback pattern
+    search(queryInput).then((data: any) => {
+      console.log('[CompanySearch] fetchList callback data=', data, 'series.length=', data?.series?.length);
+      callback(data);
+    }).catch(faultCallback);
   }
 
   fetchPage(page: any[], callback: Action<Object[]>, faultCallback: Action<any>) {
+    console.log('[CompanySearch] fetchPage called, page=', page);
     const items = page.map((item: any) => ({
       id: item.id || item,
       office: item.office || undefined
     }));
 
     toPreview(items).then(results => {
+      console.log('[CompanySearch] toPreview results=', results);
       if (this.searchParams?.searchNear && results) {
         results.forEach((r: any, i: number) => {
           const ref = page[i];
@@ -94,11 +118,15 @@ export class CompanySearch extends LitElement implements IViewAdapter {
   }
 
   firstUpdated() {
+    console.log('[CompanySearch] firstUpdated, categoryId=', this.categoryId, 'searchQuery=', this.searchQuery);
+    console.log('[CompanySearch] filterAvail el=', this.shadowRoot?.querySelector('list-filter-available'));
+    console.log('[CompanySearch] filterApplied el=', this.shadowRoot?.querySelector('list-filter-applied'));
     // Now that the shadow DOM is rendered, we can initialize the ViewModel 
     // so it can find 'list-header', 'list-filter-available', etc.
     this.viewModel.initialize({
       listView: this as any
     });
+    console.log('[CompanySearch] after initialize, _filterApplied=', (this.viewModel as any)._filterApplied);
     
     // Trigger the initial search now that filters are wired up
     if (this.categoryId || this.searchQuery) {
@@ -114,8 +142,8 @@ export class CompanySearch extends LitElement implements IViewAdapter {
   getViewModel(name: string) {
     if (name === 'listView') return this;
     if (name === 'listHeader') return this.shadowRoot?.querySelector('list-header');
-    if (name === 'filterAvail') return this.shadowRoot?.querySelector('list-filter-available');
-    if (name === 'filterApplied') return this.shadowRoot?.querySelector('list-filter-applied');
+    if (name === 'filterAvail') return (this.shadowRoot?.querySelector('list-filter-available') as any)?.viewModel;
+    if (name === 'filterApplied') return (this.shadowRoot?.querySelector('list-filter-applied') as any)?.viewModel;
     return null;
   }
 

@@ -292,3 +292,100 @@ When porting legacy C# code that constructs complex LINQ queries (especially tho
 
 ---
 *Last updated: July 07, 2026*
+
+## 9. Search Performance Patterns
+
+These patterns were discovered and applied while porting the Company and Product search flows. Apply them to all future search ports (Project, Job, Community).
+
+### 9.1 Frontend: Async/Promise Bridge in ViewModel `fetchList`
+
+**Problem**: The legacy `Searchview.fetchList` base class dispatches the API call as a callback:
+```ts
+fetchDelegate(queryInput, callback, faultCallback); // legacy callback style
+```
+The legacy `service/company.ts` functions matched this signature: `search(queryInput, callback, faultCallback)`. In the modern port, all service functions are `async` and return a `Promise` — the extra callback arguments are silently dropped, so data never flows back into the ViewModel.
+
+**Fix**: Override `fetchList` in the domain ViewModel and **bridge the Promise to the callback manually**. Do **not** call `super.fetchList(...)`. Build the queryInput from `this.searchParams` directly:
+```ts
+class CompanySearchViewModel extends Filterable(Searchview) {
+  fetchList(queryInput: any, callback: Action<any>, faultCallback: Action<any>) {
+    if (!this.searchParams) { faultCallback(new Error('No search params')); return; }
+    queryInput.category = (this.searchParams as any).categoryId || 0;
+    queryInput.location = (this.searchParams as any).locationId || 0;
+    // ... other params ...
+    search(queryInput).then(callback).catch(faultCallback); // Promise → callback bridge
+  }
+}
+```
+Also ensure the filter components return their **ViewModel** (not the element itself) from `getViewModel()`:
+```ts
+getViewModel(name: string) {
+  if (name === 'filterAvail')   return (this.shadowRoot?.querySelector('list-filter-available') as any)?.viewModel;
+  if (name === 'filterApplied') return (this.shadowRoot?.querySelector('list-filter-applied') as any)?.viewModel;
+  if (name === 'listHeader')    return this.shadowRoot?.querySelector('list-header'); // element directly — no viewModel
+}
+```
+Also call `Semantic.Facet.deserialize(data.facets)` inside the service `search()` function after parsing JSON to back-populate `FacetValue.name` references (required for the filter dropdown to display group names).
+
+### 9.2 Backend: Avoid Triple-Query in LINQ Search
+
+**Problem**: The LINQ search path runs the same expensive correlated subquery (`Categories_Unwound.Any()` + `CompanyProducts.Any()`) **three times**:
+1. `CountAsync()` — for `TotalCount`
+2. Facet aggregation `ToArrayAsync()` — for filter counts
+3. Page result `ToArrayAsync()` — for the actual page
+
+Each run re-evaluates the entire predicate including TVF joins, which is costly.
+
+**Fix**: Materialize **all matching IDs** in a **single** query projecting only `Id` (SQL Server can satisfy this with a covering index, no column reads). Derive `total` from `.Length` in memory. Slice the page with LINQ `.Skip().Take()` in memory. Run facet aggregation against `allMatchingIds.Contains(c.Id)` — a simple `IN` clause:
+
+```csharp
+// Single DB round-trip for IDs (cheap — covering index, no data columns)
+var allMatchingIds = await query
+    .OrderByDescending(c => c.Created)
+    .Select(c => c.Id)
+    .ToArrayAsync();
+
+var total = allMatchingIds.Length;
+var pageIds = allMatchingIds.Skip(startIndex).Take(length).ToArray();
+var companies = pageIds.Select(id => new SearchItem { Id = id }).ToArray();
+
+// Facet aggregation on the pre-materialized set — no re-scan of the base predicate
+var pfq = await (from c in dbContext.CompanyProfiles
+                 where allMatchingIds.Contains(c.Id)
+                 join pf in dbContext.CompanyFacets on c.Id equals pf.Company
+                 ...
+```
+
+> [!NOTE]
+> `allMatchingIds.Contains(c.Id)` generates `WHERE Id IN (...)`. SQL Server limits parameters to ~2100. For extremely large result sets, consider batching or a temp table approach. In practice the category filter narrows results well below this limit.
+
+### 9.3 Backend: Avoid N+1 in Cache `ToPreview`
+
+**Problem**: `CachedCompanyProfile.ToPreview()` accesses `Offices` and `Products` via lazy `GetArray()` getters, each hitting the DB individually per company. For 20 companies on a cold cache: ~40 individual queries → ~9s.
+
+**Fix**: Batch-load all related collections in the cache's **multi-fetch constructor** alongside the profile query. Store them as plain `{ get; set; }` properties — no lazy loading:
+
+```csharp
+// In CompanyProfilesCache batch fetcher — 3 extra queries for all N companies, not N*3
+var allOffices = dbContext.CompanyOffices
+    .Where(co => accountIds.Contains(co.Company))
+    .Select(co => new { co.Company, co.Id, ... })
+    .AsNoTracking().ToList()
+    .GroupBy(co => co.Company)
+    .ToDictionary(g => g.Key, g => g.Select(...).ToArray());
+
+var allProducts = dbContext.CompanyProducts
+    .Where(cp => accountIds.Contains(cp.Company) && cp.UnlistedType == 0)
+    .Select(cp => new { cp.Company, cp.Product })
+    .AsNoTracking().ToList()
+    .GroupBy(cp => cp.Company)
+    .ToDictionary(g => g.Key, g => g.Select(cp => cp.Product).ToArray());
+
+// Assign in the Select:
+Offices = allOffices.GetValueOrDefault(p.Profile.Id, Array.Empty<CachedCompanyOffice>()),
+Products = allProducts.GetValueOrDefault(p.Profile.Id, Array.Empty<long>()),
+```
+
+> [!CAUTION]
+> Do **not** call `AsNoTracking()` on scalar projections like `.Select(cp => cp.Product)` — EF Core requires a reference-type entity for `AsNoTracking<TEntity>`. Only call it on entity or anonymous-type projections.
+

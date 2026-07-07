@@ -152,33 +152,62 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
 
         query = query.ApplyFacets(dbContext, queryInput.InclFacets, queryInput.ExclFacets);
 
-        IQueryable<SearchItem> resultQuery;
+        // Materialize all matching IDs in a single round-trip to avoid running the expensive
+        // correlated subquery 3 times (count + facets + page).
+        // Project only the Id (no blobs/text columns) so SQL Server can use covering indexes.
+        int[] allMatchingIds;
 
         if (queryInput.Location > 0)
         {
             var coq = from c in query
                       join co in dbContext.CompanyOfficeLocation(queryInput.Location) on c.Id equals co.Id
-                      select new { Company = c, co.Office };
+                      orderby c.Created descending
+                      select c.Id;
 
-            resultQuery = coq
-                .OrderByDescending(x => x.Company.Created)
-                .Select(x => new SearchItem { Id = x.Company.Id, Office = x.Office > 0 ? (int?)x.Office : null });
-            
-            query = coq.Select(x => x.Company);
+            allMatchingIds = await coq.ToArrayAsync();
         }
         else
         {
-            resultQuery = query
+            allMatchingIds = await query
                 .OrderByDescending(c => c.Created)
-                .Select(c => new SearchItem { Id = c.Id });
+                .Select(c => c.Id)
+                .ToArrayAsync();
         }
 
-        var total = await query.CountAsync();
+        var total = allMatchingIds.Length;
+        var pageIds = allMatchingIds
+            .Skip(queryInput.StartIndex)
+            .Take(queryInput.Length > 0 ? queryInput.Length : 20)
+            .ToArray();
+
+        // Build SearchItem array. For location queries we need the office — re-fetch just those IDs with office.
+        SearchItem[] companies;
+        if (queryInput.Location > 0)
+        {
+            var officeMap = await (from c in dbContext.CompanyProfiles
+                                   join co in dbContext.CompanyOfficeLocation(queryInput.Location) on c.Id equals co.Id
+                                   where pageIds.Contains(c.Id)
+                                   select new { c.Id, co.Office })
+                                  .ToArrayAsync();
+
+            companies = pageIds
+                .Select(id => {
+                    var o = officeMap.FirstOrDefault(x => x.Id == id);
+                    return new SearchItem { Id = id, Office = o != null && o.Office > 0 ? (int?)o.Office : null };
+                })
+                .ToArray();
+        }
+        else
+        {
+            companies = pageIds.Select(id => new SearchItem { Id = id }).ToArray();
+        }
 
         BizSrt.Api.Model.Semantic.FacetName[]? facets = null;
         if (queryInput.InclFacets != null)
         {
-            var pfq = await (from c in query
+            // Facet aggregation is now over the materialized ID set — no re-scan of the base query
+            var pfq = await (from c in dbContext.CompanyProfiles
+                             where allMatchingIds.Contains(c.Id)
                              join pf in dbContext.CompanyFacets on c.Id equals pf.Company
                              join pfv in dbContext.CompanyFacetValues on pf.FacetValue equals pfv.Id
                              group pfv by new { pfv.Name, pfv.Id } into pfg
@@ -187,11 +216,6 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
 
             facets = BizSrt.Api.Data.Extensions.FacetExtensions.GetFacets(pfq, queryInput.InclFacets, total);
         }
-
-        var companies = await resultQuery
-            .Skip(queryInput.StartIndex)
-            .Take(queryInput.Length > 0 ? queryInput.Length : 20)
-            .ToArrayAsync();
 
         return new SearchOutput<SearchItem>
         {
