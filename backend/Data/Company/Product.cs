@@ -38,9 +38,7 @@ public class CompanyProductService : ICompanyProductService
         {
             var cpq = queryInput.Location == 0 
                 ? dbContext.CompanyProducts 
-                : from cp in dbContext.CompanyProducts
-                  join co in dbContext.CompanyOfficeLocation(queryInput.Location) on cp.Company equals co.Id
-                  select cp;
+                : dbContext.CompanyProducts.Where(cp => dbContext.CompanyOfficeLocation(queryInput.Location).Any(co => co.Id == cp.Company));
 
             query = from p in query
                     join cp in cpq on p.Id equals cp.Product

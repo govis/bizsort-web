@@ -1,6 +1,6 @@
----
+﻿---
 name: port_legacy_backend
-description: Mandatory workflow for porting any legacy C# endpoints, services, or data queries to the modern .NET 8 backend.
+description: Mandatory workflow for porting any legacy C# endpoints, services, or data queries to the modern .NET 10 backend.
 ---
 
 # 🛑 CRITICAL MANDATORY WORKFLOW: Porting Legacy Backend 🛑

@@ -79,10 +79,11 @@ public class CompanyProfilesCache : ReadManyExpirationCache<int, CachedCompanyPr
                 // Batch-load all three related collections in 3 queries (not N*3)
                 var profilesQuery = from c in dbContext.CompanyProfiles
                                     where accountIds.Contains(c.Id)
-                                    let biId = (int?)dbContext.CompanyMedia
+                                    from biId in dbContext.CompanyMedia
                                         .Where(m => m.Company == c.Id && m.Type == (byte)BizSrt.Api.Model.MediaType.Default_Image)
-                                        .Select(m => m.Id)
-                                        .FirstOrDefault()
+                                        .Select(m => (int?)m.Id)
+                                        .Take(1)
+                                        .DefaultIfEmpty()
                                     select new { Profile = c, ImageId = biId ?? 0 };
 
                 var profiles = profilesQuery.AsNoTracking().ToList();
@@ -147,10 +148,11 @@ public class CompanyProfilesCache : ReadManyExpirationCache<int, CachedCompanyPr
                 
                 var profileQuery = from c in dbContext.CompanyProfiles
                                    where c.Id == accountId
-                                   let biId = (int?)dbContext.CompanyMedia
+                                   from biId in dbContext.CompanyMedia
                                        .Where(m => m.Company == c.Id && m.Type == (byte)BizSrt.Api.Model.MediaType.Default_Image)
-                                       .Select(m => m.Id)
-                                       .FirstOrDefault()
+                                       .Select(m => (int?)m.Id)
+                                       .Take(1)
+                                       .DefaultIfEmpty()
                                    select new { Profile = c, ImageId = biId ?? 0 };
 
                 var p = profileQuery.AsNoTracking().SingleOrDefault();

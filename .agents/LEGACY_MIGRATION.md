@@ -1,6 +1,6 @@
-# BizSort Legacy Codebase & Migration Tracking
+﻿# BizSort Legacy Codebase & Migration Tracking
 
-This document provides a comprehensive overview of the legacy BizSort architecture and tracks the modernization progress. **Please also refer to [LEGACY_BACKEND_TRACKER.md](file:///C:/Bizsort/bizsort-web/.agents/LEGACY_BACKEND_TRACKER.md) for a line-by-line backend file tracking matrix and [LEGACY_FRONTEND_TRACKER.md](file:///C:/Bizsort/bizsort-web/.agents/LEGACY_FRONTEND_TRACKER.md) for the frontend tracking matrix.**for the new Next.js / .NET 8 codebase. **All agents must review this file when deciding how to port or where to place code.**
+This document provides a comprehensive overview of the legacy BizSort architecture and tracks the modernization progress. **Please also refer to [LEGACY_BACKEND_TRACKER.md](file:///C:/Bizsort/bizsort-web/.agents/LEGACY_BACKEND_TRACKER.md) for a line-by-line backend file tracking matrix and [LEGACY_FRONTEND_TRACKER.md](file:///C:/Bizsort/bizsort-web/.agents/LEGACY_FRONTEND_TRACKER.md) for the frontend tracking matrix.**for the new Next.js / .NET 10 codebase. **All agents must review this file when deciding how to port or where to place code.**
 
 ## Legacy Architecture Overview
 
@@ -26,9 +26,9 @@ The legacy codebase is split into two primary areas:
 3. **ViewModel Preservation:** Do not rip out the legacy `ViewModel` pattern for inputs. Extract the logic from Lit components into modern `frontend/src/viewmodel/` classes to maintain data-flow consistency.
 4. **No Novel DB Queries:** All complex EF queries already exist in `legacy/server/Data/`. Port them exactly as they are.
 5. **LINQ Building Blocks:** Legacy code constructed complex LINQ queries using reusable building blocks (e.g. `Company.GetActive()`, `Company.GetFiltered()`, `CompanyProduct.GetActive()`). When porting search methods for Company and Company Product profiles, implement these building blocks as reusable extension methods to maintain the legacy architecture.
-6. **EF Core 8 Query Translation (APPLY vs JOIN):** Legacy EF6 queries that heavily utilized the `let` keyword with multiple conditions (e.g., `let x = dbContext...FirstOrDefault() where x != null && x.Prop != null`) were natively translated into a single optimized `OUTER APPLY`. EF Core 8 parsing can sometimes regress these patterns into multiple redundant scalar subqueries. When porting these explicit "APPLY" patterns, either use standard `join` statements (with `.Distinct()` if necessary) OR explicitly structure `from...Take(1)` subqueries to guarantee performant SQL generation.
+6. **EF Core 10 Query Translation (APPLY vs JOIN):** Legacy EF6 queries that heavily utilized the `let` keyword with multiple conditions (e.g., `let x = dbContext...FirstOrDefault() where x != null && x.Prop != null`) were natively translated into a single optimized `OUTER APPLY`. EF Core 10 parsing can sometimes regress these patterns into multiple redundant scalar subqueries. When porting these explicit "APPLY" patterns, either use standard `join` statements (with `.Distinct()` if necessary) OR explicitly structure `from...Take(1)` subqueries to guarantee performant SQL generation.
 
-   **How to Hint EF Core 8 to generate `CROSS APPLY` / `OUTER APPLY`:**
+   **How to Hint EF Core 10 to generate `CROSS APPLY` / `OUTER APPLY`:**
    In SQL Server, `APPLY` operates like a `foreach` loop: it evaluates the right-hand table expression once for every single row returned by the left-hand table. EF Core will naturally generate a `CROSS APPLY` (like an INNER JOIN) or `OUTER APPLY` (like a LEFT JOIN) when you use correlated subqueries in your LINQ—specifically using a second `from` clause.
 
    **To generate an `OUTER APPLY` (returns the row even if the subquery is empty):**
@@ -56,10 +56,11 @@ The legacy codebase is split into two primary areas:
        select c;
    ```
 
-   *Rule of thumb:* If you encounter legacy code using `let x = dbContext.Table.FirstOrDefault(...)`, rewriting it to the second `from` clause with `.Take(1)` is the most reliable way to hint EF Core 8 to generate a clean, single `APPLY` without the "triple-subquery" bug.
+   *Rule of thumb:* If you encounter legacy code using `let x = dbContext.Table.FirstOrDefault(...)`, rewriting it to the second `from` clause with `.Take(1)` is the most reliable way to hint EF Core 10 to generate a clean, single `APPLY` without the "triple-subquery" bug.
 
-5. **LOB (Large Object) Columns over Network:** When querying entities that have `varbinary(max)` or `nvarchar(max)` columns (like `CompanyMedia.Content`), NEVER query the full entity if you only need the ID. EF Core 8 will attempt to download the multi-megabyte payloads for every record over the network just to populate the unused property. Always use `.Select(m => m.Id).FirstOrDefault()`.
-6. **Distinct() vs Any():** Avoid using `.Distinct()` on full entities (e.g., `select c).Distinct()`) when joining tables. EF Core 8 often translates this by fetching *all* scalar columns of the entity into a subquery to compute uniqueness before applying ordering. Instead, use an `.Any()` inside a `where` clause (e.g., `where otherTable.Any(o => o.Id == c.Id)`) which translates cleanly to an `EXISTS` statement.
+7. **LOB (Large Object) Columns over Network:** When querying entities that have `varbinary(max)` or `nvarchar(max)` columns (like `CompanyMedia.Content`), NEVER query the full entity if you only need the ID. EF Core 10 will attempt to download the multi-megabyte payloads for every record over the network just to populate the unused property. Always use `.Select(m => m.Id).FirstOrDefault()`.
+8. **Distinct() vs Any():** Avoid using `.Distinct()` on full entities (e.g., `select c).Distinct()`) when joining tables. EF Core 10 often translates this by fetching *all* scalar columns of the entity into a subquery to compute uniqueness before applying ordering. Instead, use an `.Any()` inside a `where` clause (e.g., `where otherTable.Any(o => o.Id == c.Id)`) which translates cleanly to an `EXISTS` statement.
+9. **Temp Data Set Materialization (`ToArrayAsync` vs The Triple-Query Penalty):** When porting dynamic "catch-all" queries (like complex Search methods), avoid re-executing the base query multiple times for counts, facets, and pagination. Instead, project only the `Id` and materialize the dataset into RAM (`var allMatchingIds = await query.Select(p => p.Id).ToArrayAsync();`). Modern EF Core 10 translates `.Contains(allMatchingIds)` in subsequent queries (like facet aggregations) cleanly into an `INNER JOIN OPENJSON(...)` statement. This trades a negligible network/serialization cost for a massive Database CPU saving, exactly mirroring how Stored Procedures use `@TableVariables`.
 
 ## Migration progress. **Please also refer to [LEGACY_BACKEND_TRACKER.md](file:///C:/Bizsort/bizsort-web/.agents/LEGACY_BACKEND_TRACKER.md) for a line-by-line backend tracking matrix and [LEGACY_FRONTEND_TRACKER.md](file:///C:/Bizsort/bizsort-web/.agents/LEGACY_FRONTEND_TRACKER.md) for the frontend tracking matrix.**
 
@@ -80,8 +81,8 @@ The legacy codebase is split into two primary areas:
 ### 3. Company Profile Infrastructure
 
 - [x] **`CompanyProfilesCache`:** Ported to `backend/Data/Cache/Company/Profile.cs`. **Performance Note:** Fixed a massive memory/network leak. When querying `CompanyMedia` to check if a default image exists, we must project only the `Id` (`.Select(m => m.Id)`). Fetching the entire `CompanyMedia` entity downloads the `varbinary(max)` blob payload over the network for every company, taking `toPreview` from ~300ms to over 3 seconds. 
-- [x] **`FeaturedCompaniesCache`:** Ported to `backend/Data/Cache/Company/FeaturedCompaniesCache.cs`. Keyed by `(Category, Location)`. **Performance Note:** Fixed two massive EF Core 8 query generation issues. 
-   1. Replaced `.Distinct()` and `join` for `CompanyOffices` with a native `coq.Any(co => co.Company == c.Id)`. EF Core 8 translates `.Distinct()` on entities by fetching *all* columns just to check uniqueness.
+- [x] **`FeaturedCompaniesCache`:** Ported to `backend/Data/Cache/Company/FeaturedCompaniesCache.cs`. Keyed by `(Category, Location)`. **Performance Note:** Fixed two massive EF Core 10 query generation issues. 
+   1. Replaced `.Distinct()` and `join` for `CompanyOffices` with a native `coq.Any(co => co.Company == c.Id)`. EF Core 10 translates `.Distinct()` on entities by fetching *all* columns just to check uniqueness.
    2. Added a SQL `IX_CompanyProfiles_Created` index and appended `.Take(500)` to the LINQ query. The complex `EXISTS` conditions in `getFeatured` forced SQL Server to bypass the index and scan/sort the entire 30,000+ row table on cold cache (7 seconds). Enforcing `.Take(500)` in LINQ biases the query optimizer to scan the index instead.
 - [x] **`CachedCompanyProfile` model:** Ported to `backend/Data/Cache/Company/Profile.cs` (inner class). Properties match legacy: `Id`, `Name`, `Email`, `WebSite`, `Text`, `Category`, `ServiceType`, `TransactionType`, `Options`, `ImageId`, `ImageSize`, `Offices`, `Products`, `MultiProduct`.
 - [x] **`CompanyProfileService`:** Ported to `backend/Service/Company/Profile.cs`. Implements `GetFeaturedAsync` (with default `Location=1` / Canada fix) and `ToPreviewAsync`. Uses `LegacyCache.FeaturedCompanies` and `LegacyCache.CompanyProfiles` — does NOT hit DB directly.

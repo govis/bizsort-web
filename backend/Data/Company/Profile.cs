@@ -135,14 +135,17 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
         if (queryInput.Category > 0)
         {
             query = query.Where(c => 
-                (c.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == c.Category))
-                && (queryInput.TransactionType == 0 || (c.TransactionType & queryInput.TransactionType) > 0)
-                ||
-                (from cp in dbContext.CompanyProducts
-                 join p in dbContext.Products on cp.Product equals p.Id
-                 where (p.Type == 0 || (cp.UnlistedType == 1 && p.Status == 2)) &&
-                       (cp.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == cp.Category))
-                 select cp).Any(cp => cp.Company == c.Id)
+                (queryInput.TransactionType == 0 || (c.TransactionType & queryInput.TransactionType) > 0)
+                &&
+                (
+                    (c.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == c.Category))
+                    ||
+                    (from cp in dbContext.CompanyProducts
+                     join p in dbContext.Products on cp.Product equals p.Id
+                     where (p.Type == 0 || (cp.UnlistedType == 1 && p.Status == 2)) &&
+                           (cp.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == cp.Category))
+                     select cp).Any(cp => cp.Company == c.Id)
+                )
             );
         }
         else if (queryInput.TransactionType > 0)
@@ -160,7 +163,7 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
         if (queryInput.Location > 0)
         {
             var coq = from c in query
-                      join co in dbContext.CompanyOfficeLocation(queryInput.Location) on c.Id equals co.Id
+                      where dbContext.CompanyOfficeLocation(queryInput.Location).Any(co => co.Id == c.Id)
                       orderby c.Created descending
                       select c.Id;
 
