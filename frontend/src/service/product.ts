@@ -1,6 +1,23 @@
 import { Semantic } from '../model/foundation';
+import type { SliceOutput, SearchItem } from '../components/types.js';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
+
+/**
+ * Fetches a list of featured product entity IDs.
+ * Matches legacy: getFeatured(sliceInput, ...)
+ * Default: category=0 (any), location=1 (Canada)
+ */
+export async function getFeatured(index: number, length: number, category: number = 0, location: number = 1): Promise<SliceOutput<SearchItem>> {
+  const sliceInput = JSON.stringify({ index, length, category, location });
+  const response = await fetch(`${API_BASE}/api/product/profile/getFeatured?sliceInput=${sliceInput}`);
+  
+  if (!response.ok) {
+    throw new Error(`Failed to fetch featured products: ${response.statusText}`);
+  }
+  
+  return await response.json();
+}
 
 /**
  * Ported legacy search method.
@@ -40,15 +57,6 @@ export async function toPreview(products: any[]): Promise<any[]> {
   const response = await fetch(`${API_BASE}/api/product/profile/toPreview?products=${payload}`);
   
   if (!response.ok) {
-    if (response.status === 404) {
-      // Temporary stub for missing backend endpoint
-      console.warn("Product ToPreview endpoint not yet implemented on backend.");
-      return products.map((p: any) => ({
-        id: p.id || p,
-        name: `Product ${p.id || p}`,
-        text: "Placeholder product description until backend toPreview is implemented."
-      }));
-    }
     throw new Error(`Failed to fetch product previews: ${response.statusText}`);
   }
   

@@ -37,7 +37,7 @@ public class CachedCompanyProfile : BizSrt.Api.Foundation.Cache.PartCache, BizSr
 
     public CachedCompanyOffice? HeadOffice => Offices.OrderBy(o => o.Id).FirstOrDefault();
 
-    public Preview ToPreview(int officeId = 0)
+    public Preview ToPreview(int officeId = 0, Action<Preview, CachedCompanyProfile>? populate = null)
     {
         var office = officeId > 0 ? Offices.FirstOrDefault(o => o.Id == officeId) ?? HeadOffice : HeadOffice;
         
@@ -57,6 +57,8 @@ public class CachedCompanyProfile : BizSrt.Api.Foundation.Cache.PartCache, BizSr
         if (prvw.ProductsView != BizSrt.Api.Model.ProductsView.Multiproduct && Products?.Length == 0)
             prvw.ProductsView = BizSrt.Api.Model.ProductsView.NoProducts;
         
+        populate?.Invoke(prvw, this);
+
         return prvw;
     }
 }

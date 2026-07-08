@@ -15,6 +15,8 @@ import '@awesome.me/webawesome/dist/components/tab-panel/tab-panel.js';
 import '@awesome.me/webawesome/dist/components/dropdown-item/dropdown-item.js';
 
 // Building block components
+import '../components/search/box';
+import '../components/product/slider';
 import './header-layout';
 import '../components/layout/card';
 import '../components/menu/page';
@@ -417,11 +419,15 @@ export class CompanyProfile extends LitElement {
   }
 
   private _renderProductsTab() {
+    const productRefs = this._company!.offerings?.items || []; // Assume items has product refs
     return html`
       <layout-card class="tab-section" heading="${this._company!.offerings?.label || 'What We Do'}">
         <div class="rich-text">
-          ${this._company!.offerings?.multiProduct ? unsafeHTML(this._company!.offerings.multiProduct) : html`<p style="color: #666; text-align: center;">No products or services listed.</p>`}
+          ${this._company!.offerings?.multiProduct ? unsafeHTML(this._company!.offerings.multiProduct) : ''}
         </div>
+        ${productRefs.length > 0 ? html`
+          <product-slider .companyId="\${this.companyId}" .productRefs="\${productRefs}"></product-slider>
+        ` : ''}
       </layout-card>
     `;
   }

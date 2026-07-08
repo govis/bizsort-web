@@ -13,8 +13,29 @@ public static class ProductEndpoints
 
         group.MapGet("/profile/search", async ([FromQuery] string queryInput, ICompanyProductService productService) =>
         {
-            var input = JsonSerializer.Deserialize<SearchInput>(queryInput) ?? new SearchInput();
+            var input = JsonSerializer.Deserialize<SearchInput>(queryInput, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new SearchInput();
             var result = await productService.SearchAsync(input);
+            return Results.Ok(result);
+        });
+
+        group.MapGet("/profile/getFeatured", async ([FromQuery] string sliceInput, ICompanyProductService productService) =>
+        {
+            var input = JsonSerializer.Deserialize<BizSrt.Api.Model.List.DirectorySliceInput<long>>(sliceInput, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            if (input == null) return Results.BadRequest();
+            var result = await productService.GetFeaturedAsync(input);
+            return Results.Ok(result);
+        });
+
+        group.MapGet("/profile/toPreview", async ([FromQuery] string products, [FromQuery] string? options, ICompanyProductService productService) =>
+        {
+            var inputProducts = JsonSerializer.Deserialize<SearchItem[]>(products, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            if (inputProducts == null) return Results.BadRequest();
+            
+            var optionsDict = !string.IsNullOrEmpty(options) 
+                ? JsonSerializer.Deserialize<Dictionary<string, object>>(options, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) 
+                : new Dictionary<string, object>();
+                
+            var result = await productService.ToPreviewAsync(inputProducts, optionsDict);
             return Results.Ok(result);
         });
     }

@@ -182,6 +182,30 @@ public class Preview : IdName<int>
     public ProductsView ProductsView { get; set; }
     [JsonPropertyName("category")]
     public Category? Category { get; set; }
+
+    [JsonExtensionData]
+    public Dictionary<string, object> Properties { get; set; } = new();
+
+    [JsonIgnore]
+    public string? Distance
+    {
+        get => Properties.TryGetValue("distance", out var val) ? val as string : null;
+        set { if (value != null) Properties["distance"] = value; else Properties.Remove("distance"); }
+    }
+
+    [JsonIgnore]
+    public int Office
+    {
+        get => Properties.TryGetValue("office", out var val) && val is int intVal ? intVal : 0;
+        set => Properties["office"] = value;
+    }
+
+    [JsonIgnore]
+    public long CommunityCompany
+    {
+        get => Properties.TryGetValue("communityCompany", out var val) && val is long longVal ? longVal : 0L;
+        set => Properties["communityCompany"] = value;
+    }
 }
 
 public class Option

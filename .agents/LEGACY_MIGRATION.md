@@ -1,4 +1,4 @@
-﻿# BizSort Legacy Codebase & Migration Tracking
+# BizSort Legacy Codebase & Migration Tracking
 
 This document provides a comprehensive overview of the legacy BizSort architecture and tracks the modernization progress. **Please also refer to [LEGACY_BACKEND_TRACKER.md](file:///C:/Bizsort/bizsort-web/.agents/LEGACY_BACKEND_TRACKER.md) for a line-by-line backend file tracking matrix and [LEGACY_FRONTEND_TRACKER.md](file:///C:/Bizsort/bizsort-web/.agents/LEGACY_FRONTEND_TRACKER.md) for the frontend tracking matrix.**for the new Next.js / .NET 10 codebase. **All agents must review this file when deciding how to port or where to place code.**
 
@@ -97,6 +97,19 @@ The legacy codebase is split into two primary areas:
 - [x] **`components/company/card.ts`:** New `<company-card>` Lit element rendering a single company preview card.
 - [x] **`components/search/home.ts`:** Updated to track numeric `_categoryId` / `_locationId` instead of strings; dispatches numeric IDs on `search-submit`.
 - [x] **`src/service/company.ts`:** `getFeatured(index, length, category=0, location=1)` sends category+location in JSON payload. `toPreview(ids)` sends array of IDs. Matches legacy `src/service/company.ts` method signatures.
+
+### 5. Product Infrastructure & Components
+
+- [x] **`product-home` & `company-product`:** Ported the main product browsing pages, utilizing the modern reactive framework.
+- [x] **`product-slider` & `product-featured`:** Ported the product carousel components used within company profiles and product home pages.
+- [x] **Global Building Blocks (`image-view`, `richtext-view`):** Ported legacy global UI blocks replacing `unsafeHTML` fallbacks with properly reactive custom elements.
+- [x] **Product Endpoints:** Verified `CompanyProductService` (`SearchAsync`, `GetFeaturedAsync`, `ToPreviewAsync`) is fully implemented in the .NET 10 backend and mapped in `ProductEndpoints.cs`.
+
+### 6. Foundation & Base Caches
+
+- [x] **`FeaturedCache<TItems>` Restructuring**: Created a modern base class (`backend/Data/Cache/Featured/Featured.cs`) for all "featured" caches to eliminate code duplication across companies and products, managing dirty invalidation across hierarchical folders using a concurrent dictionary of timestamps.
+- [x] **Text Normalization (`TextConverter` & `WordBreaker`)**: Fully ported legacy `TextConverter` and `WordBreaker` to `backend/Foundation/`. Restored `CheckHtml` (along with `IRichText`), `Normalize`, and `VarcharMax` (decoupled from `Settings`).
+- [x] **Dynamic Property Bags (`Preview` Models)**: Replaced legacy string-based `Newtonsoft.Json` dictionary property mappings with robust `System.Text.Json.Serialization.JsonExtensionData` property bags (`Dictionary<string, object> Properties`). Added strongly typed fallback properties (`Distance`, `UnlistedType`, `Status`) without explicit indexers.
 
 ### Pending Tasks
 

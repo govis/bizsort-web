@@ -44,6 +44,12 @@ namespace BizSrt.Api.Model
         public T Id { get; set; } = default!;
     }
 
+    public interface IRichText
+    {
+        string? RichText { get; set; }
+        string? Text { get; set; }
+    }
+
     public class IdName<T> : EntityId<T>, IEntityRef<T>
     {
         public string Name { get; set; } = string.Empty;
@@ -51,34 +57,63 @@ namespace BizSrt.Api.Model
 
     public class AccountId
     {
+        public AccountId() { }
+        
+        public AccountId(AccountType type)
+        {
+            AccountType = type;
+        }
+
         [JsonPropertyName("accountType")]
         public AccountType AccountType { get; set; }
         [JsonPropertyName("id")]
         public int Id { get; set; }
     }
 
+    public class AccountEntity<T> : AccountId
+    {
+        public AccountEntity() : base() { }
+
+        public AccountEntity(AccountType type) : base(type)
+        { }
+
+        [JsonPropertyName("entity")]
+        public T? Entity { get; set; }
+    }
+
     public class AccountName : AccountId
     {
         public AccountName() : base() { }
+
+        public AccountName(AccountType type) : base(type)
+        { }
+
         [JsonPropertyName("name")]
         public string Name { get; set; } = string.Empty;
     }
 
     public class Account : AccountName
     {
+        public Account() : base() { }
+
+        public Account(AccountType type) : base(type)
+        { }
+
         [JsonPropertyName("image")]
         public Image<int>? Image { get; set; }
     }
 
     public enum ImageEntity : byte
     {
-        Person = 1,
-        Company = 2,
-        Community = 3,
-        Product = 4,
-        Project = 5,
-        Job = 6,
-        Promotion = 7
+        Company = 1,
+        Product = 2,
+        Service = 3,
+        Project = 4,
+        Job = 5,
+        Community = 6,
+        CommunityArticle = 7,
+        Person = 8,
+        Organization = 9
     }
 
     public enum ImageSizeType : byte

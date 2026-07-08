@@ -12,6 +12,9 @@ namespace BizSrt.Api.Data.Company;
 public interface ICompanyProductService
 {
     Task<SearchOutput<SearchItem>> SearchAsync(BizSrt.Api.Model.Product.SearchInput queryInput);
+    Task<SliceOutput<SearchItem>> GetFeaturedAsync(DirectorySliceInput<long> sliceInput);
+    Task<SliceOutput<SearchItem>> GetFeaturedAsync(int company, SliceInput sliceInput);
+    Task<Preview[]> ToPreviewAsync(SearchItem[] products, Dictionary<string, object> options);
 }
 
 public class CompanyProductService : ICompanyProductService
@@ -21,6 +24,96 @@ public class CompanyProductService : ICompanyProductService
     public CompanyProductService(AppDbContext dbContext)
     {
         this.dbContext = dbContext;
+    }
+
+    public Task<SliceOutput<SearchItem>> GetFeaturedAsync(DirectorySliceInput<long> sliceInput)
+    {
+        var products = new List<long>();
+        long product;
+        var cached = BizSrt.Api.Data.Cache.LegacyCache.FeaturedProducts[new Tuple<short, int>(sliceInput.Category, sliceInput.Location), sliceInput.Index == 0 && sliceInput.Length > 1];
+        var index = sliceInput.Index;
+        if (sliceInput.Skip == null || sliceInput.Skip.Length < cached.Length)
+        {
+            while (products.Count < sliceInput.Length && index < cached.Length)
+            {
+                product = cached[index];
+                if (sliceInput.Skip == null || !sliceInput.Skip.Contains(product))
+                    products.Add(product);
+                if (++index >= cached.Length)
+                {
+                    if (cached.Length <= sliceInput.Length)
+                    {
+                        index = -1;
+                        break;
+                    }
+                    else
+                    {
+                        index = 0;
+                        sliceInput.Skip = null;
+                    }
+                }
+            }
+        }
+        return Task.FromResult(new SliceOutput<SearchItem>(products.Select(p => new SearchItem { Id = p }).ToArray(), index));
+    }
+
+    public Task<SliceOutput<SearchItem>> GetFeaturedAsync(int company, SliceInput sliceInput)
+    {
+        var products = new List<long>();
+        var cached = BizSrt.Api.Data.Cache.LegacyCache.CompanyProfiles[company]?.Products ?? Array.Empty<long>();
+        var index = sliceInput.Index;
+        while (products.Count < sliceInput.Length && index < cached.Length)
+        {
+            products.Add(cached[index]);
+            if (++index >= cached.Length)
+            {
+                if (cached.Length <= sliceInput.Length)
+                {
+                    index = -1;
+                    break;
+                }
+                else
+                    index = 0;
+            }
+        }
+        return Task.FromResult(new SliceOutput<SearchItem>(products.Select(p => new SearchItem { Id = p }).ToArray(), index));
+    }
+
+    public Task<Preview[]> ToPreviewAsync(SearchItem[] products, Dictionary<string, object> options)
+    {
+        if (products != null && products.Length > 0)
+        {
+            var productIds = products.Select(p => p.Id).ToArray();
+            var cachedProducts = BizSrt.Api.Data.Cache.LegacyCache.CompanyProducts[productIds, false];
+            
+            if (options?.ContainsKey("company") == true)
+            {
+                var companies = BizSrt.Api.Data.Cache.LegacyCache.CompanyProfiles[cachedProducts.Select(p => p.CompanyId).Distinct().ToArray()]
+                    .ToDictionary(c => c.Id, c => new BizSrt.Api.Model.Account 
+                    { 
+                        AccountType = BizSrt.Api.Model.AccountType.Company,
+                        Id = c.Id, 
+                        Name = c.Name, 
+                        Image = new Image<int> { Entity = ImageEntity.Company, ImageId = c.ImageId, MaxImageSize = c.ImageSize } 
+                    });
+
+                return Task.FromResult(cachedProducts.Select(p => 
+                {
+                    var prvw = p.ToPreview();
+                    if (companies.TryGetValue(p.CompanyId, out var companyAccount))
+                    {
+                        prvw.Company = companyAccount;
+                    }
+                    return prvw;
+                }).ToArray());
+            }
+            else
+            {
+                return Task.FromResult(cachedProducts.Select(p => p.ToPreview()).ToArray());
+            }
+        }
+        else
+            throw new InvalidOperationException("Invalid input");
     }
 
     public async Task<SearchOutput<SearchItem>> SearchAsync(BizSrt.Api.Model.Product.SearchInput queryInput)

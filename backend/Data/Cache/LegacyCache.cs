@@ -24,7 +24,9 @@ namespace BizSrt.Api.Data.Cache
             AreaNames = new BizSrt.Api.Data.AreaNamesCache();
             StreetNames = new BizSrt.Api.Data.StreetNamesCache();
             CompanyProfiles = new BizSrt.Api.Data.Cache.Company.CompanyProfilesCache();
-            FeaturedCompanies = new BizSrt.Api.Data.Cache.Company.FeaturedCompaniesCache();
+            FeaturedCompanies = new BizSrt.Api.Data.Cache.Featured.FeaturedCompaniesCache();
+            CompanyProducts = new BizSrt.Api.Data.Cache.Company.CompanyProductCache();
+            FeaturedProducts = new BizSrt.Api.Data.Cache.Featured.FeaturedProductsCache();
             Images = new BizSrt.Api.Data.Cache.ImagesCache();
         }
 
@@ -41,7 +43,9 @@ namespace BizSrt.Api.Data.Cache
         internal static BizSrt.Api.Data.AreaNamesCache AreaNames { get; private set; }
         internal static BizSrt.Api.Data.StreetNamesCache StreetNames { get; private set; }
         internal static BizSrt.Api.Data.Cache.Company.CompanyProfilesCache CompanyProfiles { get; private set; }
-        internal static BizSrt.Api.Data.Cache.Company.FeaturedCompaniesCache FeaturedCompanies { get; private set; }
+        internal static BizSrt.Api.Data.Cache.Featured.FeaturedCompaniesCache FeaturedCompanies { get; private set; }
+        internal static BizSrt.Api.Data.Cache.Company.CompanyProductCache CompanyProducts { get; private set; }
+        internal static BizSrt.Api.Data.Cache.Featured.FeaturedProductsCache FeaturedProducts { get; private set; }
         internal static BizSrt.Api.Data.Cache.ImagesCache Images { get; private set; }
         
         internal static Dictionary<int, BizSrt.Api.Model.LocationSettings> LocationSettings { get; private set; }
