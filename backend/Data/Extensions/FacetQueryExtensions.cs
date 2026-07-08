@@ -86,13 +86,13 @@ public static class FacetQueryExtensions
         {
             return from p in query
                    join pfi in (from pf in dc.CompanyProductFacets
-                                join pfv in dc.ProductFacetValues on pf.FacetValue equals pfv.Id
+                                join pfv in dc.CompanyProductFacetValues on pf.FacetValue equals pfv.Id
                                 where include.FilterNames.Contains(pfv.Name) && include.FilterValues.Contains(pfv.Id)
                                 group pf by pf.Product into pfg
                                 where pfg.Count() == include.NoFilters
                                 select pfg.Key) on p.Id equals pfi
                    join pfe in (from pf in dc.CompanyProductFacets
-                                join pfv in dc.ProductFacetValues on pf.FacetValue equals pfv.Id
+                                join pfv in dc.CompanyProductFacetValues on pf.FacetValue equals pfv.Id
                                 where exclude.FilterNames.Contains(pfv.Name) && exclude.FilterValues.Contains(pfv.Id)
                                 group pf by pf.Product into pfg
                                 where pfg.Count() > 0
@@ -110,7 +110,7 @@ public static class FacetQueryExtensions
                 var facetValue = include.FilterValues[0];
                 query = from p in query
                         join pf in (from pf in dc.CompanyProductFacets
-                                    join pfv in dc.ProductFacetValues on pf.FacetValue equals pfv.Id
+                                    join pfv in dc.CompanyProductFacetValues on pf.FacetValue equals pfv.Id
                                     where pfv.Name == facetName && pfv.Id == facetValue
                                     select pf.Product) on p.Id equals pf
                         select p;
@@ -119,7 +119,7 @@ public static class FacetQueryExtensions
             {
                 query = from p in query
                         join pf in (from pf in dc.CompanyProductFacets
-                                    join pfv in dc.ProductFacetValues on pf.FacetValue equals pfv.Id
+                                    join pfv in dc.CompanyProductFacetValues on pf.FacetValue equals pfv.Id
                                     where include.FilterNames.Contains(pfv.Name) && include.FilterValues.Contains(pfv.Id)
                                     group pf by pf.Product into pfg
                                     where pfg.Count() == include.NoFilters
@@ -132,7 +132,7 @@ public static class FacetQueryExtensions
         {
             query = from p in query
                     from pf in (from pf in dc.CompanyProductFacets
-                                join pfv in dc.ProductFacetValues on pf.FacetValue equals pfv.Id
+                                join pfv in dc.CompanyProductFacetValues on pf.FacetValue equals pfv.Id
                                 where exclude.FilterNames.Contains(pfv.Name) && exclude.FilterValues.Contains(pfv.Id)
                                 select pf)
                     .Where(pf => pf.Product == p.Id)

@@ -36,8 +36,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public virtual DbSet<CompanyFacet> CompanyFacets { get; set; }
     public virtual DbSet<CompanyFacetValue> CompanyFacetValues { get; set; }
+    public virtual DbSet<CompanyFacetName> CompanyFacetNames { get; set; }
+    public virtual DbSet<CompanyFacetSet> CompanyFacetSets { get; set; }
+    public virtual DbSet<CompanyFacetSetDetail> CompanyFacetSetDetails { get; set; }
+
     public virtual DbSet<CompanyProductFacet> CompanyProductFacets { get; set; }
-    public virtual DbSet<ProductFacetValue> ProductFacetValues { get; set; }
+    public virtual DbSet<CompanyProductFacetValue> CompanyProductFacetValues { get; set; }
+    public virtual DbSet<CompanyProductFacetName> CompanyProductFacetNames { get; set; }
+    public virtual DbSet<CompanyProductFacetSet> CompanyProductFacetSets { get; set; }
+    public virtual DbSet<CompanyProductFacetSetDetail> CompanyProductFacetSetDetails { get; set; }
 
     public IQueryable<CompanyOfficeId> CompanyOfficeLocation(int location)
     {

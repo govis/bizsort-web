@@ -2,6 +2,7 @@ import { LitElement, html, css } from 'lit';
 import { repeat } from 'lit/directives/repeat.js';
 import type { ProductPreview } from '../types.js';
 import { getFeatured, toPreview } from '../../service/product';
+import { Product } from '../../navigation';
 import './card';
 
 import '@awesome.me/webawesome/dist/components/spinner/spinner.js';
@@ -74,8 +75,8 @@ export class ProductFeatured extends LitElement {
   }
 
   private _handleProductSelect(e: CustomEvent<{ id: number; name: string }>) {
-    // Navigate to product profile. This expects URL structure like /product/[id] or similar based on Next.js setup.
-    window.location.href = `/product/${e.detail.id}`;
+    // Navigate to product profile
+    Product.profileView(e.detail.id);
   }
 
   static styles = css`

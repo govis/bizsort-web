@@ -17,15 +17,20 @@ namespace BizSrt.Api.Data.Cache
             _dbContextOptions = serviceProvider.GetRequiredService<DbContextOptions<AppDbContext>>();
             Categories = new CategoriesCache();
             Locations = new LocationsCache();
-            LocationSettings = new Dictionary<int, BizSrt.Api.Model.LocationSettings>();
             Dictionary = BizSrt.Api.Foundation.Cache.Dictionary.SecurityProfile;
             CategorySearch = new BizSrt.Api.Data.CategorySearchCache();
             LocationSearch = new BizSrt.Api.Data.LocationSearchCache();
             AreaNames = new BizSrt.Api.Data.AreaNamesCache();
-            StreetNames = new BizSrt.Api.Data.StreetNamesCache();
+            LocationSettings = new Dictionary<int, BizSrt.Api.Model.LocationSettings>();
             CompanyProfiles = new BizSrt.Api.Data.Cache.Company.CompanyProfilesCache();
+            CompanyFacetNames = new BizSrt.Api.Data.Cache.Company.Facet.NamesCache();
+            CompanyFacetValues = new BizSrt.Api.Data.Cache.Company.Facet.ValuesCache();
+            CompanyFacetSets = new BizSrt.Api.Data.Cache.Company.Facet.SetsCache();
             FeaturedCompanies = new BizSrt.Api.Data.Cache.Featured.FeaturedCompaniesCache();
             CompanyProducts = new BizSrt.Api.Data.Cache.Company.CompanyProductCache();
+            CompanyProductFacetNames = new BizSrt.Api.Data.Cache.Product.Facet.NamesCache();
+            CompanyProductFacetValues = new BizSrt.Api.Data.Cache.Product.Facet.ValuesCache();
+            CompanyProductFacetSets = new BizSrt.Api.Data.Cache.Product.Facet.SetsCache();
             FeaturedProducts = new BizSrt.Api.Data.Cache.Featured.FeaturedProductsCache();
             Images = new BizSrt.Api.Data.Cache.ImagesCache();
         }
@@ -43,8 +48,14 @@ namespace BizSrt.Api.Data.Cache
         internal static BizSrt.Api.Data.AreaNamesCache AreaNames { get; private set; }
         internal static BizSrt.Api.Data.StreetNamesCache StreetNames { get; private set; }
         internal static BizSrt.Api.Data.Cache.Company.CompanyProfilesCache CompanyProfiles { get; private set; }
+        internal static BizSrt.Api.Data.Cache.Company.Facet.NamesCache CompanyFacetNames { get; private set; }
+        internal static BizSrt.Api.Data.Cache.Company.Facet.ValuesCache CompanyFacetValues { get; private set; }
+        internal static BizSrt.Api.Data.Cache.Company.Facet.SetsCache CompanyFacetSets { get; private set; }
         internal static BizSrt.Api.Data.Cache.Featured.FeaturedCompaniesCache FeaturedCompanies { get; private set; }
         internal static BizSrt.Api.Data.Cache.Company.CompanyProductCache CompanyProducts { get; private set; }
+        internal static BizSrt.Api.Data.Cache.Product.Facet.NamesCache CompanyProductFacetNames { get; private set; }
+        internal static BizSrt.Api.Data.Cache.Product.Facet.ValuesCache CompanyProductFacetValues { get; private set; }
+        internal static BizSrt.Api.Data.Cache.Product.Facet.SetsCache CompanyProductFacetSets { get; private set; }
         internal static BizSrt.Api.Data.Cache.Featured.FeaturedProductsCache FeaturedProducts { get; private set; }
         internal static BizSrt.Api.Data.Cache.ImagesCache Images { get; private set; }
         

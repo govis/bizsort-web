@@ -61,6 +61,13 @@ The legacy codebase is split into two primary areas:
 7. **LOB (Large Object) Columns over Network:** When querying entities that have `varbinary(max)` or `nvarchar(max)` columns (like `CompanyMedia.Content`), NEVER query the full entity if you only need the ID. EF Core 10 will attempt to download the multi-megabyte payloads for every record over the network just to populate the unused property. Always use `.Select(m => m.Id).FirstOrDefault()`.
 8. **Distinct() vs Any():** Avoid using `.Distinct()` on full entities (e.g., `select c).Distinct()`) when joining tables. EF Core 10 often translates this by fetching *all* scalar columns of the entity into a subquery to compute uniqueness before applying ordering. Instead, use an `.Any()` inside a `where` clause (e.g., `where otherTable.Any(o => o.Id == c.Id)`) which translates cleanly to an `EXISTS` statement.
 9. **Temp Data Set Materialization (`ToArrayAsync` vs The Triple-Query Penalty):** When porting dynamic "catch-all" queries (like complex Search methods), avoid re-executing the base query multiple times for counts, facets, and pagination. Instead, project only the `Id` and materialize the dataset into RAM (`var allMatchingIds = await query.Select(p => p.Id).ToArrayAsync();`). Modern EF Core 10 translates `.Contains(allMatchingIds)` in subsequent queries (like facet aggregations) cleanly into an `INNER JOIN OPENJSON(...)` statement. This trades a negligible network/serialization cost for a massive Database CPU saving, exactly mirroring how Stored Procedures use `@TableVariables`.
+10. **Cache Eviction Policy (LRU/LFU Hybrid):** Both the legacy system and the modern `BizSrt.Api.Foundation.Cache` utilize `IExpirationItem` implementations across cached models (e.g. `CachedValue`, `CachedSet`). These mandate `HitCount` (total access count) and `LastHit` (a global auto-incrementing access stamp) properties. During capacity cleanups, the Cache `Manager` evaluates `LastHit + HitCount` as a single score to safely identify and evict the lowest value (least popular + stalest) items without complex tracking graphs.
+11. **Cache Interface Collisions (`IKey<T>` vs EF Schema):** The legacy database occasionally uses columns named `Key` (e.g. `byte[] Key` in `CompanyFacetSet`). The caching layer expects these models to implement `IKey<T>`, which demands a generic `T Key { get; }` property, creating a compiler collision. **Always resolve this using Explicit Interface Implementation mapped to the Primary Key**, and strictly decorate it with `[NotMapped]`. Legacy EF6 ignored explicit interfaces, but EF Core 10's reflection engine will attempt to map the explicit interface to the DB if `[NotMapped]` is omitted!
+    ```csharp
+    public int Id { get; set; }
+    public byte[] Key { get; set; } // SQL column
+    [NotMapped] int IKey<int>.Key => Id; // Cache Interface constraint
+    ```
 
 ## Migration progress. **Please also refer to [LEGACY_BACKEND_TRACKER.md](file:///C:/Bizsort/bizsort-web/.agents/LEGACY_BACKEND_TRACKER.md) for a line-by-line backend tracking matrix and [LEGACY_FRONTEND_TRACKER.md](file:///C:/Bizsort/bizsort-web/.agents/LEGACY_FRONTEND_TRACKER.md) for the frontend tracking matrix.**
 
@@ -77,6 +84,9 @@ The legacy codebase is split into two primary areas:
 - [x] **Base ViewModels:** Rewrote `ViewModel`, `IViewAdapter`, `Validateable`, and `ErrorInfo` without jQuery dependencies in `frontend/src/viewmodel.ts`.
 - [x] **Component ViewModels:** Extracted `<search-category-input>` and `<search-location-input>` logic into `frontend/src/viewmodel/search/category/input.ts` and `frontend/src/viewmodel/location/input.ts`.
 - [x] **Lit Components:** Upgraded `SearchCategoryInput` and `SearchLocationInput` to use WebAwesome UI and wire into their modern ViewModels via `IViewAdapter`.
+- [x] **Navigation & Routing:** Ported the legacy `Navigation` structure into `frontend/src/navigation.ts`. 
+  - *Purpose:* Replaced hardcoded `window.location.href` redirects across Lit components with domain-specific namespaces (e.g., `Company.profileView()`, `Product.search()`). 
+  - *Implementation:* These semantic helper methods construct parameter bags (handling search queries, location, and entity IDs) and pipe them into a global `Navigation.go()` dispatcher. This triggers a bubbling `app-navigate` CustomEvent, caught by a React boundary (`NavigationProvider.tsx`), mapping natively to Next.js's `useRouter()` to preserve SPA-style soft navigation without full page reloads.
 
 ### 3. Company Profile Infrastructure
 

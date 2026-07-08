@@ -13,6 +13,7 @@ import { SearchHome$ } from '../../viewmodel/search/home';
 import { IViewAdapter } from '../../viewmodel';
 import { SearchCategoryInput } from './category/input';
 import { SearchLocationInput } from './location/input';
+import { Navigation, Company, Product } from '../../navigation';
 
 /**
  * Search widget for the home page.
@@ -58,7 +59,33 @@ export class SearchHome extends LitElement implements IViewAdapter {
   }
 
   private _onTabSelect(e: CustomEvent<{ name: string }>) {
-    this.tab = e.detail.name;
+    const targetTab = e.detail.name;
+    if (targetTab === this.tab) return;
+    
+    // Construct params
+    const selection = this.model?.selection;
+    const params: any = {};
+    if (selection) {
+      if (selection.category) params.categoryId = selection.category;
+      if (selection.location) params.locationId = selection.location;
+      if (selection.query) params.searchQuery = selection.query;
+      if (selection.near) params.searchNear = selection.near;
+    }
+    
+    switch (targetTab) {
+        case 'company': 
+            Company.home(params); 
+            break;
+        case 'product': 
+            Product.home(params); 
+            break;
+        case 'project': 
+            Navigation.go('/project', params); 
+            break;
+        case 'job': 
+            Navigation.go('/job', params); 
+            break;
+    }
   }
 
   private async _search() {
@@ -70,7 +97,9 @@ export class SearchHome extends LitElement implements IViewAdapter {
         detail: {
           tab: this.tab,
           category: selection ? selection.category : 0,
-          location: selection ? selection.location : 0
+          location: selection ? selection.location : 0,
+          query: selection ? selection.query : undefined,
+          near: selection ? selection.near : undefined
         }
       }));
     } else {

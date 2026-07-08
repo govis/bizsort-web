@@ -4,6 +4,7 @@ import "./globals.css";
 import "@awesome.me/webawesome/dist/styles/themes/default.css";
 import SignInFormStub from "../components/global/SignInFormStub";
 import MessageToastStub from "../components/global/MessageToastStub";
+import NavigationProvider from "../components/global/NavigationProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,6 +39,7 @@ export default function RootLayout({
         {children}
         <SignInFormStub />
         <MessageToastStub />
+        <NavigationProvider />
       </body>
     </html>
   );

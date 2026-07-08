@@ -5,6 +5,8 @@ import '@awesome.me/webawesome/dist/components/button/button.js';
 import '@awesome.me/webawesome/dist/components/dropdown/dropdown.js';
 import '@awesome.me/webawesome/dist/components/dropdown-item/dropdown-item.js';
 
+import { Product } from '../navigation';
+
 // Sub-components
 import '../components/search/home';
 import '../components/product/featured';
@@ -46,16 +48,8 @@ export class ProductHome extends LitElement {
   private _handleSearch(e: CustomEvent) {
     const { category, location, query, near, transactionType } = e.detail as any;
     
-    if (category || query) {
-      const searchParams = new URLSearchParams();
-      if (category) searchParams.append('categoryId', category.toString());
-      if (location) searchParams.append('locationId', location.toString());
-      if (query) searchParams.append('searchQuery', query);
-      if (near) searchParams.append('searchNear', JSON.stringify(near));
-      if (transactionType) searchParams.append('transactionType', transactionType.toString());
-      
-      // Navigate to Next.js route
-      window.location.href = `/product/search?${searchParams.toString()}`;
+    if (category || (query && query.trim() !== '')) {
+      Product.search(transactionType, category, query, location, near);
       return;
     }
 

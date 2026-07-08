@@ -23,7 +23,7 @@ The following table demonstrates how the custom concepts from the legacy archite
 | `<page-view>` Container | **React Wrappers** | Instead of a custom element swapping out DOM nodes, we use React component wrappers (e.g., `<HomeWrapper />`) that render the underlying custom elements. |
 | `PageModel` / `ViewModel` pattern | **Lit Element Lifecycle** | The separate ViewModel classes are flattened directly into the Lit component state and properties (`connectedCallback`, `willUpdate`), simplifying the mental model. |
 | Redux `connect(store)` | **Direct Fetch / React Context** | Global state for window size is replaced by modern APIs like `ResizeObserver`. Data fetching is done via native `fetch` within Lit components, avoiding complex global stores. |
-| Programmatic Nav (`Shell.go()`) | `window.location.href` / `next/navigation` | Client-side transitions are handled by Next.js `<Link>` tags or `useRouter()`. |
+| Programmatic Nav (`Shell.go()`) | **`frontend/src/navigation.ts` Helpers** | Domain-specific namespaces (e.g., `Company.profileView()`) construct parameter bags and pipe into a global `Navigation.go()` event dispatcher, caught by a React wrapper (`NavigationProvider.tsx`) that triggers `useRouter()` for SPA transitions. |
 | SEO Context Updates | **Next.js `generateMetadata`** | Instead of updating `document.title` and canonical links from a client-side ViewModel, Next.js generates static SEO metadata dynamically via server components. |
 | URL Serialization | **Next.js Middleware** | Legacy `Token` JSON serialization in query strings is caught by Middleware and 301 redirected to modern semantic URLs. |
 | Global Shell UI | **Next.js `loading.tsx` / `layout.tsx`** | Legacy `<img src="bizsort-logo.svg">` placeholders map to `<Suspense>` boundaries via `loading.tsx`. Global overlays (like `message-toast` or `signin-form`) are mounted directly in the `RootLayout` (`layout.tsx`). |
@@ -41,7 +41,7 @@ The legacy system was a heavily orchestrated Client-Side SPA built during the Po
 ### 2. `src/navigation/token.ts` & `navigation.js` (The `Token` Definition)
 - **Legacy**: Navigation state wasn't just a URL path; it was serialized into complex JSON `Token` objects containing `Action` enums (e.g., `View`, `Edit`), entity IDs, and even nested `Forward` or `Cancel` tokens. `navigation.js` intercepted programmatic navigation, serialized the `Token` into a URL query string (`?t=...`), and triggered `history.pushState()`.
 - **Modern Next.js**: 
-  - **Simple Navigation**: Handled by standard semantic URL paths (e.g., `/company/123`).
+  - **Simple Navigation**: Handled by domain-specific semantic helper methods in `frontend/src/navigation.ts` (e.g., `Company.home()`, `Product.search()`, `Company.profileView()`). These methods construct transient parameter bags and route to standard semantic URLs (e.g., `/company/123`), piping the action through a global `Navigation.go()` dispatcher to maintain soft navigation via Next.js's `useRouter()`. This explicitly replaces manual `window.location.href` assignments across Lit components.
   - **Translating Legacy Tokens**: To maintain backwards compatibility (e.g., bookmarks pointing to `?t={json}`), we use **Next.js Middleware (`middleware.ts`)** to intercept requests on the Edge. It parses the legacy JSON string, maps the legacy IDs, and instantly issues an HTTP 301 redirect to the modern folder-based route, cleanly funneling legacy traffic without polluting the application logic.
 
 ### 3. `component/page/view.ts` (`PageView` Component)

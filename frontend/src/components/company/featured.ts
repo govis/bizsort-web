@@ -2,6 +2,7 @@ import { LitElement, html, css } from 'lit';
 import { repeat } from 'lit/directives/repeat.js';
 import type { CompanyPreview, SliceOutput } from '../types.js';
 import { getFeatured, toPreview } from '../../service/company';
+import { Company } from '../../navigation';
 import './card';
 
 import '@awesome.me/webawesome/dist/components/spinner/spinner.js';
@@ -83,7 +84,7 @@ export class CompanyFeatured extends LitElement {
 
   private _handleCompanySelect(e: CustomEvent<{ id: number; name: string }>) {
     // Navigate to company profile via Next.js routing
-    window.location.href = `/company/${e.detail.id}`;
+    Company.profileView(e.detail.id);
   }
 
   static styles = css`

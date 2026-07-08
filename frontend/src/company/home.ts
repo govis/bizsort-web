@@ -5,6 +5,8 @@ import '@awesome.me/webawesome/dist/components/button/button.js';
 import '@awesome.me/webawesome/dist/components/dropdown/dropdown.js';
 import '@awesome.me/webawesome/dist/components/dropdown-item/dropdown-item.js';
 
+import { Company } from '../navigation';
+
 // Sub-components
 import '../components/search/home';
 import '../components/company/featured';
@@ -51,17 +53,9 @@ export class CompanyHome extends LitElement {
   private _handleSearch(e: CustomEvent) {
     const { category, location, query, near, transactionType } = e.detail as any;
     
-    // If a specific category or search query is provided, navigate to the search page (modern equivalent of CompanyNavigation.search)
-    if (category || query) {
-      const searchParams = new URLSearchParams();
-      if (category) searchParams.append('categoryId', category.toString());
-      if (location) searchParams.append('locationId', location.toString());
-      if (query) searchParams.append('searchQuery', query);
-      if (near) searchParams.append('searchNear', JSON.stringify(near)); // Near is usually a serialized object or string
-      if (transactionType) searchParams.append('transactionType', transactionType.toString());
-      
-      // Navigate to Next.js route
-      window.location.href = `/search?${searchParams.toString()}`;
+    // If a specific category or search query is provided, navigate to the search page
+    if (category || (query && query.trim() !== '')) {
+      Company.search(transactionType, category, query, location, near);
       return;
     }
 

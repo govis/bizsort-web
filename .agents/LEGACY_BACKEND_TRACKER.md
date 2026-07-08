@@ -1,4 +1,4 @@
-﻿# Exhaustive Legacy BACKEND Porting Tracker
+# Exhaustive Legacy BACKEND Porting Tracker
 
 | Status | Legacy Item | Modern Equivalent | Migration Notes / Description |
 |---|---|---|---|
@@ -1434,19 +1434,19 @@
 | [ ] | â†³ `class WebsiteCache` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Reset()` | | |
 | | **Namespace: `Data.CompanyFacetCache`** | | |
-| [ ] | â†³ `class CachedSet` | - | - |
-| [ ] | â†³ `class CachedSetStats` | - | - |
-| [ ] | â†³ `class CachedValue` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Equals()` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `GetHashCode()` | | |
-| [ ] | â†³ `class Key` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Equals()` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `GetHashCode()` | | |
-| [ ] | â†³ `class NamesCache` | - | - |
-| [ ] | â†³ `class SetsCache` | - | - |
-| [ ] | â†³ `class ValuesCache` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Equals()` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `GetHashCode()` | | |
+| [x] | â†³ `class CachedSet` | `BizSrt.Api.Data.Cache.Company.Facet.CachedSet` | Ported |
+| [x] | â†³ `class CachedSetStats` | - | Omitted |
+| [x] | â†³ `class CachedValue` | `BizSrt.Api.Data.Cache.Company.Facet.CachedValue` | Ported |
+| [x] | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Equals()` | | |
+| [x] | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `GetHashCode()` | | |
+| [x] | â†³ `class Key` | `CachedValue.Key` / `CachedSet.Key` | Ported |
+| [x] | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Equals()` | | |
+| [x] | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `GetHashCode()` | | |
+| [x] | â†³ `class NamesCache` | `BizSrt.Api.Data.Cache.Company.Facet.NamesCache` | Ported |
+| [x] | â†³ `class SetsCache` | `BizSrt.Api.Data.Cache.Company.Facet.SetsCache` | Ported |
+| [x] | â†³ `class ValuesCache` | `BizSrt.Api.Data.Cache.Company.Facet.ValuesCache` | Ported |
+| [x] | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Equals()` | | |
+| [x] | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `GetHashCode()` | | |
 | | **Namespace: `Data.JobFacetCache`** | | |
 | [ ] | â†³ `class CachedSet` | - | - |
 | [ ] | â†³ `class CachedSetStats` | - | - |
@@ -1465,19 +1465,19 @@
 | [ ] | â†³ `class Product` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `ToPreview()` | | |
 | | **Namespace: `Data.ProductFacetCache`** | | |
-| [ ] | â†³ `class CachedSet` | - | - |
-| [ ] | â†³ `class CachedSetStats` | - | - |
-| [ ] | â†³ `class CachedValue` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Equals()` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `GetHashCode()` | | |
-| [ ] | â†³ `class Key` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Equals()` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `GetHashCode()` | | |
-| [ ] | â†³ `class NamesCache` | - | - |
-| [ ] | â†³ `class SetsCache` | - | - |
-| [ ] | â†³ `class ValuesCache` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Equals()` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `GetHashCode()` | | |
+| [x] | â†³ `class CachedSet` | `BizSrt.Api.Data.Cache.Product.Facet.CachedSet` | Ported |
+| [x] | â†³ `class CachedSetStats` | - | Omitted |
+| [x] | â†³ `class CachedValue` | `BizSrt.Api.Data.Cache.Product.Facet.CachedValue` | Ported |
+| [x] | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Equals()` | | |
+| [x] | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `GetHashCode()` | | |
+| [x] | â†³ `class Key` | `CachedValue.Key` / `CachedSet.Key` | Ported |
+| [x] | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Equals()` | | |
+| [x] | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `GetHashCode()` | | |
+| [x] | â†³ `class NamesCache` | `BizSrt.Api.Data.Cache.Product.Facet.NamesCache` | Ported |
+| [x] | â†³ `class SetsCache` | `BizSrt.Api.Data.Cache.Product.Facet.SetsCache` | Ported |
+| [x] | â†³ `class ValuesCache` | `BizSrt.Api.Data.Cache.Product.Facet.ValuesCache` | Ported |
+| [x] | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Equals()` | | |
+| [x] | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `GetHashCode()` | | |
 | | **Namespace: `Data.ProjectFacetCache`** | | |
 | [ ] | â†³ `class CachedSet` | - | - |
 | [ ] | â†³ `class CachedSetStats` | - | - |

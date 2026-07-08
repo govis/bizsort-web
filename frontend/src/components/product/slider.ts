@@ -2,6 +2,7 @@ import { LitElement, html, css } from 'lit';
 import { repeat } from 'lit/directives/repeat.js';
 import type { ProductPreview } from '../types.js';
 import { toPreview } from '../../service/product';
+import { Product } from '../../navigation';
 import './card';
 
 import '@awesome.me/webawesome/dist/components/spinner/spinner.js';
@@ -66,9 +67,9 @@ export class ProductSlider extends LitElement {
 
   private _handleProductSelect(e: CustomEvent<{ id: number; name: string }>) {
     if (this.companyId) {
-      window.location.href = \`/company/\${this.companyId}/product/\${e.detail.id}\`;
+      Product.view(this.companyId, e.detail.id);
     } else {
-      window.location.href = \`/product/\${e.detail.id}\`;
+      Product.profileView(e.detail.id);
     }
   }
 

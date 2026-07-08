@@ -170,7 +170,7 @@ public class CompanyProductService : ICompanyProductService
             var pfq = await (from p in dbContext.Products
                              where allMatchingIds.Contains(p.Id)
                              join pf in dbContext.CompanyProductFacets on p.Id equals pf.Product
-                             join pfv in dbContext.ProductFacetValues on pf.FacetValue equals pfv.Id
+                             join pfv in dbContext.CompanyProductFacetValues on pf.FacetValue equals pfv.Id
                              group pfv by new { pfv.Name, pfv.Id } into pfg
                              select new BizSrt.Api.Data.Extensions.FacetExtensions.ValueCount { Name = pfg.Key.Name, Value = pfg.Key.Id, Count = pfg.Count() })
                             .ToArrayAsync();
