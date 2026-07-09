@@ -79,7 +79,7 @@ export class SearchOptions extends LitElement {
                 <wa-button 
                     class="search-option"
                     variant="${item.selected ? 'brand' : 'neutral'}"
-                    size="small"
+                    size="medium"
                     pill
                     @click="${() => this._toggle(item)}"
                 >

@@ -19,8 +19,8 @@ export class SearchCategoryMenu extends LitElement {
 
   static styles = css`
     :host { display: inline-block; }
-    wa-button::part(base) {
-      color: var(--wa-color-neutral-600);
+    wa-button {
+      --wa-color-neutral-on-quiet: var(--wa-color-neutral-600);
     }
   `;
 

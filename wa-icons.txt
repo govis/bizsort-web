@@ -1,0 +1,12 @@
+https://fontawesome.com/icons
+https://fontawesome.com/search
+
+On that site, you'll see a visual grid of thousands of icons. Just click on any picture you like, copy the
+icon's name (e.g.,  user ,  envelope ,  bell ), and drop it straight into your  <wa-icon name="...">  tag!
+
+1. Standard Icons: Just search for any icon on FontAwesome (e.g.,  location-dot ,  filter ,  magnifying-glass )
+and pass that exact string to the  name  attribute (e.g.,  <wa-icon name="location-dot"></wa-icon> ).
+WebAwesome will automatically fetch the SVGs from FontAwesome's CDN behind the scenes.
+2. System Icons: WebAwesome also bundles a very small, hardcoded set of core UI icons directly into its
+JavaScript (to avoid network requests for critical UI elements like dropdown carets or close buttons). To use
+these, you have to explicitly declare the library:  <wa-icon name="x" library="system"></wa-icon> .

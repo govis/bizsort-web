@@ -184,15 +184,12 @@ export function CompanyLayoutWrapper({
         wa-tab {
           color: rgba(255, 255, 255, 0.7);
         }
-        wa-tab::part(base) {
-          padding: 0.75rem 1.5rem;
-          font-weight: 500;
-        }
+
         wa-tab[active] {
           color: white;
         }
-        wa-button[slot="navbar"]::part(base) {
-          color: white;
+        wa-button[slot="navbar"] {
+          --wa-color-neutral-on-quiet: white;
         }
       `}</style>
 

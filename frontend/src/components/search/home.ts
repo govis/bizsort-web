@@ -27,7 +27,8 @@ export class SearchHome extends LitElement implements IViewAdapter {
       categoryId: { type: Number, attribute: 'category-id' },
       locationId: { type: Number, attribute: 'location-id' },
       searchQuery: { type: String, attribute: 'search-query' },
-      searchNear: { type: String, attribute: 'search-near' }
+      searchNear: { type: String, attribute: 'search-near' },
+      _geoMode: { state: true }
     };
   }
 
@@ -37,12 +38,14 @@ export class SearchHome extends LitElement implements IViewAdapter {
   declare locationId?: number;
   declare searchQuery?: string;
   declare searchNear?: string;
+  declare _geoMode: boolean;
   model: SearchHome$;
 
   constructor() {
     super();
     this.tab = 'company';
     this.narrow = false;
+    this._geoMode = false;
     this.model = new SearchHome$(this);
   }
   modelUpdated(props: string[]) {
@@ -204,6 +207,7 @@ export class SearchHome extends LitElement implements IViewAdapter {
     wa-tab-group {
       --indicator-color: white;
       --track-color: transparent;
+      --track-width: 0.15rem;
       margin-bottom: 1rem;
     }
 
@@ -215,12 +219,6 @@ export class SearchHome extends LitElement implements IViewAdapter {
       color: rgba(255,255,255,0.7);
     }
 
-    wa-tab::part(base) {
-      padding: 0.75rem 1.25rem;
-      font-weight: 500;
-      font-size: 14px;
-    }
-
     wa-tab[active] {
       color: white;
     }
@@ -230,13 +228,60 @@ export class SearchHome extends LitElement implements IViewAdapter {
       gap: 0.75rem;
     }
 
-    :host([narrow]) .search-inputs {
-      flex-direction: column;
+    .input-wrapper {
+      display: flex;
+      flex: 1;
+      align-items: center;
+      gap: 0.5rem;
     }
 
-    .search-inputs search-category-input,
-    .search-inputs search-location-input {
+    .category-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      color: rgba(255,255,255,0.7);
+      margin-right: 0.25rem;
+    }
+
+    .category-icon wa-icon {
+      font-size: 24px;
+    }
+
+    .geo-action {
+      /* wa-button defaults to size="medium" which is exactly 40px tall/wide when used as an icon button */
+      margin-right: 0.25rem;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+      border-radius: var(--wa-border-radius-circle, 50%);
+    }
+
+    .geo-action[variant="neutral"] {
+      --wa-color-neutral-fill-loud: var(--search-home-background, rgba(83, 109, 254, 0.85));
+      --wa-color-neutral-on-loud: white;
+      --wa-color-neutral-border-loud: transparent;
+      opacity: 0.8;
+    }
+
+    .geo-action[variant="brand"] {
+      --wa-color-brand-fill-loud: #3d5afe;
+      --wa-color-brand-on-loud: white;
+      --wa-color-brand-border-loud: transparent;
+      opacity: 1;
+    }
+
+    .geo-action wa-icon {
+      font-size: 20px;
+    }
+
+    .input-wrapper search-category-input,
+    .input-wrapper search-location-input {
       flex: 1;
+      width: 100%;
+    }
+
+    :host([narrow]) .search-inputs {
+      flex-direction: column;
     }
 
     .search-fab {
@@ -253,15 +298,13 @@ export class SearchHome extends LitElement implements IViewAdapter {
       --wa-color-brand-border-loud: transparent;
     }
 
-    .search-fab wa-button::part(base) {
-      border-radius: 50%;
-      width: 56px;
-      height: 56px;
+    .search-fab wa-button {
+      border-radius: var(--wa-border-radius-circle, 50%);
       box-shadow: 0 4px 12px rgba(224, 64, 251, 0.4);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
-    .search-fab wa-button:hover::part(base) {
+    .search-fab wa-button:hover {
       transform: scale(1.1);
       box-shadow: 0 6px 20px rgba(224, 64, 251, 0.5);
     }
@@ -282,25 +325,47 @@ export class SearchHome extends LitElement implements IViewAdapter {
         </wa-tab-group>
 
         <div class="search-inputs" @keydown="${this._handleKeydown}">
-          <search-category-input
-            placeholder="Category, keyword, or name"
-            label="What"
-            @category-selected="${(e: CustomEvent) => this.categoryId = e.detail ? e.detail.id : 0}"
-            @category-cleared="${() => this.categoryId = 0}"
-          ></search-category-input>
+          <div class="input-wrapper">
+            ${this.narrow ? html`
+              <div class="category-icon">
+                <wa-icon library="bizsrt" name="filter-list"></wa-icon>
+              </div>
+            ` : ''}
+            <search-category-input
+              placeholder="What"
+              @category-selected="${(e: CustomEvent) => this.categoryId = e.detail ? e.detail.id : 0}"
+              @category-cleared="${() => this.categoryId = 0}"
+            ></search-category-input>
+          </div>
           
-          <search-location-input
-            placeholder="City, province, or postal code"
-            label="Where"
-            @location-selected="${(e: CustomEvent) => this.locationId = e.detail ? e.detail.id : 0}"
-            @location-cleared="${() => this.locationId = 0}"
-          ></search-location-input>
+          <div class="input-wrapper">
+            <wa-button 
+              variant="${this._geoMode ? 'brand' : 'neutral'}"
+              is-icon-button
+              pill
+              class="geo-action"
+              @click="${() => {
+                this._geoMode = !this._geoMode;
+                const locInput = this.shadowRoot?.querySelector('search-location-input') as any;
+                if (locInput) locInput.geoMode = this._geoMode;
+              }}"
+            >
+              <wa-icon library="bizsrt" name="${this._geoMode ? 'place' : 'location-off'}"></wa-icon>
+            </wa-button>
+            <search-location-input
+              .geoMode="${this._geoMode}"
+              placeholder="Where"
+              @geomodeChange="${(e: CustomEvent) => this._geoMode = e.detail.value}"
+              @location-selected="${(e: CustomEvent) => this.locationId = e.detail ? e.detail.id : 0}"
+              @location-cleared="${() => this.locationId = 0}"
+            ></search-location-input>
+          </div>
         </div>
 
         <slot></slot>
 
         <div class="search-fab">
-          <wa-button variant="brand" is-icon-button @click="${this._search}">
+          <wa-button variant="brand" size="large" is-icon-button pill @click="${this._search}">
             <wa-icon name="search" style="font-size: 1.2rem;"></wa-icon>
           </wa-button>
         </div>

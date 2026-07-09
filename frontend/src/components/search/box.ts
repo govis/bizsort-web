@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import '@awesome.me/webawesome/dist/components/button/button.js';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
+import '@awesome.me/webawesome/dist/components/input/input.js';
 
 export class SearchBox extends LitElement {
   static styles = css`
@@ -14,46 +15,48 @@ export class SearchBox extends LitElement {
       align-items: flex-end;
       width: 100%;
     }
-    input {
+    wa-input {
       flex: 1;
-      background: transparent;
-      border: none;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.7);
-      color: white;
-      padding: 0.5rem 0;
-      font-size: 1rem;
-      outline: none;
-      transition: border-bottom-color 0.2s;
+      /* Backgrounds */
+      --wa-form-control-background-color: transparent;
+      --wa-color-neutral-fill-quiet: transparent;
+      
+      /* Text & Placeholders */
+      --wa-form-control-value-color: white;
+      --wa-form-control-placeholder-color: rgba(255, 255, 255, 0.6);
+      
+      /* Flat Underline Borders */
+      --wa-form-control-border-color: rgba(255, 255, 255, 0.7);
+      --wa-form-control-border-width: 0 0 1px 0;
+      --wa-form-control-border-radius: 0;
+      
+      /* Disable Default Focus Ring */
+      --wa-focus-ring-width: 0;
     }
-    input:focus {
-      border-bottom-color: white;
+    
+    wa-input:focus-within {
+      --wa-form-control-border-color: white;
+      --wa-form-control-border-width: 0 0 2px 0;
     }
-    input::placeholder {
-      color: rgba(255, 255, 255, 0.6);
-    }
-    wa-button::part(base) {
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      padding: 0;
-      background-color: rgba(255, 255, 255, 0.15);
-      color: white;
-      border: none;
+
+    wa-button {
       margin-left: 0.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      border-radius: 50%;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+      --wa-color-neutral-fill-loud: rgba(255, 255, 255, 0.15);
+      --wa-color-neutral-on-loud: white;
+      --wa-color-neutral-border-loud: transparent;
     }
-    wa-button::part(base):hover {
-      background-color: rgba(255, 255, 255, 0.25);
+    wa-button:hover {
+      --wa-color-neutral-fill-loud: rgba(255, 255, 255, 0.25);
     }
   `;
 
   render() {
     return html`
       <div class="search-container">
-        <input type="text" placeholder="" />
-        <wa-button>
+        <wa-input placeholder=""></wa-input>
+        <wa-button variant="neutral" is-icon-button pill>
           <wa-icon name="search"></wa-icon>
         </wa-button>
       </div>

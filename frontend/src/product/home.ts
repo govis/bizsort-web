@@ -140,8 +140,9 @@ export class ProductHome extends LitElement {
       z-index: 20;
     }
 
-    .menu-area wa-button::part(base) {
-      color: rgba(255,255,255,0.9);
+    .menu-area wa-button {
+      --wa-color-neutral-on-quiet: rgba(255,255,255,0.9);
+      --wa-color-neutral-on-quiet-hover: white;
     }
 
     .spacer-top {
@@ -212,7 +213,7 @@ export class ProductHome extends LitElement {
       <div class="menu-area">
         <wa-dropdown>
           <wa-button slot="trigger" variant="text" is-icon-button>
-            <wa-icon name="three-dots-vertical" style="color: white;"></wa-icon>
+            <wa-icon library="system" name="ellipsis-vertical"></wa-icon>
           </wa-button>
           <wa-dropdown-item>Contact Us</wa-dropdown-item>
           <wa-dropdown-item>Categories</wa-dropdown-item>

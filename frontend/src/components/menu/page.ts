@@ -26,6 +26,8 @@ export class PageMenu extends LitElement {
     }
     :host([theme="dark"]) wa-dropdown {
       --wa-color-surface-raised: var(--primary-theme-color, #448aff);
+      --wa-color-surface-border: transparent;
+      --wa-panel-border-width: 0;
       color: white;
     }
     :host([theme="dark"]) ::slotted(wa-dropdown-item) {
@@ -40,9 +42,7 @@ export class PageMenu extends LitElement {
     ::slotted(wa-dropdown-item) {
       color: var(--wa-color-neutral-800);
     }
-    ::slotted(wa-dropdown-item)::part(base) {
-      padding: 0.5rem 1rem;
-    }
+
     :host([theme="dark"]) ::slotted(wa-dropdown-item:hover) {
       background-color: rgba(255, 255, 255, 0.2);
     }

@@ -109,31 +109,6 @@ export class CompanyProfile extends LitElement {
       padding: 4rem;
     }
 
-    /* Tab overrides for the blue header */
-    wa-tab-group {
-      --indicator-color: white;
-      --track-color: transparent;
-      width: 100%;
-    }
-
-    wa-tab {
-      color: rgba(255, 255, 255, 0.7);
-    }
-
-    wa-tab::part(base) {
-      padding: 0.75rem 1.5rem;
-      font-weight: 500;
-    }
-
-    wa-tab[active] {
-      color: white;
-    }
-
-    /* Header search button */
-    wa-button[slot="navbar"]::part(base) {
-      color: white;
-    }
-
     /* Entry animations */
     @keyframes slide-from-bottom {
       from {

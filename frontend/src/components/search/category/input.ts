@@ -105,8 +105,17 @@ export class SearchCategoryInput extends LitElement implements IViewAdapter {
             --wa-form-control-placeholder-color: var(--search-home-text-color, var(--text-color-on-primary));
             --wa-color-neutral-on-quiet: var(--search-home-text-color, var(--text-color-on-primary)); /* Prefix icons */
             
-            /* Borders */
+            /* Flat Underline Borders */
             --wa-form-control-border-color: var(--search-home-text-color, var(--text-color-on-primary));
+            --wa-form-control-border-width: 0 0 1px 0;
+            --wa-form-control-border-radius: 0;
+            
+            /* Disable Default Focus Ring */
+            --wa-focus-ring-width: 0;
+        }
+
+        wa-input:focus-within {
+            --wa-form-control-border-width: 0 0 2px 0;
         }
     `;
 
