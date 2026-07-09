@@ -67,7 +67,7 @@ export class SearchHome$ extends ViewModel {
         if (selection.location) {
             this._location.reflectToken(selection.location);
         } else {
-            this._location.resetSelected();
+            this._location.reset();
         }
         
         this._location.text = selection.near ? selection.near.text : '';

@@ -12,7 +12,7 @@
 | [ ] | ↳ `component/page/homeMenu.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<home-menu>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class HomeMenu` | | |
-| [ ] | ↳ `component/page/menu.ts` | - | - |
+| [x] | ↳ `component/page/menu.ts` | `frontend/src/components/menu/page.ts` | Ported to WebAwesome dropdown menu. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<page-menu>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class PageMenu` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class HTMLElementTagNameMap` | | |
@@ -497,7 +497,7 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class HTMLRichTextElement` | | |
 | [ ] | ↳ `component/richtext/view.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class RichtextView` | | |
-| [ ] | ↳ `component/search/box.ts` | - | - |
+| [x] | ↳ `component/search/box.ts` | `frontend/src/components/search/box.ts` | Ported to WebAwesome input with search events. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<search-box>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchBox` | | |
 | [ ] | ↳ `component/search/box/option.ts` | - | - |
@@ -508,7 +508,7 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchCategoryInput` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Input` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ReflectTokenOptions` | | |
-| [ ] | ↳ `component/search/category/menu.ts` | - | - |
+| [x] | ↳ `component/search/category/menu.ts` | `frontend/src/components/search/category/menu.ts` | Ported to WebAwesome dropdown for category location actions. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<search-category-menu>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchCategoryMenu` | | |
 | [ ] | ↳ `component/search/group.ts` | - | - |

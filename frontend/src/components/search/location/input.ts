@@ -40,6 +40,11 @@ export class SearchLocationInput extends LitElement implements IViewAdapter {
         }
         if (props.includes('geoLocation')) {
             this.selected = this.model.geoLocation;
+            this.dispatchEvent(new CustomEvent('location-selected', {
+                detail: this.selected,
+                bubbles: true,
+                composed: true
+            }));
         }
         if (props.includes('errorInfo')) {
             this._errorText = this.model.validateable.errorInfo.getError('locationInput') || this.model.validateable.errorInfo.getError('self') || '';
@@ -61,7 +66,7 @@ export class SearchLocationInput extends LitElement implements IViewAdapter {
             this.inputElement.setCustomValidity(this._errorText || '');
         }
         if (changedProperties.has('geoMode')) {
-            if (this.geoMode && !this._googleAutocomplete) {
+            if (this.geoMode && !this.model.geoInput.autocompleteObj) {
                 this.initGooglePlaces();
             }
         }
@@ -153,7 +158,6 @@ export class SearchLocationInput extends LitElement implements IViewAdapter {
     private declare inputElement: WaInput;
 
     private _debounceTimer: number | null = null;
-    private _googleAutocomplete: google.maps.places.Autocomplete | null = null;
 
     protected firstUpdated() {
         if (!this.model.initialized) {
@@ -186,27 +190,7 @@ export class SearchLocationInput extends LitElement implements IViewAdapter {
             const inputNative = this.inputElement.shadowRoot?.querySelector('input');
             
             if (inputNative) {
-                this._googleAutocomplete = new google.maps.places.Autocomplete(inputNative, {
-                    types: ['geocode']
-                });
-
-                this._googleAutocomplete.addListener('place_changed', () => {
-                    const place = this._googleAutocomplete?.getPlace();
-                    if (place && place.geometry) {
-                        this.selected = {
-                            id: 0, 
-                            name: place.formatted_address || place.name,
-                            geometry: place.geometry.location?.toJSON()
-                        };
-                        this._text = this.selected.name;
-                        this._errorText = '';
-                        this.dispatchEvent(new CustomEvent('location-selected', {
-                            detail: this.selected,
-                            bubbles: true,
-                            composed: true
-                        }));
-                    }
-                });
+                this.model.geoInit(inputNative);
             }
         } catch (e) {
             console.error('Error loading Google Maps API', e);
