@@ -9,6 +9,7 @@ import { Product } from '../navigation';
 
 // Sub-components
 import '../components/search/home';
+import '../components/search/options';
 import '../components/product/featured';
 
 /**
@@ -18,9 +19,26 @@ import '../components/product/featured';
 export class ProductHome extends LitElement {
   static get properties() {
     return {
-      _narrow: { state: true }
+      _narrow: { state: true },
+      categoryId: { type: Number, attribute: 'category-id' },
+      locationId: { type: Number, attribute: 'location-id' },
+      searchQuery: { type: String, attribute: 'search-query' },
+      searchNear: { type: String, attribute: 'search-near' },
+      transactionType: { type: Number, attribute: 'transaction-type' }
     };
   }
+
+  declare private _narrow: boolean;
+  declare categoryId?: number;
+  declare locationId?: number;
+  declare searchQuery?: string;
+  declare searchNear?: string;
+  declare transactionType?: number;
+
+  private _searchOptions = [
+    { value: 1, text: "Products", selected: true },
+    { value: 2, text: "Services", selected: true }
+  ];
 
   declare private _narrow: boolean;
   private _resizeObserver?: ResizeObserver;
@@ -45,11 +63,22 @@ export class ProductHome extends LitElement {
     super.disconnectedCallback();
   }
 
+  willUpdate(changedProperties: Map<string, any>) {
+    if (changedProperties.has('transactionType')) {
+      if (this.transactionType !== undefined) {
+        this._searchOptions[0].selected = (this.transactionType & 1) === 1;
+        this._searchOptions[1].selected = (this.transactionType & 2) === 2;
+      }
+    }
+  }
+
   private _handleSearch(e: CustomEvent) {
-    const { category, location, query, near, transactionType } = e.detail as any;
+    const { category, location, query, near } = e.detail as any;
+    const searchOptions = this.shadowRoot?.querySelector('search-options') as any;
+    const tType = searchOptions ? searchOptions.selectedValues() : (this.transactionType || 3);
     
     if (category || (query && query.trim() !== '')) {
-      Product.search(transactionType, category, query, location, near);
+      Product.search(tType, category, query, location, near);
       return;
     }
 
@@ -194,7 +223,18 @@ export class ProductHome extends LitElement {
       <div class="spacer-top"></div>
 
       <div class="search-area">
-        <search-home ?narrow="${this._narrow}" tab="product" @search-submit="${this._handleSearch}">
+        <search-home 
+          ?narrow="${this._narrow}" 
+          tab="product" 
+          @search-submit="${this._handleSearch}"
+          category-id="${this.categoryId ?? 0}"
+          location-id="${this.locationId ?? 0}"
+          search-query="${this.searchQuery ?? ''}"
+          search-near="${this.searchNear ?? ''}"
+        >
+          <search-options 
+            .values="${this._searchOptions}"
+          ></search-options>
         </search-home>
       </div>
 

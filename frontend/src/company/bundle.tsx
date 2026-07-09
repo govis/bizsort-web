@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
-import { useRouter, useSelectedLayoutSegment } from 'next/navigation';
+import { useRouter, useSelectedLayoutSegment, useSearchParams } from 'next/navigation';
 import type { Company } from '@/components/types';
 import { view } from '../service/company';
 import { setBasePath } from '@awesome.me/webawesome/dist/utilities/base-path.js';
@@ -28,7 +28,21 @@ import '@awesome.me/webawesome/dist/components/dropdown-item/dropdown-item.js';
  * Renders the Company Home (Featured Companies) web component.
  */
 export function HomeWrapper() {
-  return <company-home></company-home>;
+  const searchParams = useSearchParams();
+  const categoryId = searchParams.get('categoryId') ? parseInt(searchParams.get('categoryId')!) : undefined;
+  const locationId = searchParams.get('locationId') ? parseInt(searchParams.get('locationId')!) : undefined;
+  const searchQuery = searchParams.get('searchQuery') || undefined;
+  const searchNear = searchParams.get('searchNear') || undefined;
+  const transactionType = searchParams.get('transactionType') ? parseInt(searchParams.get('transactionType')!) : undefined;
+
+  // @ts-expect-error - Custom element attributes
+  return <company-home 
+    category-id={categoryId}
+    location-id={locationId}
+    search-query={searchQuery}
+    search-near={searchNear}
+    transaction-type={transactionType}
+  ></company-home>;
 }
 
 /**

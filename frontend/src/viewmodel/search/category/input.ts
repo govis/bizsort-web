@@ -24,12 +24,21 @@ export class Input extends ViewModel  {
         });
     }
 
-    reflectToken(options: ReflectTokenOptions = {}) {
-        // Mock token handling for now
-        var categoryId = 0; 
-        if (!this.selected || this.selected.id != categoryId) {
+    reflectToken(categoryId: number, options: ReflectTokenOptions = {}) {
+        if (!this.selected || this.selected.id !== categoryId) {
             if (categoryId) {
-                // Fetch logic
+                import('../../../service/category').then(m => {
+                    m.get(categoryId).then(category => {
+                        this.selected = {
+                            id: category.id,
+                            name: category.name
+                        };
+                        if (options.callback) options.callback(this.selected);
+                    }).catch(err => {
+                        console.error('Failed to fetch category', err);
+                        if (options.callback) options.callback();
+                    });
+                });
             }
             else {
                 if (!options.callback)
@@ -39,7 +48,7 @@ export class Input extends ViewModel  {
             }
         }
         else if (options.callback)
-            options.callback();
+            options.callback(this.selected);
     }
 
     _scope: IdName = {

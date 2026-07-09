@@ -180,6 +180,32 @@ export class Input extends ViewModel implements IInput {
         }
     }
 
+    reflectToken(locationId: number, options: any = {}) {
+        if (!this.selected || this.selected.id !== locationId) {
+            if (locationId) {
+                import('../../../service/location').then(m => {
+                    m.get(locationId).then(location => {
+                        this.selected = {
+                            id: location.id,
+                            name: location.name
+                        };
+                        if (options.callback) options.callback(this.selected);
+                    }).catch(err => {
+                        console.error('Failed to fetch location', err);
+                        if (options.callback) options.callback();
+                    });
+                }).catch(err => {
+                    if (options.callback) options.callback();
+                });
+            } else {
+                this.selected = this._scope;
+                if (options.callback) options.callback(this._scope);
+            }
+        } else if (options.callback) {
+            options.callback(this.selected);
+        }
+    }
+
     errorMessage(error: ErrorMessageType, data: any, options?: any) {
         return "An error occurred"; // Simplified for now
     }

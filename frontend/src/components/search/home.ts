@@ -24,29 +24,53 @@ export class SearchHome extends LitElement implements IViewAdapter {
     return {
       tab: { type: String },
       narrow: { type: Boolean },
-      _categoryId: { state: true },
-      _locationId: { state: true }
+      categoryId: { type: Number, attribute: 'category-id' },
+      locationId: { type: Number, attribute: 'location-id' },
+      searchQuery: { type: String, attribute: 'search-query' },
+      searchNear: { type: String, attribute: 'search-near' }
     };
   }
 
   declare tab: string;
   declare narrow: boolean;
-  declare private _categoryId: number;
-  declare private _locationId: number;
+  declare categoryId?: number;
+  declare locationId?: number;
+  declare searchQuery?: string;
+  declare searchNear?: string;
   model: SearchHome$;
 
   constructor() {
     super();
     this.tab = 'company';
     this.narrow = false;
-    this._categoryId = 0;
-    this._locationId = 0;
     this.model = new SearchHome$(this);
   }
   modelUpdated(props: string[]) {
     // Re-render when viewmodel selection changes
     if (props.includes('selection')) {
         this.requestUpdate();
+    }
+  }
+
+  willUpdate(changedProperties: Map<string, any>) {
+    if (changedProperties.has('categoryId') || 
+        changedProperties.has('locationId') || 
+        changedProperties.has('searchQuery') || 
+        changedProperties.has('searchNear')) {
+        
+        let nearObj = undefined;
+        try {
+            if (this.searchNear) {
+                nearObj = JSON.parse(this.searchNear);
+            }
+        } catch(e) {}
+
+        this.model.loadSelection({
+            category: this.categoryId || 0,
+            location: this.locationId || 0,
+            query: this.searchQuery,
+            near: nearObj
+        });
     }
   }
 
@@ -61,6 +85,21 @@ export class SearchHome extends LitElement implements IViewAdapter {
   private _onTabSelect(e: CustomEvent<{ name: string }>) {
     const targetTab = e.detail.name;
     if (targetTab === this.tab) return;
+    
+    // Flush current inputs to model selection before navigating (bypass 300ms debouncer!)
+    if (this.model) {
+      const catInput = this.shadowRoot?.querySelector('search-category-input') as any;
+      if (catInput?.inputElement) {
+        catInput.model.text = catInput.inputElement.value;
+      }
+
+      const locInput = this.shadowRoot?.querySelector('search-location-input') as any;
+      if (locInput?.inputElement) {
+        locInput.model.text = locInput.inputElement.value;
+      }
+
+      this.model.reflectSelection();
+    }
     
     // Construct params
     const selection = this.model?.selection;
@@ -138,10 +177,23 @@ export class SearchHome extends LitElement implements IViewAdapter {
     }
 
     .content {
+      --search-home-background: rgba(83, 109, 254, 0.85);
+      
+      /* Cascade WebAwesome input variables to children (mimicking legacy pattern) */
+      --wa-form-control-background-color: rgba(255,255,255,0.15);
+      --wa-color-neutral-fill-quiet: rgba(255,255,255,0.15);
+      
+      --wa-form-control-value-color: white;
+      --wa-form-control-placeholder-color: rgba(255,255,255,0.9);
+      --wa-color-neutral-on-quiet: white; 
+      
+      --wa-form-control-border-color: rgba(255,255,255,0.3);
+      --wa-form-control-label-color: rgba(255,255,255,0.9);
+
       padding: 0 24px 48px;
       box-sizing: border-box;
       width: 100%;
-      background-color: rgba(83, 109, 254, 0.85);
+      background-color: var(--search-home-background);
       backdrop-filter: blur(12px);
       border-radius: 16px;
       position: relative;
@@ -153,6 +205,10 @@ export class SearchHome extends LitElement implements IViewAdapter {
       --indicator-color: white;
       --track-color: transparent;
       margin-bottom: 1rem;
+    }
+
+    wa-tab-group::part(tabs) {
+      justify-content: center;
     }
 
     wa-tab {
@@ -183,25 +239,6 @@ export class SearchHome extends LitElement implements IViewAdapter {
       flex: 1;
     }
 
-    search-category-input::part(base),
-    search-location-input::part(base) {
-      background: rgba(255,255,255,0.15);
-      border-color: rgba(255,255,255,0.3);
-      color: white;
-      border-radius: 8px;
-    }
-
-    search-category-input::part(input),
-    search-location-input::part(input) {
-      color: white;
-    }
-
-    search-category-input::part(form-control-label),
-    search-location-input::part(form-control-label) {
-      color: rgba(255,255,255,0.9);
-      font-size: 13px;
-    }
-
     .search-fab {
       position: absolute;
       bottom: -24px;
@@ -210,19 +247,23 @@ export class SearchHome extends LitElement implements IViewAdapter {
       z-index: 10;
     }
 
+    .search-fab wa-button {
+      --wa-color-brand-fill-loud: var(--color-accent1, #e040fb);
+      --wa-color-brand-on-loud: white;
+      --wa-color-brand-border-loud: transparent;
+    }
+
     .search-fab wa-button::part(base) {
       border-radius: 50%;
       width: 56px;
       height: 56px;
-      background: #ff6f00;
-      color: white;
-      box-shadow: 0 4px 12px rgba(255, 111, 0, 0.4);
+      box-shadow: 0 4px 12px rgba(224, 64, 251, 0.4);
       transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     .search-fab wa-button:hover::part(base) {
       transform: scale(1.1);
-      box-shadow: 0 6px 20px rgba(255, 111, 0, 0.5);
+      box-shadow: 0 6px 20px rgba(224, 64, 251, 0.5);
     }
 
     ::slotted(*) {
@@ -244,23 +285,23 @@ export class SearchHome extends LitElement implements IViewAdapter {
           <search-category-input
             placeholder="Category, keyword, or name"
             label="What"
-            @category-selected="${(e: CustomEvent) => this._categoryId = e.detail ? e.detail.id : 0}"
-            @category-cleared="${() => this._categoryId = 0}"
+            @category-selected="${(e: CustomEvent) => this.categoryId = e.detail ? e.detail.id : 0}"
+            @category-cleared="${() => this.categoryId = 0}"
           ></search-category-input>
           
           <search-location-input
             placeholder="City, province, or postal code"
             label="Where"
-            @location-selected="${(e: CustomEvent) => this._locationId = e.detail ? e.detail.id : 0}"
-            @location-cleared="${() => this._locationId = 0}"
+            @location-selected="${(e: CustomEvent) => this.locationId = e.detail ? e.detail.id : 0}"
+            @location-cleared="${() => this.locationId = 0}"
           ></search-location-input>
         </div>
 
         <slot></slot>
 
         <div class="search-fab">
-          <wa-button variant="default" is-icon-button @click="${this._search}">
-            <wa-icon name="search" style="font-size: 1.5rem;"></wa-icon>
+          <wa-button variant="brand" is-icon-button @click="${this._search}">
+            <wa-icon name="search" style="font-size: 1.2rem;"></wa-icon>
           </wa-button>
         </div>
       </div>

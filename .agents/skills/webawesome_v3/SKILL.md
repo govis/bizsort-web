@@ -27,12 +27,13 @@ WebAwesome v3 dropped the framework prefix for standard DOM events on form contr
 - WebAwesome renamed several core slots across its components.
 - In `<wa-dropdown-item>`, the icon slot is now strictly `slot="icon"`. 
 - **DO NOT** use `slot="prefix"` or `slot="start"` for icons in dropdown items; they will be swallowed by the Shadow DOM and fail to render.
+- In `<wa-button>`, the icon slots are `slot="start"` and `slot="end"`. **DO NOT** use `prefix` or `suffix`.
 
 ## 4. System Icons and CDN Defaults
 
 - WebAwesome v3 ships with FontAwesome 7 and relies on a specific Alpha folder structure at `ka-f.fontawesome.com`.
 - Do not attempt to override `setIconPath()` to point to standard CDNs (like jsdelivr) unless you know what you're doing, as this will break internal component icon rendering.
-- For WebAwesome's internal bundled icons, always explicitly set the library: `<wa-icon name="search" library="system"></wa-icon>`.
+- For WebAwesome's internal bundled icons (like `check` or `minus`), always explicitly set the library: `<wa-icon name="check" library="system"></wa-icon>`.
 
 ## 5. Styling & CSS Variables (Strict Rules)
 
@@ -64,3 +65,14 @@ wa-input {
     --wa-form-control-border-color: var(--your-color);
 }
 ```
+
+## 8. `<wa-button>` Variant Renaming (Shoelace v2 -> WebAwesome v3)
+
+- Shoelace's `primary` and `default` variants have been strictly renamed to `brand` and `neutral` respectively.
+- If you pass an invalid legacy variant (e.g., `variant="primary"`), the WebAwesome component will fail to apply its internal CSS selectors, causing it to lose its `border-radius`, paddings, and background colors, effectively rendering as an unstyled dark square!
+- Valid button variants are: `neutral`, `brand`, `success`, `warning`, `danger`.
+
+## 9. Verification Requirement
+
+- **ALWAYS** check the latest WebAwesome v3 online documentation and inspect the current library's source code (e.g., `node_modules/@awesome.me/webawesome/dist/components/**/*.d.ts`) when customizing components.
+- Do not blindly assume legacy Shoelace v2 configurations (like variants, slots, attributes, or CSS variables) still exist. You must verify proper configuration hooks to prevent silent failures.

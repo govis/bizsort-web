@@ -36,7 +36,7 @@ export class SearchHome$ extends ViewModel {
             const locationValid = this._location ? this._location.validateable.validate() : true;
             
             if (categoryValid && locationValid) {
-                this._reflectSelection();
+                this.reflectSelection();
                 proceed(true);
             } else {
                 proceed(false);
@@ -47,13 +47,37 @@ export class SearchHome$ extends ViewModel {
     public attachInputs(category: CategoryInput, location: LocationInput) {
         this._category = category;
         this._location = location;
+        if (this._selection) {
+            this.loadSelection(this._selection);
+        }
+    }
+
+    public loadSelection(selection: Selection) {
+        this._selection = selection;
+        if (!this._category || !this._location) return;
+
+        if (selection.category) {
+            this._category.reflectToken(selection.category);
+        } else {
+            this._category.resetSelected();
+        }
+        
+        this._category.text = selection.query || '';
+
+        if (selection.location) {
+            this._location.reflectToken(selection.location);
+        } else {
+            this._location.resetSelected();
+        }
+        
+        this._location.text = selection.near ? selection.near.text : '';
     }
 
     validate(): boolean {
         return this.validateable.validate();
     }
 
-    protected _reflectSelection() {
+    public reflectSelection() {
         if (this._category && this._location) {
             let near = undefined;
             if ((this._location as any).geoMode && (this._location as any).geoLocation) {

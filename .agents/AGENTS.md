@@ -72,3 +72,21 @@ This file contains structural and naming conventions that all agents must follow
 - **Cache Singletons:** When accessing caches like `LegacyCache.Categories`, ensure you don't confuse the cache property with the underlying entity namespace. If C# confuses `BizSrt.Api.Data.Cache.LegacyCache.Categories` with a namespace resolution error, explicitly use an alias like `using LegacyCache = BizSrt.Api.Data.Cache.LegacyCache;` and call `LegacyCache.Categories`.
 
 **CRITICAL:** Always consult [LEGACY_BACKEND_TRACKER.md](file:///C:/Bizsort/bizsort-web/.agents/LEGACY_BACKEND_TRACKER.md) to track porting status of specific files.
+
+**CRITICAL:** For a comprehensive deep-dive into how the modern search UI, routing, component lifecycles, and backend cache APIs perfectly mirror the legacy search architecture, always read [SEARCH_ARCHITECTURE.md](file:///C:/Bizsort/bizsort-web/.agents/docs/SEARCH_ARCHITECTURE.md) before making modifications to `search-home`, `search-category-input`, or `search-location-input`.
+
+#### 5. Search Category Input Flow
+- **Separation of Category vs. Query:** The `<search-category-input>` manages two distinct, optional values simultaneously: a **Selected Category** (ID/Name) and a **Search String** (free text).
+- **Selection Behavior:** When a user types into the input, the autocomplete dropdown displays matching categories. If the user clicks a category from the dropdown, it becomes the **Selected Category**, and the free-text input box is **CLEARED** (text becomes empty).
+- **Autocomplete Scoping (Global):** The category autocomplete dropdown is ALWAYS a global search. Regardless of what category is currently selected, typing text will search all categories globally for a new category match.
+- **Refined Searching:** After selecting a category, the user can click the input box again to type a new search string. If they ignore the autocomplete and hit "Search", the search engine will search for that text *within* the selected category (e.g. Category = 'Plumbers', Text = 'Bob').
+- **Hydration (reflectToken):** When parsing query parameters from the URL (e.g. `?categoryId=123&searchQuery=Bob`), the frontend ONLY has the category ID. You MUST NOT set the category name to the search string! You must use `Category.get(categoryId)` to fetch the actual category name from the server, and populate the search string separately.
+
+### 6. Search Location Input Flow
+- **Dual Modes (geoMode):** The `<search-location-input>` operates in two exclusive modes toggled by `geoMode`: Database locations vs. Google API Geocoding.
+- **Database Mode (geoMode = off):** Works similarly to category selection. Autocomplete displays matching database locations. Clicking a location makes it the **Selected Location** and clears the text box. The user can then type a new search string. However, UNLIKE categories, a selected location **CANNOT** be cleared with an 'x' button because a location is strictly required.
+- **Autocomplete Scoping (Country Level):** Location autocomplete (when `geoMode = off`) is scoped to a specific "Country" (e.g. Canada or US) pre-configured in `LocationSettings`. The autocomplete is a global search *within that Country scope*, NOT within the currently selected location.
+- **Geocode Mode (geoMode = on):** The component uses the Google Places API. The **Selected Location** from the database is ignored, and instead the component produces a **searchNear** value containing the geocoded point.
+- **Validation Requirements:** For a search to proceed, two constraints must be met:
+  1. **What:** At least ONE of *Selected Category* or *Search String* is required (both are fine).
+  2. **Where:** EXACTLY ONE of *Selected Location* (from DB) or *searchNear* (from Google API) must be provided.
