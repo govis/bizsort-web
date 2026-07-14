@@ -200,6 +200,7 @@ export class SearchLocationInput extends LitElement implements IViewAdapter {
                         };
                         this._text = this.selected.name;
                         this._errorText = '';
+                        this.model.geoInput.geoValidated = this.selected; // Pass payload to ViewModel
                         this.dispatchEvent(new CustomEvent('location-selected', {
                             detail: this.selected,
                             bubbles: true,

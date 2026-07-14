@@ -245,31 +245,13 @@ export class GeocoderInput {
 
     initAutocomplete(inputElement: any, types: string[] = ['geocode']) {
         this.inputElement = inputElement;
-        if (typeof google !== 'undefined' && google.maps && google.maps.places) {
-            this._autocomplete = new google.maps.places.Autocomplete(inputElement, { types });
-            google.maps.event.clearInstanceListeners(this._autocomplete);
-            this._autocomplete.addListener('place_changed', () => {
-                const place = this._autocomplete?.getPlace();
-                if (place && place.geometry) {
-                    this.geoValidated = {
-                        id: 0,
-                        name: place.formatted_address || place.name,
-                        geometry: place.geometry.location?.toJSON()
-                    };
-                    this.viewModel.notifyView(['geoLocation']);
-                }
-            });
-        }
+        // The modern architecture fully delegates Google Maps initialization
+        // to the Lit View component (SearchLocationInput).
+        // This ViewModel stub remains to preserve interface compatibility.
     }
 
     clearAutocomplete() {
-        if (this._autocomplete) {
-            google.maps.event.clearInstanceListeners(this._autocomplete);
-            this._autocomplete = null;
-        }
-        if (this.inputElement && this.inputElement.hasAttribute('placeholder')) {
-            // Google Places adds inline padding/placeholder that needs cleanup sometimes
-        }
+        // Handled by Lit View
     }
 
 }
