@@ -3,7 +3,7 @@ import { IdName, Autocomplete, Node, NodeRef, SubType } from '../model/foundatio
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
 
 export async function autocomplete(parent: number, name: string, scope?: IdName): Promise<Autocomplete[]> {
-    const scopeParam = scope ? `&scope=${encodeURIComponent(JSON.stringify(scope))}` : '';
+    const scopeParam = scope ? `&scope=${JSON.stringify({ ...scope, name: encodeURIComponent(scope.name) })}` : '';
     const response = await fetch(`${API_BASE}/api/category/autocomplete?parent=${parent}&name=${encodeURIComponent(name)}${scopeParam}`);
     
     if (!response.ok) {
@@ -27,7 +27,7 @@ export async function get(category: number, type?: number): Promise<any> {
 }
 
 export async function getPath(category: number, scope?: IdName): Promise<IdName[]> {
-    const scopeParam = scope ? `&scope=${encodeURIComponent(JSON.stringify(scope))}` : '';
+    const scopeParam = scope ? `&scope=${JSON.stringify({ ...scope, name: encodeURIComponent(scope.name) })}` : '';
     const response = await fetch(`${API_BASE}/api/category/getPath?category=${category}${scopeParam}`);
     
     if (!response.ok) {

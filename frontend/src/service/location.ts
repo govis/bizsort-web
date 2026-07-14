@@ -3,7 +3,7 @@ import { IdName, Autocomplete, Node, ResolvedLocation, SubType } from '../model/
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
 
 export async function autocomplete(parent: number, name: string, scope?: IdName): Promise<Autocomplete[]> {
-    const scopeParam = scope ? `&scope=${encodeURIComponent(JSON.stringify(scope))}` : '';
+    const scopeParam = scope ? `&scope=${JSON.stringify({ ...scope, name: encodeURIComponent(scope.name) })}` : '';
     const response = await fetch(`${API_BASE}/api/location/autocomplete?parent=${parent}&name=${encodeURIComponent(name)}${scopeParam}`);
     
     if (!response.ok) {

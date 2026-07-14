@@ -217,24 +217,6 @@ export class SearchLocationInput extends LitElement implements IViewAdapter {
         }, 300);
     }
 
-    private handleClear(e: Event) {
-        e.stopPropagation();
-        this.selected = null;
-        this.model.text = '';
-        if (this.model.autocomplete) {
-            this.model.autocomplete.active = false;
-        }
-        if (this.inputElement) {
-            this.inputElement.value = '';
-            this.inputElement.focus();
-        }
-        
-        this.dispatchEvent(new CustomEvent('location-cleared', {
-            bubbles: true,
-            composed: true
-        }));
-    }
-
     public validate(): boolean {
         if (!this.selected && !this._text.trim()) {
             this._errorText = 'Location is required.';
@@ -255,20 +237,9 @@ export class SearchLocationInput extends LitElement implements IViewAdapter {
                     .value=${this.selected && this.selected.id ? this.selected.name : this._text}
                     @input=${this.handleInput}
                     @focus=${() => { if (!this.geoMode && this.model.autocomplete && this.model.autocomplete.items.length > 0) this.model.autocomplete.active = true; }}
+                    @blur=${() => { if (!this.geoMode && this.model.autocomplete) this.model.autocomplete.active = false; }}
                 >
-                    ${this.selected && this.selected.id ? html`
-                        <div slot="prefix" class="selected-container">
-                            <wa-button 
-                            variant="default"
-                            is-icon-button
-                            @click=${this.handleClear}
-                            title="Clear selection">
-                            <wa-icon name="x" library="system"></wa-icon>
-                        </wa-button>
-                        </div>
-                    ` : html`
-                        <wa-icon slot="prefix" name="geo-alt" library="system"></wa-icon>
-                    `}
+                    <wa-icon slot="prefix" name="geo-alt" library="system"></wa-icon>
                 </wa-input>
             </group-autocomplete>
         `;

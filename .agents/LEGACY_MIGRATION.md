@@ -124,5 +124,5 @@ The legacy codebase is split into two primary areas:
 ### Pending Tasks
 
 - [x] Port remaining company pages: `company/search.ts`, `company/profile.ts`, `company/header-layout.ts`.
-- [ ] Fix Google Maps API Loader version incompatibility in `components/search/location/input.ts` (uses deprecated `Loader` class — must switch to functional `setOptions()`/`importLibrary()` API).
+- [x] Fix Google Maps API Loader version incompatibility in `components/search/location/input.ts` (uses deprecated `Loader` class — must switch to functional `setOptions()`/`importLibrary()` API).
 - [ ] Further migration of remaining legacy frontend modules (see `LEGACY_FRONTEND_TRACKER.md`).

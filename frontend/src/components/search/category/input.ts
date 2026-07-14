@@ -208,6 +208,7 @@ export class SearchCategoryInput extends LitElement implements IViewAdapter {
                     .value=${this._text}
                     @input=${this.handleInput}
                     @focus=${() => { if (this.model.autocomplete && this.model.autocomplete.items.length > 0) this.model.autocomplete.active = true; }}
+                    @blur=${() => { if (this.model.autocomplete) this.model.autocomplete.active = false; }}
                 >
                     <wa-icon slot="prefix" name="search" library="system"></wa-icon>
                 </wa-input>
