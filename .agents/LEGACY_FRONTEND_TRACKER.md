@@ -158,14 +158,14 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<company-enrichment-action>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyEnrichmentAction` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyEnrichment` | | |
-| [ ] | ↳ `component/company/featured.ts` | - | - |
+| [x] | ↳ `component/company/featured.ts` | `frontend/src/components/company/featured.ts` | Ported with native CSS stagger animation (4n+x). |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyFeatured` | | |
 | [ ] | ↳ `component/company/industry/edit.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Edit` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyIndustryEdit` | | |
 | [ ] | ↳ `component/company/listitem.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyListItem` | | |
-| [ ] | ↳ `component/company/listview.ts` | - | - |
+| [x] | ↳ `component/company/listview.ts` | `frontend/src/components/company/listview.ts` | Ported with native CSS stagger animation cascade (10n+x). |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyListView` | | |
 | [ ] | ↳ `component/company/member/confirm.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyMemberConfirm` | | |
@@ -323,7 +323,7 @@
 | [ ] | ↳ `component/location/search/box.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class LocationSearchBox` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchLocationSelect` | | |
-| [ ] | ↳ `component/map/view.ts` | - | - |
+| [x] | ↳ `component/map/view.ts` | `frontend/src/components/map/view.ts` | Ported to use WebAwesome wa-dialog with lazy-loading iframe. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MapView` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MapViewOverlay` | | |
 | [ ] | ↳ `component/marketplace/card.ts` | - | - |
@@ -442,7 +442,7 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<product-card>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProductCardMenu` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProductCard` | | |
-| [ ] | ↳ `component/product/featured.ts` | - | - |
+| [x] | ↳ `component/product/featured.ts` | `frontend/src/components/product/featured.ts` | Ported with native CSS stagger animation (4n+x). |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProductFeatured` | | |
 | [ ] | ↳ `component/product/listitem.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProductListItem` | | |

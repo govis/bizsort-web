@@ -108,10 +108,10 @@ export class ProductFeatured extends LitElement {
       animation: card-enter 500ms cubic-bezier(0.4, 0, 0.2, 1) both;
     }
 
-    product-card:nth-child(1) { animation-delay: 0ms; }
-    product-card:nth-child(2) { animation-delay: 75ms; }
-    product-card:nth-child(3) { animation-delay: 150ms; }
-    product-card:nth-child(4) { animation-delay: 225ms; }
+    product-card:nth-child(4n + 1) { animation-delay: 0ms; }
+    product-card:nth-child(4n + 2) { animation-delay: 75ms; }
+    product-card:nth-child(4n + 3) { animation-delay: 150ms; }
+    product-card:nth-child(4n + 4) { animation-delay: 225ms; }
 
     .loading {
       display: flex;

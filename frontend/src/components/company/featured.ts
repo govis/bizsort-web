@@ -116,10 +116,10 @@ export class CompanyFeatured extends LitElement {
       animation: card-enter 500ms cubic-bezier(0.4, 0, 0.2, 1) both;
     }
 
-    company-card:nth-child(1) { animation-delay: 0ms; }
-    company-card:nth-child(2) { animation-delay: 75ms; }
-    company-card:nth-child(3) { animation-delay: 150ms; }
-    company-card:nth-child(4) { animation-delay: 225ms; }
+    company-card:nth-child(4n + 1) { animation-delay: 0ms; }
+    company-card:nth-child(4n + 2) { animation-delay: 75ms; }
+    company-card:nth-child(4n + 3) { animation-delay: 150ms; }
+    company-card:nth-child(4n + 4) { animation-delay: 225ms; }
 
     .loading {
       display: flex;

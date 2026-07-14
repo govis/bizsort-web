@@ -79,6 +79,33 @@ export class CompanyListView extends LitElement implements IViewAdapter {
             flex-direction: column;
             gap: 1rem;
         }
+
+        @keyframes list-enter {
+            from {
+                opacity: 0;
+                transform: translateY(40px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        company-card {
+            animation: list-enter 500ms cubic-bezier(0.4, 0, 0.2, 1) both;
+        }
+
+        /* 10-item cascade to mimic legacy JS index * delay without massive infinite wait times */
+        company-card:nth-child(10n + 1) { animation-delay: 0ms; }
+        company-card:nth-child(10n + 2) { animation-delay: 60ms; }
+        company-card:nth-child(10n + 3) { animation-delay: 120ms; }
+        company-card:nth-child(10n + 4) { animation-delay: 180ms; }
+        company-card:nth-child(10n + 5) { animation-delay: 240ms; }
+        company-card:nth-child(10n + 6) { animation-delay: 300ms; }
+        company-card:nth-child(10n + 7) { animation-delay: 360ms; }
+        company-card:nth-child(10n + 8) { animation-delay: 420ms; }
+        company-card:nth-child(10n + 9) { animation-delay: 480ms; }
+        company-card:nth-child(10n + 10) { animation-delay: 540ms; }
     `;
 
     render() {

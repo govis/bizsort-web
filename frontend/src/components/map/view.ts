@@ -1,8 +1,10 @@
 import { LitElement, html, css } from 'lit';
-import { property, query } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import type { Office } from '../types.js';
 import '@awesome.me/webawesome/dist/components/dialog/dialog.js';
 import '@awesome.me/webawesome/dist/components/button/button.js';
+import '@awesome.me/webawesome/dist/components/icon/icon.js';
+import type WaDialog from '@awesome.me/webawesome/dist/components/dialog/dialog.js';
 
 export class MapView extends LitElement {
     @property({ type: Array })
@@ -10,9 +12,17 @@ export class MapView extends LitElement {
 
     @property({ type: Object })
     declare office?: Office;
+
+    @state()
+    declare private _renderIframe: boolean;
     
     @query('wa-dialog')
-    declare dialog: any;
+    declare private _dialog: WaDialog;
+
+    constructor() {
+        super();
+        this._renderIframe = false;
+    }
 
     open(offices?: Office[]) {
         if (offices && offices.length) {
@@ -23,15 +33,31 @@ export class MapView extends LitElement {
                 this.office = undefined;
                 this.offices = offices;
             }
-            this.dialog.show();
+            
+            this._renderIframe = false; // reset
+            if (this._dialog) {
+                this._dialog.open = true;
+            }
         } else {
-            this.office = undefined;
-            this.offices = undefined;
+            this.close();
         }
     }
 
     close() {
-        this.dialog.hide();
+        if (this._dialog) {
+            this._dialog.open = false;
+        }
+    }
+
+    private _handleAfterShow() {
+        // Once the dialog animation is perfectly finished, load the heavy iframe
+        this._renderIframe = true;
+    }
+
+    private _handleAfterHide() {
+        this.office = undefined;
+        this.offices = undefined;
+        this._renderIframe = false;
     }
     
     private _getOsmMapUrl(office?: Office) {
@@ -43,55 +69,117 @@ export class MapView extends LitElement {
     }
 
     static styles = css`
-        wa-dialog::part(panel) {
-            width: 90vw;
-            height: 90vh;
-            max-width: 1200px;
-            max-height: 800px;
+        :host {
+            display: block;
+        }
+
+        wa-dialog {
+            --width: 85vw;
+            --body-spacing: 0;
+        }
+
+        .dialog-content {
+            height: 85vh;
             display: flex;
             flex-direction: column;
+            position: relative;
+            background: #f8f9fa;
         }
-        wa-dialog::part(body) {
-            padding: 0;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
+
+        /* Floating 'X' button tucked cleanly inside the corner */
+        .close-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            border-radius: 50%;
         }
+
+        wa-button.close-btn {
+            --wa-color-neutral-fill-quiet: #ffffff;
+            --wa-color-neutral-fill-quiet-hover: #f5f5f5;
+            --wa-color-neutral-on-quiet: #333;
+        }
+
         .map-frame {
             width: 100%;
             height: 100%;
             border: none;
             flex-grow: 1;
         }
+
+        .loading-placeholder {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            width: 100%;
+            color: #666;
+            font-size: 1.2rem;
+            font-family: inherit;
+        }
+        
         .multi-office-fallback {
             display: flex;
             align-items: center;
             justify-content: center;
             height: 100%;
+            width: 100%;
             color: #666;
             flex-direction: column;
             gap: 1rem;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            wa-dialog {
+                --width: 100vw;
+            }
+            .dialog-content {
+                height: 100vh;
+            }
         }
     `;
 
     render() {
         return html`
-            <wa-dialog label="${this.office ? this.office.name || 'Office Map' : 'Offices Map'}">
-                ${this.office ? html`
-                    <iframe
-                        class="map-frame"
-                        src="${this._getOsmMapUrl(this.office)}"
-                        scrolling="no"
-                        marginheight="0"
-                        marginwidth="0">
-                    </iframe>
-                ` : this.offices ? html`
-                    <div class="multi-office-fallback">
-                        <h3>Multiple Offices Map</h3>
-                        <p>Showing ${this.offices.length} offices. (OpenStreetMap embed supports single markers by default).</p>
-                    </div>
-                ` : ''}
-                <wa-button slot="footer" variant="primary" @click="${this.close}">Close</wa-button>
+            <wa-dialog 
+                without-header 
+                @wa-after-show="${this._handleAfterShow}" 
+                @wa-after-hide="${this._handleAfterHide}">
+                
+                <div class="dialog-content">
+                    <wa-button 
+                        is-icon-button 
+                        pill 
+                        class="close-btn" 
+                        variant="neutral" 
+                        @click="${this.close}"
+                        title="Close map">
+                        <wa-icon name="xmark"></wa-icon>
+                    </wa-button>
+                    
+                    ${this._renderIframe && this.office ? html`
+                        <iframe
+                            class="map-frame"
+                            src="${this._getOsmMapUrl(this.office)}"
+                            scrolling="no"
+                            marginheight="0"
+                            marginwidth="0">
+                        </iframe>
+                    ` : this._renderIframe && this.offices ? html`
+                        <div class="multi-office-fallback">
+                            <h3>Multiple Offices</h3>
+                            <p>Showing ${this.offices.length} offices.</p>
+                        </div>
+                    ` : html`
+                        <div class="loading-placeholder">
+                            Loading map...
+                        </div>
+                    `}
+                </div>
             </wa-dialog>
         `;
     }
