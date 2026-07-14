@@ -21,12 +21,8 @@ export function HomeWrapper() {
   const searchNear = searchParams.get('searchNear') || undefined;
   const transactionType = searchParams.get('transactionType') ? parseInt(searchParams.get('transactionType')!) : undefined;
 
-  // @ts-expect-error - Custom element attributes
-  return <product-home 
-    category-id={categoryId}
-    location-id={locationId}
-    search-query={searchQuery}
-    search-near={searchNear}
-    transaction-type={transactionType}
-  ></product-home>;
+  return (
+    // @ts-expect-error
+    <product-home category-id={categoryId} location-id={locationId} search-query={searchQuery} search-near={searchNear} transaction-type={transactionType}></product-home>
+  );
 }

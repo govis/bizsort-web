@@ -76,10 +76,10 @@ export class ImageView extends LitElement {
         return html`
             <img src="${imgRef}" alt="${this.alt || ''}"></img>
             ${this.images.length > 1 ? html`
-                <wa-button variant="neutral" is-icon-button class="prev" ?disabled="${this._imageIndex <= 0}" @click=${() => this._handleAction(-1)}>
+                <wa-button variant="neutral" is-icon-button class="prev" ?disabled="${this._imageIndex <= 0}" @click=${() => (this as any)._handleAction(-1)}>
                     <wa-icon name="chevron-left" library="system"></wa-icon>
                 </wa-button>
-                <wa-button variant="neutral" is-icon-button class="next" ?disabled="${this._imageIndex >= this.images.length - 1}" @click=${() => this._handleAction(1)}>
+                <wa-button variant="neutral" is-icon-button class="next" ?disabled="${this._imageIndex >= this.images.length - 1}" @click=${() => (this as any)._handleAction(1)}>
                     <wa-icon name="chevron-right" library="system"></wa-icon>
                 </wa-button>
                 <div class="slider">
@@ -110,10 +110,10 @@ export class ImageView extends LitElement {
         const img = this.images[this._imageIndex];
         if (!img) return '';
         const backendUrl = process.env.NEXT_PUBLIC_API_URL || '';
-        return \`\${backendUrl}/api/image/get?entity=\${img.entity}&id=\${img.id || img.imageId}&width=800&height=600\`;
+        return `${backendUrl}/api/image/get?entity=${img.entity}&id=${img.id || img.imageId}&width=800&height=600`;
     }
 
-    private _handleAction(direction: number) {
+    _handleAction(direction: number) {
         let newIndex = this._imageIndex + direction;
         if (newIndex < 0) newIndex = 0;
         if (newIndex >= this.images.length) newIndex = this.images.length - 1;

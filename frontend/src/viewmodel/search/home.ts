@@ -1,6 +1,6 @@
 import { IViewAdapter, Validateable, ViewModel } from '../../viewmodel';
 import { Input as CategoryInput } from './category/input';
-import { Input as LocationInput } from '../location/input';
+import { Input as LocationInput } from './location/input';
 
 export interface Selection {
     category: number;
@@ -93,7 +93,7 @@ export class SearchHome$ extends ViewModel {
 
             this.selection = {
                 category: this._category.selected ? this._category.selected.id : 0,
-                location: this._location.selected ? this._location.selected.id : 0,
+                location: near ? 0 : (this._location.selected ? this._location.selected.id : 0),
                 query: this._category.text || undefined,
                 near: near
             };

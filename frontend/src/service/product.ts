@@ -31,6 +31,9 @@ export async function search(queryInput: any): Promise<any> {
     // Only encode the user-provided string to avoid HTTP parser truncation (e.g. '&', '=')
     queryCopy.searchQuery = encodeURIComponent(queryCopy.searchQuery);
   }
+  if (queryCopy.searchNear && queryCopy.searchNear.text) {
+    queryCopy.searchNear.text = encodeURIComponent(queryCopy.searchNear.text);
+  }
   const payload = JSON.stringify(queryCopy);
   const response = await fetch(`${API_BASE}/api/product/profile/search?queryInput=${payload}`);
   

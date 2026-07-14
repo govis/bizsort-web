@@ -19,9 +19,9 @@ The category and location inputs share an identical UI pattern but diverge in st
 - **Geocode Mode (`geoMode = on`):** Replaces the database location with a `searchNear` payload representing the user's geocoded coordinates.
 - **Autocomplete Scoping (Country):** Location autocomplete is scoped to the globally configured `LocationSettings.country` (e.g., Canada). It searches all of Canada, rather than being restricted to the currently selected City/Province.
 
-## 2. Search Aggregation & Navigation (`search-home`)
+## 2. Search Aggregation & Navigation (`search-home` and `search-header`)
 
-The `<search-home>` component acts as the orchestrator. When the user clicks the Search button, it forces validation on its children:
+The `<search-home>` and `<search-header>` components act as the orchestrators. When the user clicks the Search button, they force validation on their children:
 1. **What:** At least ONE of *Selected Category* or *Search Text* must be present.
 2. **Where:** EXACTLY ONE of *Selected DB Location* or *Google Geocoded Point* must be present.
 
@@ -34,10 +34,10 @@ When a user navigates to a search results page or refreshes the browser, Next.js
 **The Hydration Problem:** The URL only contains the Category/Location **IDs**, not their human-readable names. We cannot fall back to assigning the search query string as the category name!
 
 **The `reflectToken` Solution:**
-When `loadSelection` pushes IDs into the input viewmodels, the viewmodels execute a `reflectToken` cycle:
-1. They fire an asynchronous API request (`CategoryService.get(id)` / `LocationService.get(id)`).
-2. Once the API returns the entity, they overwrite `selected` with the true `{ id, name }`.
-3. Concurrently, the `text` string (e.g., `searchQuery=Bob`) is pushed independently into the viewmodel so the user sees both their refined search text and the background selected entity.
+When `loadSelection` pushes IDs into the input viewmodels, the viewmodels execute a `reflectToken` cycle to hydrate the inputs:
+1. They fire an asynchronous API request using the specific `.get(id)` service method (`service/category.get(id)` / `service/location.get(id)`). This is strictly distinct from the `.autocomplete()` service method (e.g., `fetchCategories`) which is exclusively used for the dropdown search.
+2. Once the API returns the requested entity, they overwrite `selected` with the true `{ id, name }`.
+3. Concurrently, the free-form `text` string (e.g., `searchQuery=Bob`) is pushed independently into the viewmodel so the user sees both their refined search text and the background selected entity name.
 
 ## 4. Backend Autocomplete & SQL Caching
 
@@ -52,6 +52,19 @@ This is cached efficiently via a composite cache key: `new GroupSearchCache<int>
 
 ### The `scope` Parameter (The Formatter)
 The frontend also passes the full `_scope` object. The C# endpoint ignores this for filtering and **only** uses it for formatting the display path via `location.AutocompletePath(scope.Id)`. This strips redundant root nodes (e.g., hiding ", Canada" from every result if the search is already scoped to Canada).
+
+## 5. URL Parameter Escaping (Payload Serialization)
+
+When passing search parameters to the backend via the `?queryInput={...}` JSON string (e.g. inside `service/company.ts` and `service/product.ts`), special care must be taken to manually escape certain user-provided free-form strings before JSON serialization:
+
+- **`searchQuery`**: The primary free-form text input string.
+- **`searchNear.text`**: The city/address string retrieved from Google Maps Geocoding (if `geoMode = on`).
+
+**Why escape them?**
+If a user inputs a special character (like `&` or `=`) into either of these strings, the resulting un-escaped JSON string (e.g., `{"searchQuery": "Bob & Sons"}`) will instantly truncate the HTTP query payload parser right at the `&`. This causes the C# backend to receive a truncated, malformed string (e.g., `{"searchQuery": "Bob `) resulting in a `JsonException`. 
+
+To prevent this, we explicitly run `encodeURIComponent()` on **only** these two specific string fields before JSON serialization. 
+On the hydration side (inside the Next.js page wrappers and viewmodels), we also apply a robust `decodeURIComponent()` fallback (e.g. checking `if (val.startsWith('%7B'))`) to safely parse any double-encoded `searchNear` payload objects that traverse back through the URL.
 
 ---
 *Documented on July 8, 2026 for AI Agents and Developers maintaining the legacy parity architecture.*

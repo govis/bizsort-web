@@ -105,7 +105,7 @@ The legacy codebase is split into two primary areas:
 - [x] **`company/home.ts`:** Page-level Lit element (`<company-home>`). Orchestrates `<search-home>` and `<company-featured>`, handles `search-submit` events, passes selection to featured component.
 - [x] **`components/company/featured.ts`:** New `<company-featured>` Lit element. Accepts `selection: { category, location }` property (defaults `category=0, location=1`). Re-fetches on property change via `updated()` lifecycle. Calls `getFeatured()` service helper.
 - [x] **`components/company/card.ts`:** New `<company-card>` Lit element rendering a single company preview card.
-- [x] **`components/search/home.ts` & `box.ts`:** Updated to track numeric `_categoryId` / `_locationId` instead of strings; dispatches numeric IDs on `search-submit`. Fully refactored to use native WebAwesome v3 components and CSS variables, eliminating legacy shadow DOM overrides.
+- [x] **`components/search/home.ts`:** Updated to track numeric `_categoryId` / `_locationId` instead of strings; dispatches numeric IDs on `search-submit`.
 - [x] **`src/service/company.ts`:** `getFeatured(index, length, category=0, location=1)` sends category+location in JSON payload. `toPreview(ids)` sends array of IDs. Matches legacy `src/service/company.ts` method signatures.
 
 ### 5. Product Infrastructure & Components

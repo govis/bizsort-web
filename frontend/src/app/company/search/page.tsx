@@ -12,7 +12,7 @@ export default async function SearchPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const resolvedParams = await searchParams;
-  const query = typeof resolvedParams.query === 'string' ? resolvedParams.query : undefined;
+  const query = typeof resolvedParams.searchQuery === 'string' ? resolvedParams.searchQuery : undefined;
   const categoryId = typeof resolvedParams.categoryId === 'string' ? parseInt(resolvedParams.categoryId, 10) : undefined;
   const locationId = typeof resolvedParams.locationId === 'string' ? parseInt(resolvedParams.locationId, 10) : undefined;
   const searchNear = typeof resolvedParams.searchNear === 'string' ? resolvedParams.searchNear : undefined;

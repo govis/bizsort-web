@@ -11,9 +11,9 @@ import '../components/product/listview';
 import '../components/list/pager';
 import '../components/list/header';
 import '../components/list/filter';
-import '../company/header-layout';
+import '../components/directory/header-layout';
 
-class ProductSearchViewModel extends Filterable(Searchview) {
+class ProductSearchViewModel extends Filterable(Searchview as any) {
   fetchList(queryInput: any, callback: Action<any>, faultCallback: Action<any>) {
     if (!this.searchParams) {
       faultCallback(new Error('No search params'));
@@ -28,7 +28,18 @@ class ProductSearchViewModel extends Filterable(Searchview) {
       queryInput.productType = (this.searchParams as any).productType || 0;
 
     if ((this.searchParams as any).searchNear) {
-      queryInput.searchNear = (this.searchParams as any).searchNear;
+      try {
+        let nearVal = (this.searchParams as any).searchNear;
+        if (typeof nearVal === 'string') {
+           // Handle case where it might be URI encoded
+           if (nearVal.startsWith('%7B')) nearVal = decodeURIComponent(nearVal);
+           nearVal = JSON.parse(nearVal);
+        }
+        queryInput.searchNear = nearVal;
+      } catch (e) {
+        // Fallback to undefined if parsing fails completely so we don't crash C# backend with a string
+        queryInput.searchNear = undefined;
+      }
     } else {
       queryInput.location = (this.searchParams as any).locationId || 0;
     }
@@ -102,6 +113,7 @@ export class ProductSearch extends LitElement implements IViewAdapter {
 
   constructor() {
     super();
+    // @ts-expect-error
     this.viewModel = new ProductSearchViewModel(this);
     this.viewModel.pager.pageSize = 24; 
   }
@@ -201,11 +213,13 @@ export class ProductSearch extends LitElement implements IViewAdapter {
 
   render() {
     return html`
-      <company-header-layout title-text="Product Search">
-        <div slot="logo" style="display: flex; align-items: center; height: 100%; justify-content: center; color: white; font-weight: bold; font-size: 1.2rem;">
-          bizSORT
-        </div>
-        
+      <directory-header-layout 
+        entity-type="product"
+        .categoryId=${this.categoryId}
+        .locationId=${this.locationId}
+        .searchQuery=${this.searchQuery}
+        .searchNear=${this.searchNear}
+      >
         <div class="content">
           <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end;">
             <div>
@@ -219,15 +233,15 @@ export class ProductSearch extends LitElement implements IViewAdapter {
           <product-listview .items="${this._items}"></product-listview>
           
           ${this.isLoading 
-            ? html`<div class="loading-state"><wa-spinner></wa-spinner> Loading results...</div>`
-            : this._errorText
-              ? html`<div class="error-state">Error: ${this._errorText}</div>`
-              : this.viewModel.pager.itemCount > 0
-                ? html`<list-pager .master="${this.viewModel.pager}"></list-pager>`
-                : (this.searchQuery || this.categoryId) ? html`<div class="empty-state">No products found matching your criteria.</div>` : ''
+            ? html`<div class="loading-state">Loading products...</div>` 
+            : this._errorText 
+                ? html`<div class="error-state">Error: ${this._errorText}</div>`
+                : this._items.length > 0
+                  ? html`<list-pager .master="${this.viewModel.pager}"></list-pager>`
+                  : html`<div class="empty-state">No products found matching your search.</div>`
           }
         </div>
-      </company-header-layout>
+      </directory-header-layout>
     `;
   }
 }

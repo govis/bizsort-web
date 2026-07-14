@@ -483,7 +483,7 @@ export abstract class View extends ViewModel
         });
     }
 
-    protected populatePage(page: EntityId[], options: PopulatePageOptions) {
+    protected populatePage(page: EntityId[], options?: PopulatePageOptions) {
         if (page && page.length > 0) {
             if (this.listHeader)
                 this.listHeader.data = this.populateHeader(new Header.Data({ fromRecord: this._pager.fromRecord, toRecord: this._pager.toRecord, totalCount: this._pager.itemCount }));
@@ -492,7 +492,7 @@ export abstract class View extends ViewModel
             this._fetchPending = true;
             this.fetchPage(page, (data) => {
                 this._fetchPending = false;
-                if (!options.addItems)
+                if (!options?.addItems)
                     this.listItems = data;
                 else
                     this.addItems(data, options.addItems);

@@ -12,7 +12,7 @@
 | [ ] | ↳ `component/page/homeMenu.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<home-menu>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class HomeMenu` | | |
-| [x] | ↳ `component/page/menu.ts` | `frontend/src/components/menu/page.ts` | Ported to WebAwesome dropdown menu. |
+| [ ] | ↳ `component/page/menu.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<page-menu>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class PageMenu` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class HTMLElementTagNameMap` | | |
@@ -204,7 +204,7 @@
 | [ ] | ↳ `component/directory/feed-header.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<feed-header-layout>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class FeedHeaderLayout` | | |
-| [ ] | ↳ `component/directory/header-layout.ts` | - | - |
+| [x] | ↳ `component/directory/header-layout.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<directory-header-layout>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class DirectoryHeaderLayout` | | |
 | [ ] | ↳ `component/dropdown/edit.ts` | - | - |
@@ -497,7 +497,7 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class HTMLRichTextElement` | | |
 | [ ] | ↳ `component/richtext/view.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class RichtextView` | | |
-| [x] | ↳ `component/search/box.ts` | `frontend/src/components/search/box.ts` | Ported to WebAwesome input with search events. |
+| [ ] | ↳ `component/search/box.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<search-box>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchBox` | | |
 | [ ] | ↳ `component/search/box/option.ts` | - | - |
@@ -508,12 +508,12 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchCategoryInput` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Input` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ReflectTokenOptions` | | |
-| [x] | ↳ `component/search/category/menu.ts` | `frontend/src/components/search/category/menu.ts` | Ported to WebAwesome dropdown for category location actions. |
+| [ ] | ↳ `component/search/category/menu.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<search-category-menu>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchCategoryMenu` | | |
 | [ ] | ↳ `component/search/group.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchGroup` | | |
-| [ ] | ↳ `component/search/header.ts` | - | - |
+| [x] | ↳ `component/search/header.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<search-header>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchHeader` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Selection` | | |

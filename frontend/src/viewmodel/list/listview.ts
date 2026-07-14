@@ -1,5 +1,6 @@
 import { ViewModel, type IViewAdapter } from '../../viewmodel';
-import { Event, type EntityId } from '../../global';
+import { Event } from '../../global';
+import type { EntityId } from '../../model/foundation';
 
 export enum ViewType {
     Card = 1,

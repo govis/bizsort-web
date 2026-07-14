@@ -29,13 +29,13 @@ export class ListPager extends LitElement implements IViewAdapter {
     connectedCallback() {
         super.connectedCallback();
         if (this.master) {
-            this.viewModel.initialize({ master: this.master });
+            (this.viewModel as any).initialize({ master: this.master });
         }
     }
     
     willUpdate(changedProperties: Map<string | number | symbol, unknown>) {
         if (changedProperties.has('master') && this.master) {
-            this.viewModel.initialize({ master: this.master });
+            (this.viewModel as any).initialize({ master: this.master });
         }
     }
 
@@ -44,19 +44,19 @@ export class ListPager extends LitElement implements IViewAdapter {
         props.forEach(prop => {
             switch (prop) {
                 case 'pageButtons':
-                    this._pageButtons = [...this.viewModel.pageButtons];
+                    this._pageButtons = [...(this.viewModel as any).pageButtons];
                     update = true;
                     break;
                 case 'previousPage':
-                    this._previousPage = { ...this.viewModel.previousPage };
+                    this._previousPage = { ...(this.viewModel as any).previousPage };
                     update = true;
                     break;
                 case 'nextPage':
-                    this._nextPage = { ...this.viewModel.nextPage };
+                    this._nextPage = { ...(this.viewModel as any).nextPage };
                     update = true;
                     break;
                 case 'pageCount':
-                    this.hidden = !(this.viewModel.pageCount > 1);
+                    this.hidden = !((this.viewModel as any).pageCount > 1);
                     break;
             }
         });
@@ -66,7 +66,7 @@ export class ListPager extends LitElement implements IViewAdapter {
     private _handleAction(event: Event) {
         const target = event.currentTarget as HTMLElement;
         const action = target.dataset.action;
-        const pager = this.viewModel.master;
+        const pager = (this.viewModel as any).master;
         
         if (!pager) return;
 
@@ -117,8 +117,8 @@ export class ListPager extends LitElement implements IViewAdapter {
             <wa-button 
                 variant="text" 
                 is-icon-button
-                ?disabled="${!this.viewModel.canChangePage || this.viewModel.pageIndex <= 0}" 
-                @click="${this.viewModel.moveToPreviousPage}"
+                ?disabled="${!(this.viewModel as any).canChangePage || (this.viewModel as any).pageIndex <= 0}" 
+                @click="${(this.viewModel as any).moveToPreviousPage}"
             >
                 <wa-icon name="chevron-left" library="system"></wa-icon>
             </wa-button>
@@ -138,8 +138,8 @@ export class ListPager extends LitElement implements IViewAdapter {
             <wa-button 
                 variant="text" 
                 is-icon-button
-                ?disabled="${!this.viewModel.canChangePage || !this.viewModel.hasPage(this.viewModel.pageIndex + 1)}" 
-                @click="${() => this.viewModel.moveToNextPage()}"
+                ?disabled="${!(this.viewModel as any).canChangePage || !(this.viewModel as any).hasPage((this.viewModel as any).pageIndex + 1)}" 
+                @click="${() => (this.viewModel as any).moveToNextPage()}"
             >
                 <wa-icon name="chevron-right" library="system"></wa-icon>
             </wa-button>

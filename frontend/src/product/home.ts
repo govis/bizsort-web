@@ -40,7 +40,6 @@ export class ProductHome extends LitElement {
     { value: 2, text: "Services", selected: true }
   ];
 
-  declare private _narrow: boolean;
   private _resizeObserver?: ResizeObserver;
 
   constructor() {

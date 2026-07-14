@@ -11,9 +11,9 @@ import '../components/company/listview';
 import '../components/list/pager';
 import '../components/list/header';
 import '../components/list/filter';
-import './header-layout';
+import '../components/directory/header-layout';
 
-class CompanySearchViewModel extends Filterable(Searchview) {
+class CompanySearchViewModel extends Filterable(Searchview as any) {
   fetchList(queryInput: any, callback: Action<any>, faultCallback: Action<any>) {
     console.log('[CompanySearch] fetchList called, searchParams=', this.searchParams, 'queryInput=', queryInput);
     console.log('[CompanySearch] _filterApplied=', (this as any)._filterApplied, '_filterAvail=', (this as any)._filterAvail);
@@ -31,7 +31,18 @@ class CompanySearchViewModel extends Filterable(Searchview) {
       queryInput.transactionType = (this.searchParams as any).transactionType || 0;
 
     if ((this.searchParams as any).searchNear) {
-      queryInput.searchNear = (this.searchParams as any).searchNear;
+      try {
+        let nearVal = (this.searchParams as any).searchNear;
+        if (typeof nearVal === 'string') {
+           // Handle case where it might be URI encoded
+           if (nearVal.startsWith('%7B')) nearVal = decodeURIComponent(nearVal);
+           nearVal = JSON.parse(nearVal);
+        }
+        queryInput.searchNear = nearVal;
+      } catch (e) {
+        // Fallback to undefined if parsing fails completely so we don't crash C# backend with a string
+        queryInput.searchNear = undefined;
+      }
     } else {
       queryInput.location = (this.searchParams as any).locationId || 0;
     }
@@ -108,6 +119,7 @@ export class CompanySearch extends LitElement implements IViewAdapter {
 
   constructor() {
     super();
+    // @ts-expect-error
     this.viewModel = new CompanySearchViewModel(this);
     this.viewModel.pager.pageSize = 24; 
   }
@@ -162,6 +174,7 @@ export class CompanySearch extends LitElement implements IViewAdapter {
         changedProperties.has('locationId') || changedProperties.has('searchNear') || 
         changedProperties.has('transactionType')) {
         
+      console.log('[CompanySearch] willUpdate', this.categoryId, this.searchQuery);
       if (!this.categoryId && !this.searchQuery) {
         this._errorText = "Invalid Search: Please provide either a category or a search query to continue.";
         return;
@@ -232,13 +245,13 @@ export class CompanySearch extends LitElement implements IViewAdapter {
 
   render() {
     return html`
-      <company-header-layout title-text="Search Results">
-        <div slot="logo" style="display: flex; align-items: center; height: 100%; justify-content: center; color: white; font-weight: bold; font-size: 1.2rem;">
-          bizSORT
-        </div>
-        
-        <search-box slot="navbar" query="${this.searchQuery || ''}"></search-box>
-
+      <directory-header-layout 
+        entity-type="company"
+        .categoryId=${this.categoryId}
+        .locationId=${this.locationId}
+        .searchQuery=${this.searchQuery}
+        .searchNear=${this.searchNear}
+      >
         <div class="content">
           <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end;">
             <div>
@@ -260,7 +273,7 @@ export class CompanySearch extends LitElement implements IViewAdapter {
                 : (this.searchQuery || this.categoryId) ? html`<div class="empty-state">No companies found matching your criteria.</div>` : ''
           }
         </div>
-      </company-header-layout>
+      </directory-header-layout>
     `;
   }
 }

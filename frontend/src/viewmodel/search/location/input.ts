@@ -135,7 +135,7 @@ export class Input extends ViewModel implements IInput {
                 selected: this._selected
             };
             this._selected = value;
-            this.notifyView(['selected'], old);
+            this.notifyView(['selected']);
         }
     }
 

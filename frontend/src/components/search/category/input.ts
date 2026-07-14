@@ -93,6 +93,10 @@ export class SearchCategoryInput extends LitElement implements IViewAdapter {
             --wa-color-neutral-on-quiet: var(--search-home-text-color, var(--text-color-on-primary));
             --wa-color-neutral-fill-quiet: transparent;
             --wa-color-neutral-border-normal: transparent;
+            position: absolute;
+            bottom: -28px;
+            left: 0;
+            z-index: 10;
         }
 
         wa-input {

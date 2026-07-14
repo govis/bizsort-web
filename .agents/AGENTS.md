@@ -90,3 +90,20 @@ This file contains structural and naming conventions that all agents must follow
 - **Validation Requirements:** For a search to proceed, two constraints must be met:
   1. **What:** At least ONE of *Selected Category* or *Search String* is required (both are fine).
   2. **Where:** EXACTLY ONE of *Selected Location* (from DB) or *searchNear* (from Google API) must be provided.
+
+### 7. Collapsible Header Layouts (Native CSS)
+- **No JS Wrappers Needed:** The legacy codebase relied heavily on Polymer's `<app-header-layout>` and `<app-header>` to create "collapsible" headers (where a top search bar scrolls away, but a bottom navbar sticks to the top of the viewport). WebAwesome does NOT have an equivalent layout component because modern CSS handles this natively.
+- **Implementation (Sticky Negative Top):** When porting these layouts, use native CSS `position: sticky`. Place both the collapsible header (e.g., `search-header`) and the sticky navbar (e.g., `.navbar`) inside a single wrapper (e.g., `.header-panel`). 
+- **The Calculation:** Set the wrapper to `position: sticky` and set `top` to a **negative value equal to the exact pixel height of the collapsible element**. 
+- **Example:** If `search-header` is `72px` tall, styling `.header-panel { position: sticky; top: -72px; }` allows the wrapper to scroll up until the `search-header` is completely hidden off-screen (`-72px`), at which point the `.navbar` structurally lands perfectly at `0px` and sticks there. This achieves zero-JS, buttery smooth native scrolling parity with the legacy app-header component.
+
+### 8. URL State Synchronization (Shallow Routing)
+- **Legacy reflectToken parity:** In the legacy architecture, the UI state (e.g., selected categories and locations) was often preserved silently without causing page reloads so that clicking the "Back" button would properly rehydrate the search inputs.
+- **Modern Implementation (replaceState):** Modern Next.js routing uses `searchParams` on initial load for hydration. To ensure that navigating away and hitting "Back" restores the exact state the user left (even if they hadn't hit "Search" yet), orchestrator components (like `search-home` and `search-header`) hosting `SearchHome$` viewmodels MUST silently sync their selection state to the URL.
+- **How to Implement:** Tap into the `modelUpdated(props: string[])` lifecycle hook. When `props.includes('selection')`, execute a function (`_syncUrlState()`) that constructs a new `URL(window.location.href)`, maps `this.model.selection` to `URLSearchParams` (`categoryId`, `locationId`, `searchQuery`, `searchNear`), and calls `window.history.replaceState(null, '', url.toString())`.
+- **Constraint Enforcement:** It is crucial that the viewmodel correctly zeros out mutually exclusive parameters BEFORE synchronization (e.g., if a geocoded `near` object is present, the database `location` ID must be explicitly suppressed to `0` to enforce the 1-of-2 location rule).
+
+### 9. MVVM Separation of Concerns (DOM/Browser APIs)
+- **ViewModel Boundaries:** ViewModels (like `SearchHome$`) must remain strictly agnostic to the host environment (DOM, SSR, or Node.js). They exist purely to manage business logic, state, and validation.
+- **No Direct DOM Manipulation:** NEVER call browser-specific APIs like `window.history.replaceState`, `window.location`, or `document.querySelector` directly inside a ViewModel class.
+- **The View's Responsibility:** Browser side-effects (like syncing URL parameters or focusing elements) are strictly the responsibility of the Lit components (the "View"). The components should observe the ViewModel (e.g., via `modelUpdated`) and execute the necessary browser APIs in response to state changes.

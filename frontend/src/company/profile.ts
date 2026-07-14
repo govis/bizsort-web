@@ -394,14 +394,14 @@ export class CompanyProfile extends LitElement {
   }
 
   private _renderProductsTab() {
-    const productRefs = this._company!.offerings?.items || []; // Assume items has product refs
+    const productRefs = (this._company!.offerings as any)?.items || []; // Assume items has product refs
     return html`
       <layout-card class="tab-section" heading="${this._company!.offerings?.label || 'What We Do'}">
         <div class="rich-text">
           ${this._company!.offerings?.multiProduct ? unsafeHTML(this._company!.offerings.multiProduct) : ''}
         </div>
         ${productRefs.length > 0 ? html`
-          <product-slider .companyId="\${this.companyId}" .productRefs="\${productRefs}"></product-slider>
+          <product-slider .companyId="${this.companyId}" .productRefs="${productRefs}"></product-slider>
         ` : ''}
       </layout-card>
     `;

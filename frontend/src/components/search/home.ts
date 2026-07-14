@@ -52,6 +52,31 @@ export class SearchHome extends LitElement implements IViewAdapter {
     // Re-render when viewmodel selection changes
     if (props.includes('selection')) {
         this.requestUpdate();
+        this._syncUrlState();
+    }
+  }
+
+  private _syncUrlState() {
+    if (!this.model || !this.model.selection) return;
+    try {
+        const url = new URL(window.location.href);
+        const sel = this.model.selection;
+        
+        if (sel.category) url.searchParams.set('categoryId', sel.category.toString());
+        else url.searchParams.delete('categoryId');
+        
+        if (sel.location) url.searchParams.set('locationId', sel.location.toString());
+        else url.searchParams.delete('locationId');
+        
+        if (sel.query) url.searchParams.set('searchQuery', sel.query);
+        else url.searchParams.delete('searchQuery');
+        
+        if (sel.near) url.searchParams.set('searchNear', JSON.stringify(sel.near));
+        else url.searchParams.delete('searchNear');
+        
+        window.history.replaceState(null, '', url.toString());
+    } catch (e) {
+        // Ignore URL parsing errors during SSR or edge cases
     }
   }
 
