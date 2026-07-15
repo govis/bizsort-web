@@ -8,11 +8,11 @@ using Microsoft.Extensions.Configuration;
 var builder = Host.CreateApplicationBuilder(args);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("BizSort")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("BizSort"), x => x.UseNetTopologySuite()));
 
 builder.Services.AddGrpcClient<BizSrt.Model.Grpc.CompanyService.CompanyServiceClient>(o =>
 {
-    o.Address = new Uri("http://localhost:5000");
+    o.Address = new Uri("https://localhost:5001");
 });
 builder.Services.AddHostedService<Indexer>();
 
