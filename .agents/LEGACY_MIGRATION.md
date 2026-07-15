@@ -84,7 +84,8 @@ The legacy codebase is split into two primary areas:
 ### 1. Backend Services & Data
 
 - [x] **Project Structure & Libraries:** Refactored the monolith into BizSrt.Model, BizSrt.Foundation, BizSrt.Data, BizSrt.Worker, and BizSrt.Api. Handled circular dependencies and enforced InternalsVisibleTo.
-- [x] **Background Worker (Indexer):** Scaffolded BizSrt.Worker project. Mapped legacy google.protobuf and gRPC implementation plan to rebuild the IndexCompany polling logic.
+- [x] **Background Worker (Indexer):** Scaffolded BizSrt.Worker project. Mapped legacy google.protobuf and gRPC implementation plan to rebuild the IndexCompany polling logic. Configured `NetTopologySuite` for spatial data.
+- [x] **Facet Indexing Logic:** Rebuilt the highly complex two-way synchronization loop for `FacetSetCompanies`. Ported `IndexCompanyFacetSetAsync` (for dynamically created Sets Cache queries) and `refreshCompanyFacetSetsAsync` (for recalculating set satisfiability when a company updates its generic facets).
 - [x] **Dictionary Caches:** Ported DictionaryItem, DictionaryType, DictionaryCache, and integrated into LegacyCache.
 
 - [x] **Location Infrastructure:** Ported `LocationRef`, `IdName`, `LocationSettings`, `LocationType` enum, and the static `BizSrt.Api.Data.Master.Location` facade.
