@@ -1411,7 +1411,7 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `DeleteProductFacetSet()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `GetEventId()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `IndexCommunityArticle()` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `IndexCompany()` | | |
+| [x] | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `IndexCompany()` | `BizSrt.Api.Process.Company.IndexCompanyAsync()` | Ported cache synchronization logic using generic IQueryable and Bitwise Dictionary logic. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `IndexProduct()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `IndexProject()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `LogEvent()` | | |
@@ -3547,7 +3547,7 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `CompanyApp()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `CompanyImage()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Get()` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `IndexCompany()` | | |
+| [x] | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `IndexCompany()` | `BizSrt.Api.Process.Company.IndexCompanyAsync()` | Ported cache synchronization logic using generic IQueryable and Bitwise Dictionary logic. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `IndexProduct()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `IndexProject()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Module()` | | |

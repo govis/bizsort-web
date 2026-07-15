@@ -22,20 +22,42 @@ namespace BizSrt.Api.Process
             // Update the indexed timestamp to indicate we have processed this company
             company.Indexed = DateTime.UtcNow;
 
-            // TODO: Port CompanyFacets cache logic when the required concurrent dictionary caches are fully ported.
-            // Currently, CompanyFacetCache and LegacyCache.CompanyFacetValues are missing from BizSrt.Data.
-            
-            // TODO: Port CompanyFacets cache logic when the required concurrent dictionary caches are fully ported.
-            // Currently, CompanyFacetCache and LegacyCache.CompanyFacetValues are missing from BizSrt.Data.
-            
+            var cache = await dc.CompanyFacets
+                .Where(bf => bf.Company == companyId && !bf.UserDefined)
+                .ToArrayAsync(cancellationToken);
+
+            var facets = new System.Collections.Generic.List<LocalFacet>();
+            var processed = new System.Collections.Generic.List<long>();
+
+            if (company.Category > 0)
+            {
+                createCompanyFacet(facets, company);
+            }
+
             bool refreshFacetSets = false;
-            // var dbf = cache.Where(cbf => !processedValues.Contains(cbf.FacetValue)).ToArray();
-            // if (dbf.Length > 0)
-            // {
-            //     // dc.CompanyFacets.RemoveRange(dbf); // Keyless, need to handle differently or map keys. 
-            //     // TODO: Properly map CompanyFacet primary key in EF so we can remove
-            //     refreshFacetSets = true;
-            // }
+            foreach (var facet in facets)
+            {
+                var facetName = BizSrt.Api.Data.Cache.LegacyCache.CompanyFacetNames[facet.Name, BizSrt.Foundation.Cache.TwoKeySuppress.None, facet.Name];
+                var facetValue = BizSrt.Api.Data.Cache.LegacyCache.CompanyFacetValues[new BizSrt.Api.Data.Cache.Company.Facet.CachedValue.Key { Name = facetName, ValueType = (byte)facet.ValueType, Value = facet.ValueData }, BizSrt.Foundation.Cache.TwoKeySuppress.None, facet.ValueText];
+                var bf = cache.SingleOrDefault(cbf => cbf.Company == companyId && cbf.FacetValue == facetValue);
+                if (bf == null)
+                {
+                    bf = new CompanyFacet { Company = companyId, FacetValue = facetValue, UserDefined = false };
+                    dc.CompanyFacets.Add(bf);
+                    refreshFacetSets = true;
+                }
+                else
+                {
+                    processed.Add(bf.Id);
+                }
+            }
+
+            var dbf = cache.Where(cbf => !processed.Contains(cbf.Id)).ToArray();
+            if (dbf.Length > 0)
+            {
+                dc.CompanyFacets.RemoveRange(dbf);
+                refreshFacetSets = true;
+            }
 
             company.Indexed = DateTime.UtcNow;
 
@@ -134,22 +156,121 @@ namespace BizSrt.Api.Process
             if (facets.Length > 0)
             {
                 var facetSet = await dc.CompanyFacetSets.SingleAsync(bfs => bfs.Id == setId, cancellationToken);
-                
-                // TODO: Implement the LINQ building block CompanyProfile.Get(dc, inclFilters, exclFilters) to replace this logic
-                // var cq = CompanyProfile.Get(dc, new Model.Semantic.FacetFilter(facets, false), new Model.Semantic.FacetFilter(facets, true));
+                var cq = BizSrt.Api.Data.Company.ProfileQueryExtensions.Get(dc, new BizSrt.Model.Semantic.FacetFilter(facets, false), new BizSrt.Model.Semantic.FacetFilter(facets, true));
 
-                // dc.FacetSetCompanies.RemoveRange(dc.FacetSetCompanies.Where(bsp => bsp.FacetSet == setId));
-                // dc.FacetSetCompanies.AddRange(from c in cq.ToArray()
-                //                               select new FacetSetCompany { FacetSet = setId, Company = c.Id });
+                var existingFsc = await dc.FacetSetCompanies.Where(bsp => bsp.FacetSet == setId).ToArrayAsync(cancellationToken);
+                dc.FacetSetCompanies.RemoveRange(existingFsc);
+
+                var companyIds = await cq.Select(c => c.Id).ToArrayAsync(cancellationToken);
+                dc.FacetSetCompanies.AddRange(companyIds.Select(cid => new FacetSetCompany { FacetSet = setId, Company = cid }));
 
                 facetSet.Indexed = DateTime.UtcNow;
                 await dc.SaveChangesAsync(cancellationToken);
 
-                // TODO: Cache.CompanyFacetSets[key] = setId; and update Indexed property in cache
+                var cachedSet = BizSrt.Api.Data.Cache.LegacyCache.CompanyFacetSets?[setId];
+                if (cachedSet != null)
+                {
+                    cachedSet.Indexed = true;
+                }
             }
             else
             {
                 throw new InvalidOperationException($"No Company Facets found for Set {setId}");
+            }
+        }
+
+        private enum FacetValueType : byte
+        {
+            _Status = 1,
+            _Category = 2,
+            _Type = 3,
+            _Industry = 4
+        }
+
+        private class LocalFacet
+        {
+            public FacetValueType ValueType { get; set; }
+            public bool UserDefined { get; set; }
+            public string Name { get; set; }
+            public byte[] ValueData { get; set; } = Array.Empty<byte>();
+            public string ValueText { get; set; } = string.Empty;
+
+            public LocalFacet(FacetValueType valueType, bool userDefined)
+            {
+                ValueType = valueType;
+                UserDefined = userDefined;
+                Name = string.Empty;
+            }
+        }
+
+        private static void createCompanyFacet(System.Collections.Generic.List<LocalFacet> facets, CompanyProfile company)
+        {
+            if (company.Id > 0)
+            {
+                if (company.Category > 0)
+                {
+                    var cat = BizSrt.Api.Data.Cache.LegacyCache.Categories?[company.Category];
+                    if (cat != null)
+                    {
+                        facets.Add(new LocalFacet(FacetValueType._Category, false)
+                        {
+                            Name = "Category",
+                            ValueData = BitConverter.GetBytes(company.Category),
+                            ValueText = cat.QualifiedName
+                        });
+                    }
+                }
+                if (company.TransactionType != 0)
+                {
+                    var transactionTypes = BizSrt.Api.Data.Cache.LegacyCache.Dictionary?.Get<BizSrt.Model.TransactionType>(BizSrt.Model.DictionaryType.TransactionType);
+                    if (transactionTypes != null)
+                    {
+                        foreach (var transactionType in transactionTypes)
+                        {
+                            if ((transactionType.ItemKey & company.TransactionType) > 0)
+                                facets.Add(new LocalFacet(FacetValueType._Type, false)
+                                {
+                                    Name = "Type",
+                                    ValueData = BitConverter.GetBytes(transactionType.ItemKey),
+                                    ValueText = transactionType.ItemText
+                                });
+                        }
+                    }
+                }
+                if (company.ServiceType != 0)
+                {
+                    var serviceTypes = BizSrt.Api.Data.Cache.LegacyCache.Dictionary?.Get<BizSrt.Model.ServiceType>(BizSrt.Model.DictionaryType.ServiceType);
+                    if (serviceTypes != null)
+                    {
+                        foreach (var serviceType in serviceTypes)
+                        {
+                            if ((serviceType.ItemKey & company.ServiceType) > 0)
+                                facets.Add(new LocalFacet(FacetValueType._Type, false)
+                                {
+                                    Name = "Type",
+                                    ValueData = BitConverter.GetBytes(-Convert.ToInt32(serviceType.ItemKey)),
+                                    ValueText = serviceType.ItemText
+                                });
+                        }
+                    }
+                }
+                if (company.Industry != 0)
+                {
+                    var industries = BizSrt.Api.Data.Cache.LegacyCache.Dictionary?.Get<BizSrt.Model.Industry>(BizSrt.Model.DictionaryType.Industry);
+                    if (industries != null)
+                    {
+                        foreach (var industry in industries)
+                        {
+                            if ((industry.ItemKey & company.Industry) > 0)
+                                facets.Add(new LocalFacet(FacetValueType._Industry, false)
+                                {
+                                    Name = "Industry",
+                                    ValueData = BitConverter.GetBytes(industry.ItemKey),
+                                    ValueText = industry.ItemText
+                                });
+                        }
+                    }
+                }
             }
         }
     }

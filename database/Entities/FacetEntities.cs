@@ -4,11 +4,12 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace BizSrt.Data.Entities;
 
 [Table("CompanyFacets")]
-[Keyless]
 public class CompanyFacet
 {
+    public long Id { get; set; }
     public int Company { get; set; }
     public int FacetValue { get; set; }
+    public bool UserDefined { get; set; }
 }
 
 [Table("CompanyFacetNames")]
@@ -63,11 +64,12 @@ public class FacetSetCompany
 }
 
 [Table("CompanyProductFacets")]
-[Keyless]
 public class CompanyProductFacet
 {
+    public long Id { get; set; }
     public long Product { get; set; }
     public int FacetValue { get; set; }
+    public bool UserDefined { get; set; }
 }
 
 [Table("CompanyProductFacetNames")]

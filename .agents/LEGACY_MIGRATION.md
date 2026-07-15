@@ -7,9 +7,9 @@ This document provides a comprehensive overview of the legacy BizSort architectu
 The new modern architecture breaks the monolith into standard .NET 10 libraries:
 - **BizSrt.Model**: POCO DTOs, Enums, and ViewModels (Zero dependencies).
 - **BizSrt.Foundation**: Abstract caching layers, utilities, text conversion (Depends on Model).
-- **BizSrt.Data**: A pure Data Access Layer containing ONLY the EF Core 10 DataContext, Entities, and extensions (Depends on Foundation).
-- **BizSrt.Api**: The frontend-facing REST API and orchestrating services. **Crucially, this layer now acts as the authoritative source for all concrete memory caches (`backend/Data/Cache`), legacy master classes, and process logic.** (Depends on Data).
-- **BizSrt.Worker**: Separate BackgroundService process for heavy background processing (like IndexCompany). Because the memory caches live in `BizSrt.Api`, the Worker must access cached state or trigger cache calculations via `BizSrt.Api` endpoints (e.g., gRPC) rather than reading from memory directly. (Depends on Data).
+- **BizSrt.Data**: A pure Data Access Layer strictly containing ONLY the EF Core 10 `AppDbContext`, Entities, and `IQueryable` extensions. **Do not place Caches or business logic here.** (Depends on Foundation).
+- **BizSrt.Api**: The frontend-facing REST API and orchestrating services. **Crucially, this layer acts as the authoritative source and sole host for all concrete memory caches (`backend/Data/Cache`), Legacy Master classes (`backend/Data/Master`), and Process logic (`backend/Process`).** (Depends on Data).
+- **BizSrt.Worker**: Separate BackgroundService process for heavy background processing (e.g. queue consumers). **Crucial Rule:** Because the memory caches are instantiated strictly inside `BizSrt.Api`, any background worker or external process MUST NOT attempt to instantiate or access these caches directly. They must interact with `BizSrt.Api` via endpoints or gRPC to trigger cached calculations (like `IndexCompany`). (Depends on Data).
 
 
 ## Legacy Architecture Overview
