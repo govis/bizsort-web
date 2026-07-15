@@ -49,6 +49,17 @@ public class CompanyFacetSetDetail
     public int Set { get; set; }
     public int Value { get; set; }
     public bool Exclude { get; set; }
+
+    [ForeignKey("Set")]
+    public CompanyFacetSet CompanyFacetSet { get; set; } = null!;
+}
+
+[Table("FacetSetCompanies")]
+[PrimaryKey(nameof(FacetSet), nameof(Company))]
+public class FacetSetCompany
+{
+    public int FacetSet { get; set; }
+    public int Company { get; set; }
 }
 
 [Table("CompanyProductFacets")]
@@ -97,4 +108,7 @@ public class CompanyProductFacetSetDetail
     public int Set { get; set; }
     public int Value { get; set; }
     public bool Exclude { get; set; }
+
+    [ForeignKey("Set")]
+    public CompanyProductFacetSet CompanyProductFacetSet { get; set; } = null!;
 }

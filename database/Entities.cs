@@ -73,6 +73,26 @@ public partial class CompanyOffice
     public virtual CompanyProfile CompanyProfile { get; set; } = null!;
 }
 
+public partial class CompanyOffice_Audit
+{
+    public int Id { get; set; }
+    public DateTime Updated { get; set; }
+    public string UpdatedBy { get; set; } = string.Empty;
+    public int Company { get; set; }
+    public int? Location { get; set; }
+    public string? PostalCode { get; set; }
+    public string? StreetNumber { get; set; }
+    public int? StreetName { get; set; }
+    public string? Address1 { get; set; }
+    public float? Latitude { get; set; }
+    public float? Longitude { get; set; }
+    public string? Phone { get; set; }
+    public string? Phone1 { get; set; }
+    public string? Fax { get; set; }
+    public string? Name { get; set; }
+    public string? PlaceId { get; set; }
+}
+
 public partial class Category
 {
     public short Id { get; set; }

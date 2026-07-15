@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using BizSrt.Data.Company;
+using BizSrt.Api.Data.Company;
 using BizSrt.Model.Product;
 using System.Text.Json;
 

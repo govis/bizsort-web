@@ -19,10 +19,10 @@ public class ImageService(IServiceScopeFactory serviceScopeFactory) : IImageServ
 {
     public async Task<(byte[]? Content, string ContentType)> GetImageAsync(ImageEntity entity, long id, int width, int height)
     {
-        var key = new BizSrt.Data.Cache.ImageCacheKey(entity, id);
+        var key = new BizSrt.Api.Data.Cache.ImageCacheKey(entity, id);
         
         // Suppress exception if record not found
-        var image = BizSrt.Data.Cache.LegacyCache.Images[key, BizSrt.Foundation.Cache.ReadOneSuppress.RecordNotFound];
+        var image = BizSrt.Api.Data.Cache.LegacyCache.Images[key, BizSrt.Foundation.Cache.ReadOneSuppress.RecordNotFound];
         
         if (image == null) return (null, string.Empty);
         

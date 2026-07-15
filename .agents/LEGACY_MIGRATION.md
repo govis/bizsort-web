@@ -7,9 +7,9 @@ This document provides a comprehensive overview of the legacy BizSort architectu
 The new modern architecture breaks the monolith into standard .NET 10 libraries:
 - **BizSrt.Model**: POCO DTOs, Enums, and ViewModels (Zero dependencies).
 - **BizSrt.Foundation**: Abstract caching layers, utilities, text conversion (Depends on Model).
-- **BizSrt.Data**: EF Core 10 DataContext, Entities, and concrete memory Caches (Depends on Foundation).
-- **BizSrt.Worker**: Separate BackgroundService process for heavy lifting like IndexCompany via gRPC (Depends on Data).
-- **BizSrt.Api**: The frontend-facing REST API and orchestrating services (Depends on Data).
+- **BizSrt.Data**: A pure Data Access Layer containing ONLY the EF Core 10 DataContext, Entities, and extensions (Depends on Foundation).
+- **BizSrt.Api**: The frontend-facing REST API and orchestrating services. **Crucially, this layer now acts as the authoritative source for all concrete memory caches (`backend/Data/Cache`), legacy master classes, and process logic.** (Depends on Data).
+- **BizSrt.Worker**: Separate BackgroundService process for heavy background processing (like IndexCompany). Because the memory caches live in `BizSrt.Api`, the Worker must access cached state or trigger cache calculations via `BizSrt.Api` endpoints (e.g., gRPC) rather than reading from memory directly. (Depends on Data).
 
 
 ## Legacy Architecture Overview
@@ -19,7 +19,7 @@ The legacy codebase is split into two primary areas:
 1. **`legacy/server/` (Backend - C#):** 
    - A highly cached, layered monolith.
    - **Data Layer (`Data/`):** Directly queries EF Core `Entities` and uses heavily cached read-through proxies (e.g., `Cache.cs` and `ReadManyExpirationCache`).
-   - **Service Layer (`Service/`):** Contains business logic that invokes the Data layer caches and helpers.
+   - **Service Layer (`Data/Service.cs`):** Contains business logic that invokes the Data layer caches and helpers. **When porting items from this legacy file, their modern destination is `backend/Process/` (e.g., `BizSrt.Api.Process.Company`). This avoids confusion with the modern `Service/` layer which maps endpoints to DTOs.**
    - **Model Layer (`Model/`):** Contains DTOs and view models mapped from the Data layer or returned to the UI.
    - **API/Endpoints:** Historically used Web API/MVC controllers.
 

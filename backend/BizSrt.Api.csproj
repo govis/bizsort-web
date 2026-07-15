@@ -20,6 +20,12 @@
     <ProjectReference Include="..\database\BizSrt.Data.csproj" />
     <ProjectReference Include="..\foundation\BizSrt.Foundation.csproj" />
     <ProjectReference Include="..\model\BizSrt.Model.csproj" />
+    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Grpc.AspNetCore" Version="2.62.0" />
   </ItemGroup>
-
+  <ItemGroup>
+    <Protobuf Include="..\model\Protos\company.proto" GrpcServices="Server" />
+  </ItemGroup>
 </Project>
+

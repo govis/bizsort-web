@@ -8,7 +8,7 @@ using System.Text.Json;
 
 namespace BizSrt.Api.Service.Company;
 
-using BizSrt.Data.Company;
+using BizSrt.Api.Data.Company;
 
 public static class CompanyEndpoints
 {

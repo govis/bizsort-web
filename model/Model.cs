@@ -35,6 +35,15 @@ namespace BizSrt.Model
         Deleted = 6
     }
 
+    [Flags]
+    public enum PendingStatus : byte
+    {
+        EmailConfirmation = 1,
+        PasswordReset = 2,
+        PeerReview = 4,
+        StaffReview = 8
+    }
+
     public enum AccountType : byte
     {
         Person = 1,

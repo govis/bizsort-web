@@ -45,6 +45,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public virtual DbSet<CompanyFacetName> CompanyFacetNames { get; set; }
     public virtual DbSet<CompanyFacetSet> CompanyFacetSets { get; set; }
     public virtual DbSet<CompanyFacetSetDetail> CompanyFacetSetDetails { get; set; }
+    public virtual DbSet<FacetSetCompany> FacetSetCompanies { get; set; }
+    public virtual DbSet<CompanyOffice_Audit> CompanyOffices_Audit { get; set; }
 
     public virtual DbSet<CompanyProductFacet> CompanyProductFacets { get; set; }
     public virtual DbSet<CompanyProductFacetValue> CompanyProductFacetValues { get; set; }

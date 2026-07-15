@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+option csharp_namespace = "BizSrt.Model.Grpc";
+
+package company;
+
+service CompanyService {
+  rpc IndexCompany (IndexCompanyRequest) returns (IndexCompanyResponse);
+}
+
+message IndexCompanyRequest {
+  int32 company_id = 1;
+}
+
+message IndexCompanyResponse {
+  bool success = 1;
+}
