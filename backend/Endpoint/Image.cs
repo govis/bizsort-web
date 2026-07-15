@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using BizSrt.Api.Service;
-using BizSrt.Api.Model;
+using BizSrt.Model;
 
 namespace BizSrt.Api.Endpoint;
 

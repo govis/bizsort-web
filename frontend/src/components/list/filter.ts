@@ -26,7 +26,7 @@ export class ListFilterAvailable extends LitElement implements IViewAdapter {
 
     modelUpdated(props: string[]) {
         if (props.includes('facets')) {
-            this._facets = [...this.viewModel.facets];
+            this._facets = this.viewModel.facets ? [...this.viewModel.facets] : [];
             this.hidden = this._facets.length === 0;
             this.requestUpdate();
         }
@@ -58,13 +58,26 @@ export class ListFilterAvailable extends LitElement implements IViewAdapter {
             opacity: 1;
             color: var(--wa-color-danger-600);
         }
+        .filter-action {
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            border-radius: var(--wa-border-radius-circle, 50%);
+        }
+        .filter-action[variant="neutral"] {
+            --wa-color-neutral-fill-loud: var(--primary-theme-color, #448aff);
+            --wa-color-neutral-on-loud: white;
+            --wa-color-neutral-border-loud: transparent;
+            opacity: 0.8;
+        }
+        .filter-action wa-icon {
+            font-size: 20px;
+        }
     `;
 
     render() {
         return html`
             <wa-dropdown placement="bottom-start" hoist>
-                <wa-button slot="trigger" variant="text" is-icon-button>
-                    <wa-icon name="filter-list" library="system"></wa-icon>
+                <wa-button slot="trigger" variant="neutral" is-icon-button pill class="filter-action">
+                    <wa-icon library="bizsrt" name="filter-list"></wa-icon>
                 </wa-button>
                     ${this._facets.map(item => html`
                         <div class="facet-header">${item.text}</div>
@@ -72,7 +85,6 @@ export class ListFilterAvailable extends LitElement implements IViewAdapter {
                             <wa-dropdown-item value="${value.key}" @click=${() => this.viewModel.filterIn(value)}>
                                 ${value.text} (${value.count})
                                 <wa-button 
-                                    slot="suffix" 
                                     variant="text"
                                     class="exclude-btn" 
                                     is-icon-button

@@ -16,4 +16,10 @@
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.*" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\database\BizSrt.Data.csproj" />
+    <ProjectReference Include="..\foundation\BizSrt.Foundation.csproj" />
+    <ProjectReference Include="..\model\BizSrt.Model.csproj" />
+  </ItemGroup>
+
 </Project>

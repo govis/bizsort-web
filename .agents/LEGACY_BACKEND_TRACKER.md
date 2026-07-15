@@ -1254,8 +1254,8 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Reset()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `resize()` | | |
 | [ ] | â†³ `class Department` | - | - |
-| [ ] | â†³ `class Dictionary` | - | - |
-| [ ] | â†³ `class DictionaryCache` | - | - |
+| [x] | â†³ `class Dictionary` | BizSrt.Data.Master.Dictionary | Ported |
+| [x] | â†³ `class DictionaryCache` | BizSrt.Data.Cache.DictionaryCache | Ported |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `FetchDictionary()` | | |
 | [ ] | â†³ `class Facet` | - | - |
 | [ ] | â†³ `class FacetName` | - | - |
@@ -2487,7 +2487,7 @@
 | [ ] | â†³ `class CachedNode` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `HasChildren()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `OfType()` | | |
-| [ ] | â†³ `class Dictionary` | - | - |
+| [x] | â†³ `class Dictionary` | BizSrt.Data.Master.Dictionary | Ported |
 | [ ] | â†³ `class Enumerator` | - | - |
 | [ ] | â†³ `class FolderCache` | - | - |
 | [ ] | â†³ `class FolderItemCache` | - | - |
@@ -3017,9 +3017,9 @@
 | [ ] | â†³ `class Config` | - | - |
 | [ ] | â†³ `class Currency` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Convert()` | | |
-| [ ] | â†³ `class Dictionary` | - | - |
+| [x] | â†³ `class Dictionary` | BizSrt.Data.Master.Dictionary | Ported |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Convert()` | | |
-| [ ] | â†³ `class DictionaryItem` | - | - |
+| [x] | â†³ `class DictionaryItem` | BizSrt.Model.DictionaryItem | Ported |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Clone()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `ToString()` | | |
 | [ ] | â†³ `class DirectoryFeaturedInput` | - | - |
@@ -3784,5 +3784,6 @@
 | [ ] | â†³ `class Profile` | - | - |
 | | **Namespace: `User.Model.Promotion`** | | |
 | [ ] | â†³ `class Profile` | - | - |
+
 
 

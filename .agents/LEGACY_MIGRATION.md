@@ -2,6 +2,16 @@
 
 This document provides a comprehensive overview of the legacy BizSort architecture and tracks the modernization progress. **Please also refer to [LEGACY_BACKEND_TRACKER.md](file:///C:/Bizsort/bizsort-web/.agents/LEGACY_BACKEND_TRACKER.md) for a line-by-line backend file tracking matrix and [LEGACY_FRONTEND_TRACKER.md](file:///C:/Bizsort/bizsort-web/.agents/LEGACY_FRONTEND_TRACKER.md) for the frontend tracking matrix.**for the new Next.js / .NET 10 codebase. **All agents must review this file when deciding how to port or where to place code.**
 
+## Modern Architecture Overview
+
+The new modern architecture breaks the monolith into standard .NET 10 libraries:
+- **BizSrt.Model**: POCO DTOs, Enums, and ViewModels (Zero dependencies).
+- **BizSrt.Foundation**: Abstract caching layers, utilities, text conversion (Depends on Model).
+- **BizSrt.Data**: EF Core 10 DataContext, Entities, and concrete memory Caches (Depends on Foundation).
+- **BizSrt.Worker**: Separate BackgroundService process for heavy lifting like IndexCompany via gRPC (Depends on Data).
+- **BizSrt.Api**: The frontend-facing REST API and orchestrating services (Depends on Data).
+
+
 ## Legacy Architecture Overview
 
 The legacy codebase is split into two primary areas:
@@ -73,6 +83,10 @@ The legacy codebase is split into two primary areas:
 
 ### 1. Backend Services & Data
 
+- [x] **Project Structure & Libraries:** Refactored the monolith into BizSrt.Model, BizSrt.Foundation, BizSrt.Data, BizSrt.Worker, and BizSrt.Api. Handled circular dependencies and enforced InternalsVisibleTo.
+- [x] **Background Worker (Indexer):** Scaffolded BizSrt.Worker project. Mapped legacy google.protobuf and gRPC implementation plan to rebuild the IndexCompany polling logic.
+- [x] **Dictionary Caches:** Ported DictionaryItem, DictionaryType, DictionaryCache, and integrated into LegacyCache.
+
 - [x] **Location Infrastructure:** Ported `LocationRef`, `IdName`, `LocationSettings`, `LocationType` enum, and the static `BizSrt.Api.Data.Master.Location` facade.
 - [x] **Caching Scaffolding:** Ported base caching logic (`ReadManyExpirationCache`) and instantiated `LegacyCache` singletons.
 - [x] **Location Service & Endpoints:** Ported `LocationService` (Resolve, PopulateWithPath) and mapped legacy `OperationExceptionType` / Geocoding appropriately.
@@ -126,3 +140,4 @@ The legacy codebase is split into two primary areas:
 - [x] Port remaining company pages: `company/search.ts`, `company/profile.ts`, `company/header-layout.ts`.
 - [x] Fix Google Maps API Loader version incompatibility in `components/search/location/input.ts` (uses deprecated `Loader` class — must switch to functional `setOptions()`/`importLibrary()` API).
 - [ ] Further migration of remaining legacy frontend modules (see `LEGACY_FRONTEND_TRACKER.md`).
+

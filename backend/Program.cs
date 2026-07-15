@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using BizSrt.Api.Data;
+using BizSrt.Data;
 using BizSrt.Api.Service;
 using BizSrt.Api.Service.Company;
 using BizSrt.Api.Endpoint;
@@ -21,11 +21,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     ServiceLifetime.Singleton);
 
 // Domain Services
-builder.Services.AddScoped<BizSrt.Api.Data.Company.ICompanyService, BizSrt.Api.Data.Company.CompanyService>();
-builder.Services.AddScoped<BizSrt.Api.Data.Company.ICompanyProductService, BizSrt.Api.Data.Company.CompanyProductService>();
+builder.Services.AddScoped<BizSrt.Data.Company.ICompanyService, BizSrt.Data.Company.CompanyService>();
+builder.Services.AddScoped<BizSrt.Data.Company.ICompanyProductService, BizSrt.Data.Company.CompanyProductService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ILocationService, LocationService>();
-// builder.Services.AddSingleton<BizSrt.Api.Data.Cache.Company.CompanyProfilesCache>();
+// builder.Services.AddSingleton<BizSrt.Data.Cache.Company.CompanyProfilesCache>();
 builder.Services.AddSingleton<IImageService, ImageService>();
 
 builder.Services.AddCors(options =>
@@ -41,7 +41,7 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // --- Middleware Pipeline ---
-BizSrt.Api.Data.Cache.LegacyCache.Initialize(app.Services);
+BizSrt.Data.Cache.LegacyCache.Initialize(app.Services);
 
 if (app.Environment.IsDevelopment())
 {

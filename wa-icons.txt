@@ -10,3 +10,4 @@ WebAwesome will automatically fetch the SVGs from FontAwesome's CDN behind the s
 2. System Icons: WebAwesome also bundles a very small, hardcoded set of core UI icons directly into its
 JavaScript (to avoid network requests for critical UI elements like dropdown carets or close buttons). To use
 these, you have to explicitly declare the library:  <wa-icon name="x" library="system"></wa-icon> .
+3. Custom BizSort Icons: The project includes a custom icon library registered under `bizsrt`. This is used for legacy Material icons or custom SVG graphics that don't map perfectly to FontAwesome. You must explicitly declare the library: `<wa-icon name="filter-list" library="bizsrt"></wa-icon>`.

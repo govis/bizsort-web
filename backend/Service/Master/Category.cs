@@ -1,8 +1,8 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using BizSrt.Api.Data.Cache;
-using BizSrt.Api.Model;
-using BizSrt.Api.Model.Group;
+using BizSrt.Data.Cache;
+using BizSrt.Model;
+using BizSrt.Model.Group;
 using System;
 
 namespace BizSrt.Api.Service.Master;
@@ -10,25 +10,25 @@ namespace BizSrt.Api.Service.Master;
 public interface ICategoryService
 {
     Task<Autocomplete<short>[]> AutocompleteAsync(short parentCategory, string name, string? scopeInput);
-    Task<BizSrt.Api.Model.Group.IdName<short>> GetAsync(short category);
-    Task<BizSrt.Api.Model.Group.Node<short>> PopulateWithChildrenAsync(short parentCategory, BizSrt.Api.Model.Group.SubType type, BizSrt.Api.Model.Category.MemberType memberType);
-    Task<BizSrt.Api.Model.Group.NodeRef<short>[]> GetChildrenAsync(short parentCategory, short lookupCategory);
-    Task<BizSrt.Api.Model.Group.IdName<short>[]> GetPathAsync(short category, string? scopeInput);
+    Task<BizSrt.Model.Group.IdName<short>> GetAsync(short category);
+    Task<BizSrt.Model.Group.Node<short>> PopulateWithChildrenAsync(short parentCategory, BizSrt.Model.Group.SubType type, BizSrt.Model.Category.MemberType memberType);
+    Task<BizSrt.Model.Group.NodeRef<short>[]> GetChildrenAsync(short parentCategory, short lookupCategory);
+    Task<BizSrt.Model.Group.IdName<short>[]> GetPathAsync(short category, string? scopeInput);
 }
 
 public class CategoryService : ICategoryService
 {
     public Task<Autocomplete<short>[]> AutocompleteAsync(short parentCategory, string name, string? scopeInput)
     {
-        BizSrt.Api.Model.Group.IdName<short>? scope = null;
+        BizSrt.Model.Group.IdName<short>? scope = null;
         if (!string.IsNullOrWhiteSpace(scopeInput))
         {
-            try { scope = JsonSerializer.Deserialize<BizSrt.Api.Model.Group.IdName<short>>(scopeInput, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }); } catch { }
+            try { scope = JsonSerializer.Deserialize<BizSrt.Model.Group.IdName<short>>(scopeInput, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }); } catch { }
         }
 
         if (parentCategory >= 0 && !string.IsNullOrWhiteSpace(name))
         {
-            var categorySearchCacheKey = new BizSrt.Api.Foundation.Cache.GroupSearchCache<short> { Parent = parentCategory, Name = name };
+            var categorySearchCacheKey = new BizSrt.Foundation.Cache.GroupSearchCache<short> { Parent = parentCategory, Name = name };
             var categories = LegacyCache.CategorySearch[categorySearchCacheKey].Take(15);
             
             var result = (from c in categories
@@ -50,7 +50,7 @@ public class CategoryService : ICategoryService
         }
     }
 
-    public Task<BizSrt.Api.Model.Group.IdName<short>> GetAsync(short category)
+    public Task<BizSrt.Model.Group.IdName<short>> GetAsync(short category)
     {
         if (category > 0)
             return Task.FromResult(LegacyCache.Categories[category].IdName);
@@ -58,25 +58,25 @@ public class CategoryService : ICategoryService
             throw new ArgumentException("Invalid category.");
     }
 
-    public Task<BizSrt.Api.Model.Group.Node<short>> PopulateWithChildrenAsync(short parentCategory, BizSrt.Api.Model.Group.SubType type, BizSrt.Api.Model.Category.MemberType memberType)
+    public Task<BizSrt.Model.Group.Node<short>> PopulateWithChildrenAsync(short parentCategory, BizSrt.Model.Group.SubType type, BizSrt.Model.Category.MemberType memberType)
     {
         if (parentCategory >= 0)
-            return Task.FromResult(BizSrt.Api.Foundation.Cache.CachedNode<short>.PopulateWithChildren(parentCategory, type, (byte)memberType, LegacyCache.Categories));
+            return Task.FromResult(BizSrt.Foundation.Cache.CachedNode<short>.PopulateWithChildren(parentCategory, type, (byte)memberType, LegacyCache.Categories));
         else
             throw new ArgumentException("Invalid parent category.");
     }
 
-    public Task<BizSrt.Api.Model.Group.NodeRef<short>[]> GetChildrenAsync(short parentCategory, short lookupCategory)
+    public Task<BizSrt.Model.Group.NodeRef<short>[]> GetChildrenAsync(short parentCategory, short lookupCategory)
     {
         return Task.FromResult(LegacyCache.Categories.GetChildren(parentCategory, lookupCategory));
     }
 
-    public Task<BizSrt.Api.Model.Group.IdName<short>[]> GetPathAsync(short category, string? scopeInput)
+    public Task<BizSrt.Model.Group.IdName<short>[]> GetPathAsync(short category, string? scopeInput)
     {
-        BizSrt.Api.Model.Group.IdName<short>? scope = null;
+        BizSrt.Model.Group.IdName<short>? scope = null;
         if (!string.IsNullOrWhiteSpace(scopeInput))
         {
-            try { scope = JsonSerializer.Deserialize<BizSrt.Api.Model.Group.IdName<short>>(scopeInput, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }); } catch { }
+            try { scope = JsonSerializer.Deserialize<BizSrt.Model.Group.IdName<short>>(scopeInput, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }); } catch { }
         }
 
         if (category > 0)
@@ -118,7 +118,7 @@ public static class CategoryEndpoints
             }
         });
 
-        group.MapGet("/populate_Children", async ([FromQuery] short parent, [FromQuery] BizSrt.Api.Model.Group.SubType type, [FromQuery] BizSrt.Api.Model.Category.MemberType memberType, ICategoryService categoryService) =>
+        group.MapGet("/populate_Children", async ([FromQuery] short parent, [FromQuery] BizSrt.Model.Group.SubType type, [FromQuery] BizSrt.Model.Category.MemberType memberType, ICategoryService categoryService) =>
         {
             try
             {

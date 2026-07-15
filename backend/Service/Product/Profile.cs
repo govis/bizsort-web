@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
-using BizSrt.Api.Data.Company;
-using BizSrt.Api.Model.Product;
+using BizSrt.Data.Company;
+using BizSrt.Model.Product;
 using System.Text.Json;
 
 namespace BizSrt.Api.Service.Product;
@@ -20,7 +20,7 @@ public static class ProductEndpoints
 
         group.MapGet("/profile/getFeatured", async ([FromQuery] string sliceInput, ICompanyProductService productService) =>
         {
-            var input = JsonSerializer.Deserialize<BizSrt.Api.Model.List.DirectorySliceInput<long>>(sliceInput, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var input = JsonSerializer.Deserialize<BizSrt.Model.List.DirectorySliceInput<long>>(sliceInput, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
             if (input == null) return Results.BadRequest();
             var result = await productService.GetFeaturedAsync(input);
             return Results.Ok(result);

@@ -1,8 +1,8 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using BizSrt.Api.Data.Cache;
-using BizSrt.Api.Model;
-using BizSrt.Api.Model.Group;
+using BizSrt.Data.Cache;
+using BizSrt.Model;
+using BizSrt.Model.Group;
 using System;
 
 namespace BizSrt.Api.Service.Master;
@@ -10,18 +10,18 @@ namespace BizSrt.Api.Service.Master;
 public interface ILocationService
 {
     Task<Autocomplete<int>[]> AutocompleteAsync(int parentLocation, string name, string? scopeInput);
-    Task<BizSrt.Api.Model.ResolvedLocation> ResolveAsync(BizSrt.Api.Model.Geocoder.City city, string street, bool allowCreate);
-    Task<BizSrt.Api.Model.Group.IdName<int>> GetAsync(int location);
-    Task<BizSrt.Api.Model.LocationRef> GetRefAsync(int location, BizSrt.Api.Model.Group.DisplayType type);
-    Task<BizSrt.Api.Model.Group.IdName<int>[]> GetPathAsync(int location, string? scopeInput);
-    Task<BizSrt.Api.Model.Group.Node<int>> PopulateWithChildrenAsync(int parent, BizSrt.Api.Model.Group.SubType type);
-    Task<BizSrt.Api.Model.Location> PopulateWithPathAsync(int location);
-    Task<BizSrt.Api.Model.Location> PopulateWithPathAsync(int city, int street);
+    Task<BizSrt.Model.ResolvedLocation> ResolveAsync(BizSrt.Model.Geocoder.City city, string street, bool allowCreate);
+    Task<BizSrt.Model.Group.IdName<int>> GetAsync(int location);
+    Task<BizSrt.Model.LocationRef> GetRefAsync(int location, BizSrt.Model.Group.DisplayType type);
+    Task<BizSrt.Model.Group.IdName<int>[]> GetPathAsync(int location, string? scopeInput);
+    Task<BizSrt.Model.Group.Node<int>> PopulateWithChildrenAsync(int parent, BizSrt.Model.Group.SubType type);
+    Task<BizSrt.Model.Location> PopulateWithPathAsync(int location);
+    Task<BizSrt.Model.Location> PopulateWithPathAsync(int city, int street);
 }
 
 public class ResolveRequest
 {
-    public BizSrt.Api.Model.Geocoder.City City { get; set; } = new();
+    public BizSrt.Model.Geocoder.City City { get; set; } = new();
     public string Street { get; set; } = string.Empty;
     public bool AllowCreate { get; set; }
 }
@@ -30,15 +30,15 @@ public class LocationService : ILocationService
 {
     public Task<Autocomplete<int>[]> AutocompleteAsync(int parentLocation, string name, string? scopeInput)
     {
-        BizSrt.Api.Model.Group.IdName<int>? scope = null;
+        BizSrt.Model.Group.IdName<int>? scope = null;
         if (!string.IsNullOrWhiteSpace(scopeInput))
         {
-            try { scope = JsonSerializer.Deserialize<BizSrt.Api.Model.Group.IdName<int>>(scopeInput, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }); } catch { }
+            try { scope = JsonSerializer.Deserialize<BizSrt.Model.Group.IdName<int>>(scopeInput, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }); } catch { }
         }
 
         if (parentLocation >= 0 && !string.IsNullOrWhiteSpace(name))
         {
-            var locationSearchCacheKey = new BizSrt.Api.Foundation.Cache.GroupSearchCache<int> { Parent = parentLocation, Name = name };
+            var locationSearchCacheKey = new BizSrt.Foundation.Cache.GroupSearchCache<int> { Parent = parentLocation, Name = name };
             var locations = LegacyCache.LocationSearch[locationSearchCacheKey].Take(15);
             
             var result = (from l in locations
@@ -60,17 +60,17 @@ public class LocationService : ILocationService
         }
     }
 
-    public Task<BizSrt.Api.Model.ResolvedLocation> ResolveAsync(BizSrt.Api.Model.Geocoder.City city, string street, bool allowCreate)
+    public Task<BizSrt.Model.ResolvedLocation> ResolveAsync(BizSrt.Model.Geocoder.City city, string street, bool allowCreate)
     {
         if (city != null && !string.IsNullOrWhiteSpace(city.Country))
         {
-            return Task.FromResult(BizSrt.Api.Data.Master.Location.Resolve(city, street, allowCreate));
+            return Task.FromResult(BizSrt.Data.Master.Location.Resolve(city, street, allowCreate));
         }
         else
             throw new ArgumentException("Invalid city.");
     }
 
-    public Task<BizSrt.Api.Model.Group.IdName<int>> GetAsync(int location)
+    public Task<BizSrt.Model.Group.IdName<int>> GetAsync(int location)
     {
         if (location > 0)
         {
@@ -80,7 +80,7 @@ public class LocationService : ILocationService
             throw new ArgumentException("Invalid location.");
     }
 
-    public Task<BizSrt.Api.Model.LocationRef> GetRefAsync(int location, BizSrt.Api.Model.Group.DisplayType type)
+    public Task<BizSrt.Model.LocationRef> GetRefAsync(int location, BizSrt.Model.Group.DisplayType type)
     {
         if (location > 0)
         {
@@ -90,12 +90,12 @@ public class LocationService : ILocationService
             throw new ArgumentException("Invalid location.");
     }
 
-    public Task<BizSrt.Api.Model.Group.IdName<int>[]> GetPathAsync(int location, string? scopeInput)
+    public Task<BizSrt.Model.Group.IdName<int>[]> GetPathAsync(int location, string? scopeInput)
     {
-        BizSrt.Api.Model.Group.IdName<int>? scope = null;
+        BizSrt.Model.Group.IdName<int>? scope = null;
         if (!string.IsNullOrWhiteSpace(scopeInput))
         {
-            try { scope = JsonSerializer.Deserialize<BizSrt.Api.Model.Group.IdName<int>>(scopeInput, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }); } catch { }
+            try { scope = JsonSerializer.Deserialize<BizSrt.Model.Group.IdName<int>>(scopeInput, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }); } catch { }
         }
 
         if (location > 0)
@@ -106,24 +106,24 @@ public class LocationService : ILocationService
             throw new ArgumentException("Invalid location.");
     }
 
-    public Task<BizSrt.Api.Model.Group.Node<int>> PopulateWithChildrenAsync(int parent, BizSrt.Api.Model.Group.SubType type)
+    public Task<BizSrt.Model.Group.Node<int>> PopulateWithChildrenAsync(int parent, BizSrt.Model.Group.SubType type)
     {
-        return Task.FromResult(BizSrt.Api.Foundation.Cache.CachedNode<int>.PopulateWithChildren(parent, type, 0, LegacyCache.Locations));
+        return Task.FromResult(BizSrt.Foundation.Cache.CachedNode<int>.PopulateWithChildren(parent, type, 0, LegacyCache.Locations));
     }
 
-    public Task<BizSrt.Api.Model.Location> PopulateWithPathAsync(int location)
+    public Task<BizSrt.Model.Location> PopulateWithPathAsync(int location)
     {
         if (location > 0)
         {
-            return Task.FromResult(BizSrt.Api.Data.Master.Location.PopulateWithPath(location));
+            return Task.FromResult(BizSrt.Data.Master.Location.PopulateWithPath(location));
         }
         else
             throw new ArgumentException("Invalid location.");
     }
 
-    public Task<BizSrt.Api.Model.Location> PopulateWithPathAsync(int city, int street)
+    public Task<BizSrt.Model.Location> PopulateWithPathAsync(int city, int street)
     {
-        return Task.FromResult(BizSrt.Api.Data.Master.Location.PopulateWithPath(city, street));
+        return Task.FromResult(BizSrt.Data.Master.Location.PopulateWithPath(city, street));
     }
 }
 
@@ -165,7 +165,7 @@ public static class LocationEndpoints
             }
         });
 
-        group.MapGet("/get_Ref", async ([FromQuery] int location, [FromQuery] BizSrt.Api.Model.Group.DisplayType type, ILocationService locationService) =>
+        group.MapGet("/get_Ref", async ([FromQuery] int location, [FromQuery] BizSrt.Model.Group.DisplayType type, ILocationService locationService) =>
         {
             try
             {
@@ -191,7 +191,7 @@ public static class LocationEndpoints
             }
         });
 
-        group.MapGet("/populate_Children", async ([FromQuery] int parent, [FromQuery] BizSrt.Api.Model.Group.SubType type, ILocationService locationService) =>
+        group.MapGet("/populate_Children", async ([FromQuery] int parent, [FromQuery] BizSrt.Model.Group.SubType type, ILocationService locationService) =>
         {
             var result = await locationService.PopulateWithChildrenAsync(parent, type);
             return Results.Ok(result);
