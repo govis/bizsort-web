@@ -66,5 +66,24 @@ If a user inputs a special character (like `&` or `=`) into either of these stri
 To prevent this, we explicitly run `encodeURIComponent()` on **only** these two specific string fields before JSON serialization. 
 On the hydration side (inside the Next.js page wrappers and viewmodels), we also apply a robust `decodeURIComponent()` fallback (e.g. checking `if (val.startsWith('%7B'))`) to safely parse any double-encoded `searchNear` payload objects that traverse back through the URL.
 
+## 6. Facet Sets Architecture
+
+The backend search engine heavily utilizes a "Facet Sets" architecture to quickly match search queries with matching companies. This is a highly optimized two-way synchronization loop powered by `FacetSetCompanies` acting as a junction table.
+
+### 1. The "Search Query" Direction (`SetsCache`)
+When a user executes a search query with specific filters (e.g., `InclFacets` / `ExclFacets` within `QueryInput` / `SearchInput`):
+1. **`SetsCache`** intercepts the query, hashes the filters, and checks if a `CompanyFacetSet` already exists for that exact combination of requirements.
+2. If it is a brand new combination, it creates a new **`CompanyFacetSet`** and inserts the individual facet requirements into **`CompanyFacetSetDetails`** (marking them as `Exclude = true` or `false`).
+3. It then immediately kicks off `BizSrt.Api.Process.Company.IndexCompanyFacetSetAsync` on a background thread.
+4. `IndexCompanyFacetSetAsync` executes a sweeping EF Core query against the database to find ALL companies that match this brand new combination of facets, and bulk-inserts them into the junction table **`FacetSetCompanies`**.
+
+### 2. The "Company Update" Direction (`refreshCompanyFacetSetsAsync`)
+When a Company gets saved or updated, the `BizSrt.Worker` background indexer calls `IndexCompanyAsync`.
+1. It looks at the Company's `Category`, `Industry`, `ServiceType`, etc., and breaks them down into generic individual **`CompanyFacets`** (e.g., `FacetName = 'Category', FacetValue = 54`).
+2. It then runs the `refreshCompanyFacetSetsAsync` EF Core LINQ query to see if the company's new generic facets perfectly satisfy any **already existing** `CompanyFacetSets`.
+   - The query validates that the company has ALL of the facets required by the Set (`Count = bfs.InclFacets`).
+   - The query validates that the company has NONE of the excluded facets for that Set (`bsfd.Exclude == true`).
+3. If it perfectly satisfies the set's rules, it adds the Company to that Set by inserting a row into **`FacetSetCompanies`**.
+
 ---
-*Documented on July 8, 2026 for AI Agents and Developers maintaining the legacy parity architecture.*
+*Documented on July 15, 2026 for AI Agents and Developers maintaining the legacy parity architecture.*
