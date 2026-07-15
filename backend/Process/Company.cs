@@ -116,12 +116,28 @@ namespace BizSrt.Api.Process
 
         private static async Task refreshCompanyFacetSetsAsync(AppDbContext dc, int companyId, CancellationToken cancellationToken)
         {
-            var sets = await (from fsd in dc.CompanyFacetSetDetails
-                              join cf in dc.CompanyFacets on fsd.Value equals cf.FacetValue
-                              where cf.Company == companyId
-                              select fsd.Set)
-                             .Distinct()
-                             .ToArrayAsync(cancellationToken);
+            var pfCount = from bf in dc.CompanyFacets
+                          join bfsv in dc.CompanyFacetValues on bf.FacetValue equals bfsv.Id
+                          join bfsd in dc.CompanyFacetSetDetails on bf.FacetValue equals bfsd.Value
+                          where bf.Company == companyId
+                          group bfsd by bfsd.Set into g
+                          select new { Set = g.Key, Count = g.Count() };
+
+            var excl = from bf in dc.CompanyFacets
+                       join bfsv in dc.CompanyFacetValues on bf.FacetValue equals bfsv.Id
+                       join bfsd in dc.CompanyFacetSetDetails on bf.FacetValue equals bfsd.Value
+                       where bf.Company == companyId && bfsd.Exclude
+                       group bfsd by bfsd.Set into g
+                       select (int?)g.Key;
+
+            var q = from bfs in dc.CompanyFacetSets
+                    join bfc in pfCount on new { Set = bfs.Id, Count = bfs.InclFacets } equals new { bfc.Set, Count = (byte)bfc.Count }
+                    join e in excl on bfs.Id equals e into et
+                    from e in et.DefaultIfEmpty()
+                    where e == null
+                    select bfs.Id;
+
+            var sets = await q.ToArrayAsync(cancellationToken);
 
             var existingSets = await dc.FacetSetCompanies
                 .Where(fsc => fsc.Company == companyId)
