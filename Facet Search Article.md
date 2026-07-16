@@ -54,7 +54,7 @@ If not, the cache creates a new record called a **Facet Set**:
 
 The caching layer then immediately fires a fire-and-forget background task (or pushes a message to a distributed worker queue via gRPC) to calculate the actual members of this set.
 
-### 3. The Background Indexer (Set â†’ Companies)
+### 3. The Background Indexer (Set → Companies)
 A dedicated .NET `BackgroundService` picks up the newly created `FacetSet`. Off the main request thread, it runs the heavy, complex EF Core query to find every single company that perfectly satisfies those specific rules.
 
 It then bulk-inserts the results into a highly optimized, flat junction table called `FacetSetCompanies`:
@@ -72,7 +72,7 @@ Caching search queries is incredibly fast, but what happens when a company updat
 
 This is where the architecture completes its two-way synchronization loop.
 
-### The Background Indexer (Company â†’ Sets)
+### The Background Indexer (Company → Sets)
 When a company saves its profile, a background worker is triggered to recalculate the company's generic `Facets`. 
 
 Instead of searching for companies, the worker now searches for **Facet Sets**. It executes an EF Core query to find all existing `Facet Sets` that this company *now perfectly satisfies*.

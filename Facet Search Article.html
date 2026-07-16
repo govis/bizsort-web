@@ -116,7 +116,7 @@
 }
 </code></pre>
 <p>The caching layer then immediately fires a fire-and-forget background task (or pushes a message to a distributed worker queue via gRPC) to calculate the actual members of this set.</p>
-<h3>3. The Background Indexer (Set â†’ Companies)</h3>
+<h3>3. The Background Indexer (Set → Companies)</h3>
 <p>A dedicated .NET <code>BackgroundService</code> picks up the newly created <code>FacetSet</code>. Off the main request thread, it runs the heavy, complex EF Core query to find every single company that perfectly satisfies those specific rules.</p>
 <p>It then bulk-inserts the results into a highly optimized, flat junction table called <code>FacetSetCompanies</code>:
 <code>[SetId, CompanyId]</code></p>
@@ -127,7 +127,7 @@ This transforms a multi-second, 5-table JOIN query into a sub-millisecond index 
 <h2>Keeping Data Fresh: The Reverse Loop</h2>
 <p>Caching search queries is incredibly fast, but what happens when a company updates its profile? If a company moves to Toronto, it needs to instantly appear in <code>SetId: 9942</code>.</p>
 <p>This is where the architecture completes its two-way synchronization loop.</p>
-<h3>The Background Indexer (Company â†’ Sets)</h3>
+<h3>The Background Indexer (Company → Sets)</h3>
 <p>When a company saves its profile, a background worker is triggered to recalculate the company&#39;s generic <code>Facets</code>. </p>
 <p>Instead of searching for companies, the worker now searches for <strong>Facet Sets</strong>. It executes an EF Core query to find all existing <code>Facet Sets</code> that this company <em>now perfectly satisfies</em>.</p>
 <p><strong>Conceptual SQL / Pseudo-code:</strong></p>
