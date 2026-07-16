@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Facet Search Article</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; padding: 2rem; max-width: 800px; margin: 0 auto; color: #333; }
+        pre { background: #f4f4f4; padding: 1rem; border-radius: 5px; overflow-x: auto; }
+        code { font-family: Consolas, Monaco, Courier New, monospace; background: #f4f4f4; padding: 0.2rem 0.4rem; border-radius: 3px; }
+        h1, h2, h3 { color: #111; }
+    </style>
+</head>
+<body>
+<h1>Implementing Efficient Facet-Based Search and Navigation for a Directory of Public Companies</h1>
+<p>When building a large-scale directory of public companies, search isn&#39;t just a text box—it&#39;s a high-performance fine-grained filtering engine. Users expect to cross-reference multiple categories, locations, industries, and service types instantaneously. </p>
+<p>However, running complex, multi-table <code>JOIN</code> operations across a vast directory of company profiles and nested taxonomy hierarchies for every single page load will quickly bring a traditional relational database to its knees.</p>
+<p>This article outlines a highly optimized reference architecture for facet-based search and navigation. By decoupling the read-path from the write-path using dynamic query caching and asynchronous background indexers, we can achieve sub-millisecond search query times while driving rich, dynamic filter UI.</p>
+<hr>
+<h2>The Problem: The N+1 Filtering Nightmare</h2>
+<p>Imagine a user searching for:
+<strong>&quot;Technology Companies in Toronto that DO NOT provide Hardware Manufacturing.&quot;</strong></p>
+<p>In a normalized relational database, finding matching companies requires:</p>
+<ol>
+<li>Joining the <code>Company</code> table to the <code>Location</code> closure table (to ensure Toronto or any of its sub-neighborhoods are included).</li>
+<li>Joining the <code>Company</code> table to the <code>Category</code> table (Technology).</li>
+<li>Using an <code>EXISTS</code> or <code>LEFT JOIN</code> exclusion to filter out any company tagged with &quot;Hardware Manufacturing&quot;.</li>
+</ol>
+<p>When thousands of users apply different arbitrary combinations of these filters, the database CPU spikes, and query plans thrash. </p>
+<h2>The Solution: The Two-Way Synchronization Loop</h2>
+<p>Instead of calculating these answers on the fly, we can treat <em>the search queries themselves</em> as first-class entities. We introduce a junction architecture powered by three core concepts:</p>
+<ol>
+<li><strong>Generic Facets</strong></li>
+<li><strong>Dynamic Facet Sets</strong></li>
+<li><strong>Background Indexing Workers</strong></li>
+</ol>
+<h3>1. Generic Facets (The Building Blocks)</h3>
+<p>Every company in the database is stripped down into generic key-value pair &quot;Facets&quot; when they are saved. Instead of a rigid <code>CompanyLocation</code> or <code>CompanyCategory</code> table, everything becomes a <code>Facet</code>:</p>
+<ul>
+<li><code>{ CompanyId: 1, FacetId: 105 }</code> (Category: Technology)</li>
+<li><code>{ CompanyId: 1, FacetId: 402 }</code> (Location: Toronto)</li>
+<li><code>{ CompanyId: 1, FacetId: 811 }</code> (Service: Software)</li>
+</ul>
+<h3>2. Dynamic Facet Sets &amp; The Caching Layer</h3>
+<p>When a user executes a search, the frontend sends an array of requested inclusions and exclusions to the API.</p>
+<p>The API intercepts this query using an in-memory <code>ExpirationCache</code> (e.g., an LRU/LFU hybrid cache). It hashes the specific combination of filters and checks both memory and the database: <em>Have we ever seen this exact combination of filters before?</em></p>
+<p>If not, the cache creates a new record called a <strong>Facet Set</strong>:</p>
+<pre><code class="language-json">{
+  &quot;SetId&quot;: 9942,
+  &quot;Key&quot;: &quot;hash_of_filters&quot;,
+  &quot;RequiredFacetCount&quot;: 2,
+  &quot;Details&quot;: [
+    { &quot;FacetId&quot;: 105, &quot;Exclude&quot;: false },
+    { &quot;FacetId&quot;: 402, &quot;Exclude&quot;: false },
+    { &quot;FacetId&quot;: 811, &quot;Exclude&quot;: true }
+  ]
+}
+</code></pre>
+<p>The caching layer then immediately fires a fire-and-forget background task (or pushes a message to a distributed worker queue via gRPC) to calculate the actual members of this set.</p>
+<h3>3. The Background Indexer (Set â†’ Companies)</h3>
+<p>A dedicated .NET <code>BackgroundService</code> picks up the newly created <code>FacetSet</code>. Off the main request thread, it runs the heavy, complex EF Core query to find every single company that perfectly satisfies those specific rules.</p>
+<p>It then bulk-inserts the results into a highly optimized, flat junction table called <code>FacetSetCompanies</code>:
+<code>[SetId, CompanyId]</code></p>
+<p>The next time <em>any</em> user searches for that exact combination of filters, the database simply queries:
+<code>SELECT CompanyId FROM FacetSetCompanies WHERE SetId = 9942</code>
+This transforms a multi-second, 5-table JOIN query into a sub-millisecond index seek.</p>
+<hr>
+<h2>Keeping Data Fresh: The Reverse Loop</h2>
+<p>Caching search queries is incredibly fast, but what happens when a company updates its profile? If a company moves to Toronto, it needs to instantly appear in <code>SetId: 9942</code>.</p>
+<p>This is where the architecture completes its two-way synchronization loop.</p>
+<h3>The Background Indexer (Company â†’ Sets)</h3>
+<p>When a company saves its profile, a background worker is triggered to recalculate the company&#39;s generic <code>Facets</code>. </p>
+<p>Instead of searching for companies, the worker now searches for <strong>Facet Sets</strong>. It executes an EF Core query to find all existing <code>Facet Sets</code> that this company <em>now perfectly satisfies</em>.</p>
+<p><strong>Conceptual SQL / Pseudo-code:</strong></p>
+<pre><code class="language-sql">-- Find all sets where the company possesses ALL required inclusive facets
+-- AND possesses NONE of the exclusive facets.
+
+INSERT INTO FacetSetCompanies (SetId, CompanyId)
+SELECT cfs.Id, @CompanyId
+FROM FacetSets cfs
+WHERE 
+  -- Condition 1: Company has exactly the number of required facets for this set
+  cfs.RequiredFacetCount = (
+    SELECT COUNT(*) 
+    FROM FacetSetDetails detail
+    JOIN CompanyFacets cf ON cf.FacetId = detail.FacetId
+    WHERE detail.SetId = cfs.Id 
+      AND detail.Exclude = 0 
+      AND cf.CompanyId = @CompanyId
+  )
+  -- Condition 2: Company has NONE of the excluded facets for this set
+  AND NOT EXISTS (
+    SELECT 1 
+    FROM FacetSetDetails detail
+    JOIN CompanyFacets cf ON cf.FacetId = detail.FacetId
+    WHERE detail.SetId = cfs.Id 
+      AND detail.Exclude = 1 
+      AND cf.CompanyId = @CompanyId
+  )
+</code></pre>
+<p>If the company perfectly satisfies a Set, it inserts itself into the junction table. If it no longer satisfies a Set it used to belong to, it deletes itself.</p>
+<hr>
+<h2>UI Navigation &amp; Driving the Filter Sidebar</h2>
+<p>This flat junction architecture isn&#39;t just for speeding up search results—it powers the &quot;available vs. applied filters&quot; sidebar experience.</p>
+<h3>Available vs. Applied Facets</h3>
+<p>Once a user selects filters (like &quot;Technology&quot; and &quot;Toronto&quot;), the backend resolves the <code>SetId</code>. To populate the sidebar with remaining filter options, the backend can execute an ultra-fast aggregation over the junction table:</p>
+<pre><code class="language-csharp">// Find all remaining generic facets that exist within the current Set&#39;s companies
+var availableFacets = await dbContext.FacetSetCompanies
+    .Where(fsc =&gt; fsc.SetId == currentSetId)
+    .Join(dbContext.CompanyFacets, 
+          fsc =&gt; fsc.CompanyId, 
+          cf =&gt; cf.CompanyId, 
+          (fsc, cf) =&gt; cf.FacetId)
+    .GroupBy(facetId =&gt; facetId)
+    .Select(g =&gt; new { FacetId = g.Key, Count = g.Count() })
+    .ToArrayAsync();
+</code></pre>
+<p>Because <code>FacetSetCompanies</code> is a pre-computed flat table, this grouping and counting operation is lightning fast. The UI can instantly render sidebar facets (e.g., &quot;Software [150]&quot;, &quot;Consulting [45]&quot;) without ever recalculating the complex underlying location boundaries or exclusion logic.</p>
+<h3>Shallow Routing &amp; State Sync</h3>
+<p>To keep the UI snappy, Modern Single Page Applications (SPAs) should synchronize this facet state directly into the browser&#39;s URL using shallow routing (e.g., <code>window.history.replaceState</code>). </p>
+<p>When a user toggles a facet in the sidebar:</p>
+<ol>
+<li>The frontend pushes the updated Facet IDs into the URL (<code>?inclFacets=105,402&amp;exclFacets=811</code>).</li>
+<li>The UI fires an event to re-fetch the data.</li>
+<li>The API intercepts the new combination, checks the <code>SetsCache</code>, and instantly returns the pre-computed matching companies alongside the newly aggregated available facets.</li>
+</ol>
+<h2>Addressing Architecturally Significant Issues</h2>
+<p>When implementing this pattern in production, several architecturally significant issues must be carefully managed to ensure stability at scale:</p>
+<h3>1. Why not just use a Star Schema?</h3>
+<p>A traditional star schema (Fact and Dimension tables) is the gold standard for OLAP workloads (e.g., PowerBI, Snowflake). However, it is fundamentally designed for data analytics, not high-concurrency web traffic.</p>
+<ul>
+<li>If you used a star schema, the database would still have to execute dynamic <code>JOIN</code> operations at runtime for every user search. </li>
+<li>This architecture acts as a dynamically <strong>Materialized View</strong>. It calculates the JOINs offline and flattens them into <code>FacetSetCompanies</code>. The web user experiences an O(1) single-table index seek with zero JOINs, preserving your database CPU for actual transactional workloads.</li>
+</ul>
+<h3>2. The Combinatorial Explosion (Cache Bloat)</h3>
+<p>If you cache every unique combination of filters users ever click, won&#39;t the <code>FacetSetCompanies</code> table eventually consume terabytes of space?
+Yes, if left unchecked. To prevent storage bloat, the <code>FacetSets</code> table must implement a strict <strong>LRU/LFU (Least Recently/Frequently Used) eviction policy</strong>. </p>
+<ul>
+<li>The cache tracks a <code>HitCount</code> and <code>LastUsed</code> timestamp for every Set. </li>
+<li>A nightly scheduled job sweeps the database, identifying Sets that haven&#39;t been queried in 30 days or have a low hit count, and permanently deletes them (cascading the deletion to the junction table) to reclaim space.</li>
+</ul>
+<h3>3. The Cache Stampede (Thundering Herd)</h3>
+<p>What happens if a popular influencer links to a brand-new, uncached filter combination, causing 1,000 users to request it simultaneously? 
+To prevent 1,000 background workers from calculating the exact same Set, the API must implement <strong>Request Coalescing</strong>. The first request creates the <code>FacetSet</code> and acquires a lock to spawn the worker. The subsequent 999 requests hit the cache, see the Set is in a &quot;Calculating&quot; state, and gracefully wait (or return a partial loading UI) rather than overwhelming the database.</p>
+<h3>4. Eventual Consistency</h3>
+<p>This architecture trades strict ACID consistency for extreme read performance. There is a small window (usually milliseconds to seconds) where a company updates its profile, but the background worker hasn&#39;t yet added/removed it from the relevant <code>FacetSets</code>. For a public directory, this eventual consistency is a highly acceptable trade-off compared to the alternative of slow page loads.</p>
+<h2>Conclusion</h2>
+<p>By treating search combinations as cached, first-class entities (<code>FacetSets</code>) and utilizing asynchronous background workers to maintain a flat junction table (<code>FacetSetCompanies</code>), you can entirely bypass the database CPU bottlenecks inherent in dynamic filtering. </p>
+<p>This architecture trades a slight, asynchronous delay on the write-path (company profile updates) for a massively scalable, sub-millisecond read-path (user searches and facet aggregations)—exactly where it matters most for a directory of public companies.</p>
+
+</body>
+</html>
