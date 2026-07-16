@@ -43,7 +43,7 @@ If not, the cache creates a new record called a **Facet Set**:
 {
   "SetId": 9942,
   "Key": "hash_of_filters",
-  "RequiredFacetCount": 2,
+  "InclFacets": 2,
   "Details": [
     { "FacetId": 105, "Exclude": false },
     { "FacetId": 402, "Exclude": false },
@@ -87,7 +87,7 @@ SELECT cfs.Id, @CompanyId
 FROM CompanyFacetSets cfs
 WHERE 
   -- Condition 1: Company has exactly the number of required facets for this set
-  cfs.RequiredFacetCount = (
+  cfs.InclFacets = (
     SELECT COUNT(*) 
     FROM FacetSetDetails detail
     JOIN CompanyFacets cf ON cf.FacetId = detail.FacetId

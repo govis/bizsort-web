@@ -107,7 +107,7 @@
 <pre><code class="language-json">{
   &quot;SetId&quot;: 9942,
   &quot;Key&quot;: &quot;hash_of_filters&quot;,
-  &quot;RequiredFacetCount&quot;: 2,
+  &quot;InclFacets&quot;: 2,
   &quot;Details&quot;: [
     { &quot;FacetId&quot;: 105, &quot;Exclude&quot;: false },
     { &quot;FacetId&quot;: 402, &quot;Exclude&quot;: false },
@@ -139,7 +139,7 @@ SELECT cfs.Id, @CompanyId
 FROM CompanyFacetSets cfs
 WHERE 
   -- Condition 1: Company has exactly the number of required facets for this set
-  cfs.RequiredFacetCount = (
+  cfs.InclFacets = (
     SELECT COUNT(*) 
     FROM FacetSetDetails detail
     JOIN CompanyFacets cf ON cf.FacetId = detail.FacetId
