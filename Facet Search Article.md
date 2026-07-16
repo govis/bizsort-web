@@ -1,5 +1,6 @@
 # Implementing Efficient Facet-Based Search and Navigation for a Directory of Public Companies
 
+![Database Filtering Conceptual Architecture](./facet_search_header.jpg)
 When building a large-scale directory of public companies, search isn't just a text box—it's a high-performance fine-grained filtering engine. Users expect to cross-reference multiple categories, locations, industries, and service types instantaneously. 
 
 However, running complex, multi-table `JOIN` operations across a vast directory of company profiles and nested taxonomy hierarchies for every single page load will quickly bring a traditional relational database to its knees.

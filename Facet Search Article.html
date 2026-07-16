@@ -71,7 +71,8 @@
     </style>
 </head>
 <body>
-<h1>Implementing Efficient Facet-Based Search and Navigation for a Directory of Public Companies</h1>
+<h1 id="implementing-efficient-facet-based-search-and-navigation-for-a-directory-of-public-companies">Implementing Efficient Facet-Based Search and Navigation for a Directory of Public Companies</h1>
+<p><img src="./facet_search_header.jpg" alt="Database Filtering Conceptual Architecture" style="max-width: 100%; border-radius: 8px; margin: 16px 0;"></p>
 <p>When building a large-scale directory of public companies, search isn&#39;t just a text box—it&#39;s a high-performance fine-grained filtering engine. Users expect to cross-reference multiple categories, locations, industries, and service types instantaneously. </p>
 <p>However, running complex, multi-table <code>JOIN</code> operations across a vast directory of company profiles and nested taxonomy hierarchies for every single page load will quickly bring a traditional relational database to its knees.</p>
 <p>This article outlines a highly optimized reference architecture for facet-based search and navigation. By decoupling the read-path from the write-path using dynamic query caching and asynchronous background indexers, we can achieve sub-millisecond search query times while driving rich, dynamic filter UI.</p>
