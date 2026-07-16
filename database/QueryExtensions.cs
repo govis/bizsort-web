@@ -11,8 +11,11 @@ public static class QueryExtensions
 
         var childLocations = dbContext.Locations_Unwound
             .Where(lu => lu.Parent == location)
-            .Select(lu => lu.Child);
+            .Select(lu => lu.Child)
+            .ToList();
+        
+        childLocations.Add(location);
 
-        return offices.Where(co => co.Location == location || childLocations.Contains(co.Location));
+        return offices.Where(co => childLocations.Contains(co.Location));
     }
 }

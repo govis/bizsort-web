@@ -173,7 +173,7 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
         if (queryInput.Location > 0)
         {
             var coq = from c in query
-                      where dbContext.CompanyOfficeLocation(queryInput.Location).Any(co => co.Id == c.Id)
+                      where dbContext.CompanyOffices.LocationQuery(dbContext, queryInput.Location).Any(co => co.Company == c.Id)
                       orderby c.Created descending
                       select c.Id;
 
@@ -198,9 +198,9 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
         if (queryInput.Location > 0)
         {
             var officeMap = await (from c in dbContext.CompanyProfiles
-                                   join co in dbContext.CompanyOfficeLocation(queryInput.Location) on c.Id equals co.Id
+                                   join co in dbContext.CompanyOffices.LocationQuery(dbContext, queryInput.Location) on c.Id equals co.Company
                                    where pageIds.Contains(c.Id)
-                                   select new { c.Id, co.Office })
+                                   select new { c.Id, Office = co.Order == 0 ? 0 : co.Id })
                                   .ToArrayAsync();
 
             companies = pageIds

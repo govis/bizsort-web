@@ -144,6 +144,16 @@ The legacy codebase is split into two primary areas:
       query = query.Where(c => catIds.Contains(c.Category));
       ```
       *Reason for:* Because the `Unwound` dimension table only has a few rows for any given parent, fetching it into memory is virtually instantaneous. EF Core translates the subsequent `.Contains()` into a simple `IN (1, 2, 3...)` clause. This eliminates the `EXISTS` block entirely, guaranteeing the SQL Server uses its covering indexes perfectly without any parameter sniffing timeout vulnerabilities.
+14. **Hierarchical Tree Traversal & Deduplication (Closure Tables & `IN`/`EXISTS` vs `JOIN`):** The legacy database maintains `Categories_Unwound` and `Locations_Unwound` as "Closure Tables"—pre-calculated flattened sets mapping every `Parent` to *all* its hierarchical descendants (`Child`) across every depth level.
+    - **Approach 1 - `INNER JOIN` against the Hierarchy (Rejected):** 
+      `from c in dbContext.CompanyProfiles join lu in dbContext.Locations_Unwound on c.Location equals lu.Child where lu.Parent == targetLoc select c`
+      *Reason against:* Joining directly against the hierarchy table creates result duplication if a Company maps to multiple criteria within the same tree, forcing expensive `.Distinct()` calculations downstream.
+    - **Approach 2 - Eager `.Contains()` (`IN` Clause) (Implemented):** 
+      `var locIds = await dbContext.Locations_Unwound.Where(lu => lu.Parent == targetLoc).Select(lu => lu.Child).ToListAsync(); query.Where(c => locIds.Contains(c.Location));`
+      *Reason for:* EF Core generates an `IN (1, 2, 3)` clause. SQL Server natively processes `IN` by evaluating a true/false condition per row, inherently preventing the parent `CompanyProfiles` record from ever duplicating.
+    - **Approach 3 - Cross-Entity `.Any()` (`EXISTS` Clause) (Implemented):** 
+      `query.Where(c => dbContext.CompanyOffices.Where(co => locIds.Contains(co.Location)).Any(co => co.Company == c.Id))`
+      *Reason for:* When checking 1-to-Many nested relationships (e.g. a Company has 5 Offices in the target location tree), wrapping the check in `.Any()` generates an `EXISTS (...)` block. `EXISTS` short-circuits on the first matching office, correctly returning `true` and cleanly deduplicating the parent Company without any row expansion.
 
 ## Migration progress. **Please also refer to [LEGACY_BACKEND_TRACKER.md](file:///C:/Bizsort/bizsort-web/.agents/LEGACY_BACKEND_TRACKER.md) for a line-by-line backend tracking matrix and [LEGACY_FRONTEND_TRACKER.md](file:///C:/Bizsort/bizsort-web/.agents/LEGACY_FRONTEND_TRACKER.md) for the frontend tracking matrix.**
 

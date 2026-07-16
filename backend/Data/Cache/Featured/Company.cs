@@ -25,8 +25,11 @@ namespace BizSrt.Api.Data.Cache.Featured
 
             if (key.Item1 > 0)
             {
+                var catIds = dbContext.Categories_Unwound.Where(cu => cu.Parent == key.Item1).Select(cu => cu.Child).ToList();
+                catIds.Add(key.Item1);
+
                 cq = from c in cq
-                     where c.Category == key.Item1 || dbContext.Categories_Unwound.Any(cu => cu.Parent == key.Item1 && cu.Child == c.Category)
+                     where catIds.Contains(c.Category)
                      select c;
             }
 
