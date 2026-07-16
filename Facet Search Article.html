@@ -136,7 +136,7 @@ This transforms a multi-second, 5-table JOIN query into a sub-millisecond index 
 
 INSERT INTO FacetSetCompanies (SetId, CompanyId)
 SELECT cfs.Id, @CompanyId
-FROM FacetSets cfs
+FROM CompanyFacetSets cfs
 WHERE 
   -- Condition 1: Company has exactly the number of required facets for this set
   cfs.RequiredFacetCount = (

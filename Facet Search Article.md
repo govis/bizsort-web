@@ -84,7 +84,7 @@ Instead of searching for companies, the worker now searches for **Facet Sets**. 
 
 INSERT INTO FacetSetCompanies (SetId, CompanyId)
 SELECT cfs.Id, @CompanyId
-FROM FacetSets cfs
+FROM CompanyFacetSets cfs
 WHERE 
   -- Condition 1: Company has exactly the number of required facets for this set
   cfs.RequiredFacetCount = (
