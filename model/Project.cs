@@ -42,7 +42,7 @@ public class Profile
     public byte TenderType { get; set; }
 
     [JsonPropertyName("status")]
-    public Status Status { get; set; }
+    public BizSrt.Model.Product.Status Status { get; set; }
 
     [JsonPropertyName("updated")]
     public DateTime Updated { get; set; }

@@ -124,20 +124,26 @@ public class CompanyProductService : ICompanyProductService
             return await ExecuteProductSearchSpAsync(queryInput);
         }
 
-        var activeProducts = dbContext.Products.Where(p => p.Status == 2);
+        var activeProducts = dbContext.Products.Where(p => p.Status == (byte)BizSrt.Model.Product.Status.Active);
 
         IQueryable<Product> query = activeProducts;
 
         if (queryInput.Category > 0)
         {
+            var categoryIds = await dbContext.Categories_Unwound
+                .Where(cu => cu.Parent == queryInput.Category)
+                .Select(cu => cu.Child)
+                .ToListAsync();
+            categoryIds.Add(queryInput.Category);
+
             var cpq = queryInput.Location == 0 
                 ? dbContext.CompanyProducts 
                 : dbContext.CompanyProducts.Where(cp => dbContext.CompanyOfficeLocation(queryInput.Location).Any(co => co.Id == cp.Company));
 
             query = from p in query
                     join cp in cpq on p.Id equals cp.Product
-                    where cp.UnlistedType == 1 &&
-                          (cp.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == cp.Category)) &&
+                    where cp.UnlistedType == (byte)BizSrt.Model.Product.UnlistedType.Listed &&
+                          categoryIds.Contains(cp.Category) &&
                           (queryInput.ProductType == 0 || (p.Type & queryInput.ProductType) > 0)
                     select p;
         }
@@ -257,14 +263,16 @@ public class CompanyProductService : ICompanyProductService
 
             var products = new List<BizSrt.Model.Product.SearchItem>();
             
-            using var reader = await command.ExecuteReaderAsync();
-            while (await reader.ReadAsync())
+            using (var reader = await command.ExecuteReaderAsync())
             {
-                products.Add(new BizSrt.Model.Product.SearchItem
+                while (await reader.ReadAsync())
                 {
-                    Id = reader.GetInt64(reader.GetOrdinal("Id")),
-                    Distance = queryInput.SearchNear != null ? (float)reader.GetDouble(reader.GetOrdinal("Distance")) : 0f
-                });
+                    products.Add(new BizSrt.Model.Product.SearchItem
+                    {
+                        Id = reader.GetInt64(reader.GetOrdinal("Id")),
+                        Distance = queryInput.SearchNear != null ? (float)reader.GetDouble(reader.GetOrdinal("Distance")) : 0f
+                    });
+                }
             }
 
             return new SearchOutput<SearchItem>

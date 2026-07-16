@@ -5,6 +5,9 @@ API URL: http://localhost:5000
 Swagger UI: http://localhost:5000/swagger
 
 cd backend
+dotnet run --urls https://localhost:5001
+
+cd background
 dotnet run
 
 cd frontend

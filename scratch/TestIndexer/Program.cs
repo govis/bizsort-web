@@ -9,14 +9,9 @@ optionsBuilder.UseSqlServer(connectionString, x => x.UseNetTopologySuite());
 
 using var dbContext = new AppDbContext(optionsBuilder.Options);
 
-var company = dbContext.CompanyProfiles.OrderBy(c => c.Id).FirstOrDefault();
-if (company != null)
+var facets = dbContext.CompanyFacets.Where(c => c.Company == 1).ToList();
+Console.WriteLine($"Found {facets.Count} facets for Company 1");
+foreach (var f in facets)
 {
-    company.Indexed = null;
-    dbContext.SaveChanges();
-    Console.WriteLine($"Set Indexed = null for Company {company.Id}");
-}
-else
-{
-    Console.WriteLine("No company found.");
+    Console.WriteLine($"  Id: {f.Id}, FacetValue: {f.FacetValue}, UserDefined: {f.UserDefined}");
 }

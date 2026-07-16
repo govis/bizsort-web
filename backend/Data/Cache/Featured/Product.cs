@@ -17,8 +17,8 @@ namespace BizSrt.Api.Data.Cache.Featured
         {
             using var dbContext = BizSrt.Api.Data.Cache.LegacyCache.GetDbContext();
 
-            var pq = dbContext.Products.Where(p => p.Status == 2);
-            var cpq = dbContext.CompanyProducts.Where(cp => cp.UnlistedType == 1);
+            var pq = dbContext.Products.Where(p => p.Status == (byte)BizSrt.Model.Product.Status.Active);
+            var cpq = dbContext.CompanyProducts.Where(cp => cp.UnlistedType == (byte)BizSrt.Model.Product.UnlistedType.Listed);
 
             if (key.Item1 > 0)
             {

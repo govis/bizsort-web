@@ -149,10 +149,10 @@ public class SearchInput : BizSrt.Model.List.QueryInput
     public Geolocation? SearchNear { get; set; }
 
     [JsonPropertyName("inclFacets")]
-    public BizSrt.Model.Semantic.FacetFilter? InclFacets { get; set; }
+    public BizSrt.Model.Semantic.FacetFilter InclFacets { get; set; } = new BizSrt.Model.Semantic.FacetFilter { NoFilters = 0 };
 
     [JsonPropertyName("exclFacets")]
-    public BizSrt.Model.Semantic.FacetFilter? ExclFacets { get; set; }
+    public BizSrt.Model.Semantic.FacetFilter ExclFacets { get; set; } = new BizSrt.Model.Semantic.FacetFilter { NoFilters = 0 };
 }
 
 public class SearchItem : EntityId<int>

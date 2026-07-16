@@ -31,6 +31,25 @@ public enum UnlistedType : byte
     Unlisted = 1
 }
 
+public enum Status : byte
+{
+    Draft = 0,
+    Active = 1,
+    Pending = 2,
+    Rejected = 3,
+    Archived = 4,
+    Deleted = 5
+}
+
+[Flags]
+public enum RejectReason : byte
+{
+    WrongCategory = 1,
+    Offensive = 2,
+    Unlawful = 4,
+    Scam = 8
+}
+
 public class Profile
 {
     [JsonPropertyName("id")]

@@ -134,18 +134,28 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
 
         if (queryInput.Category > 0)
         {
+            var categoryIds = await dbContext.Categories_Unwound
+                .Where(cu => cu.Parent == queryInput.Category)
+                .Select(cu => cu.Child)
+                .ToListAsync();
+            categoryIds.Add(queryInput.Category);
+
+            var companyCategoryMatches = dbContext.CompanyProfiles
+                .Where(c => categoryIds.Contains(c.Category))
+                .Select(c => c.Id);
+
+            var productCategoryMatches = (from cp in dbContext.CompanyProducts
+                                          join p in dbContext.Products on cp.Product equals p.Id
+                                          where (p.Type == 0 || (cp.UnlistedType == (byte)BizSrt.Model.Product.UnlistedType.Listed && p.Status == (byte)BizSrt.Model.Product.Status.Active)) &&
+                                                categoryIds.Contains(cp.Category)
+                                          select cp.Company);
+
+            var matchingCompanyIds = companyCategoryMatches.Union(productCategoryMatches);
+
             query = query.Where(c => 
                 (queryInput.TransactionType == 0 || (c.TransactionType & queryInput.TransactionType) > 0)
                 &&
-                (
-                    (c.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == c.Category))
-                    ||
-                    (from cp in dbContext.CompanyProducts
-                     join p in dbContext.Products on cp.Product equals p.Id
-                     where (p.Type == 0 || (cp.UnlistedType == 1 && p.Status == 2)) &&
-                           (cp.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == cp.Category))
-                     select cp).Any(cp => cp.Company == c.Id)
-                )
+                matchingCompanyIds.Contains(c.Id)
             );
         }
         else if (queryInput.TransactionType > 0)
@@ -378,7 +388,7 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
 
         var query = dbContext.CompanyProducts
             .Join(pq, cp => cp.Product, p => p.Id, (cp, p) => new { cp, p })
-            .Where(x => x.cp.Company == companyId && x.cp.UnlistedType == 1 && x.p.Status == 2);
+            .Where(x => x.cp.Company == companyId && x.cp.UnlistedType == (byte)BizSrt.Model.Product.UnlistedType.Listed && x.p.Status == (byte)BizSrt.Model.Product.Status.Active);
 
         var total = await query.CountAsync();
         var products = await query
@@ -402,7 +412,7 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
 
         var query = dbContext.CompanyProjects
             .Join(pq, cp => cp.Project, p => p.Id, (cp, p) => new { cp, p })
-            .Where(x => x.cp.Company == companyId && x.cp.UnlistedType == 1 && x.p.Status == 2);
+            .Where(x => x.cp.Company == companyId && x.cp.UnlistedType == (byte)BizSrt.Model.Product.UnlistedType.Listed && x.p.Status == (byte)BizSrt.Model.Product.Status.Active);
 
         var total = await query.CountAsync();
         var projects = await query
@@ -426,7 +436,7 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
 
         var query = dbContext.Jobs
             .Join(pq, j => j.Id, p => p.Id, (j, p) => new { j, p })
-            .Where(x => x.j.Company == companyId && x.p.Status == 2);
+            .Where(x => x.j.Company == companyId && x.p.Status == (byte)BizSrt.Model.Product.Status.Active);
 
         if (department > 0)
         {
@@ -495,7 +505,7 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
             RichText = cp.ProductNavigation.RichText,
             Text = cp.ProductNavigation.Text,
             WebUrl = cp.ProductNavigation.WebUrl,
-            Status = (BizSrt.Model.Status)cp.ProductNavigation.Status,
+            Status = (BizSrt.Model.Product.Status)cp.ProductNavigation.Status,
             Updated = cp.ProductNavigation.Updated
         };
     }
@@ -518,7 +528,7 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
             StartDate = job.StartDate,
             Duration = job.Duration,
             WebUrl = job.ProductNavigation.WebUrl,
-            Status = (BizSrt.Model.Status)job.ProductNavigation.Status,
+            Status = (BizSrt.Model.Product.Status)job.ProductNavigation.Status,
             Updated = job.ProductNavigation.Updated
         };
     }
@@ -539,7 +549,7 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
             RichText = cp.ProjectNavigation.RichText ?? "",
             Text = cp.ProjectNavigation.Text ?? "",
             TenderType = cp.ProjectNavigation.TenderType,
-            Status = (BizSrt.Model.Status)cp.ProjectNavigation.Status,
+            Status = (BizSrt.Model.Product.Status)cp.ProjectNavigation.Status,
             Updated = cp.ProjectNavigation.Updated
         };
     }
