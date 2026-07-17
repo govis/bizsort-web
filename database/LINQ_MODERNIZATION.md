@@ -145,3 +145,38 @@ var allOffices = dbContext.CompanyOffices
 ```
 > [!CAUTION]
 > Do NOT call `AsNoTracking()` directly on scalar/primitive projections (like `Select(cp => cp.Product)`). EF Core requires an entity or anonymous object type for `AsNoTracking`. Project first, then track.
+
+---
+
+## 11. The `UNION` Trap for Complex Filters
+
+**The Pitfall**: When trying to extract matches from multiple tables (e.g., finding companies that match a category natively in `CompanyProfiles` vs via multiproducts in `CompanyProducts`), it's tempting to write two separate LINQ queries and use `.Union()`. However, if those subqueries contain complex filters (like `OR EXISTS` hierarchy lookups) or large `IN` clauses, the SQL Server query optimizer completely breaks down when trying to compile a plan for the `UNION`, resulting in massive execution latency (15+ seconds).
+
+**The Solution**: Use a single query with `OR EXISTS` blocks instead. SQL Server handles `OR EXISTS` over standard `JOIN`s much more efficiently than combining complex derived tables via `UNION`.
+
+---
+
+## 12. Top-N per Group (The `GroupBy().First()` Pitfall)
+
+**The Pitfall**: When trying to fetch the "best" or "primary" child record for a set of parents (e.g., the lowest-Order office for 20 companies), using EF Core's `GroupBy(c => c.Company).Select(g => g.OrderBy(x => x.Order).First())` translates into a catastrophic correlated `SELECT TOP(1)` subquery per parent. If the base query involves expensive filters, those filters are re-evaluated inside every single subquery. 
+
+**The Solution**: Fetch all child records for the limited page of parent IDs, and pick the Top-N in C# memory.
+
+```csharp
+// BAD (Causes correlated subqueries)
+var bestOffices = await dbContext.CompanyOffices
+    .Where(co => pageIds.Contains(co.Company))
+    .GroupBy(co => co.Company)
+    .Select(g => g.OrderBy(co => co.Order).First())
+    .ToListAsync();
+
+// GOOD (Fetches all matching offices, then sorts in memory)
+var allOfficesForPage = await dbContext.CompanyOffices
+    .Where(co => pageIds.Contains(co.Company))
+    .ToListAsync();
+
+var bestOffices = allOfficesForPage
+    .GroupBy(co => co.Company)
+    .Select(g => g.OrderBy(co => co.Order).First())
+    .ToList();
+```
