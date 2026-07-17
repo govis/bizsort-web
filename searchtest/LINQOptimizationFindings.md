@@ -15,6 +15,12 @@ This document captures the chronological attempts, experiments, and failures we 
 2. **Materializing Child Categories to `List<short>`**
    - **Approach:** Fetched the 83 child categories into memory, appended the parent (84 total), and used `catIds.Contains(c.Category)`.
    - **Result:** **FAIL (24,250ms Timeout)**. EF Core padded the 84 items into exactly 90 named SQL parameters (`@__catIds_0` to `@__catIds_89`). The duplicate padded variables caused SQL Server's execution plan compiler to choke and time out.
+3. **`UNION` with Materialized Category IDs**
+   - **Approach:** Queried `CompanyProfiles` and `CompanyProducts` separately using `Category IN (...)` and attempted to `UNION` the resulting Company IDs to avoid the `OR EXISTS` block entirely.
+   - **Result:** **FAIL (15.0+ seconds)**. Passing 90+ parameterized variables into an `IN` clause across a `UNION` caused the SQL Server optimizer to fail at creating an efficient plan, resulting in massive execution latency.
+4. **`UNION` with `IQueryable` Subqueries**
+   - **Approach:** Similar to above, but using EF Core's `IQueryable` to generate `IN (SELECT Child FROM Categories_Unwound...)` across a `UNION`.
+   - **Result:** **FAIL (15.2+ seconds)**. SQL Server completely failed to optimize the combination of a `UNION` alongside deep correlated subqueries.
 
 ---
 
@@ -81,6 +87,10 @@ This document captures the chronological attempts, experiments, and failures we 
 ---
 
 ## 5. Architectural Experiments
+
+### In-Memory Sorting (The Backward Scan Mitigation)
+- **Approach:** When EF Core appended `.OrderByDescending(c => c.Created)` to the complex `OR EXISTS` category query, SQL Server utilized the `IX_CompanyProfiles_Created` index to scan the table *backwards*. Evaluating complex `OR EXISTS` subqueries row-by-row during a backward index scan forced SQL Server into a catastrophic execution plan (60+ seconds). We removed the SQL-side `.OrderByDescending()` entirely, projecting only the `Id` and `Created` timestamp into memory via a forward scan, and then applied the sort in C#.
+- **Result:** **SUCCESS**. This dropped the category query time from a 60+ second timeout down to ~2.5s (warm cache) by guaranteeing SQL Server performed a forward table scan. Sorting 10,000 items in C# memory takes <5ms.
 
 ### Query Splitting (The "Two-Query Split")
 - **Approach:** The original query combined Category (`OR EXISTS`) and Location (`IN`) logic into one massive SQL statement, which caused the optimizer to break down. We split this into a **Category-only query** and a **Location-only query**, and intersected their resulting IDs (`HashSet<int>`) in C# memory.
