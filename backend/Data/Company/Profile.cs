@@ -267,7 +267,7 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
     // =====================================================================================
     // REFERENCE IMPLEMENTATION ONLY
     // =====================================================================================
-    // This is the pre-optimization baseline implementation of CompanySearch.
+    // This is the pre-optimization baseline implementation of CompanySearch (matches legacy logic).
     // It is kept purely for historical reference and performance comparison purposes.
     // DO NOT modify, optimize, or use this method in production code.
     // For the actual implementation, see SearchAsync() above.
@@ -281,7 +281,7 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
 
         var activeCompanies = dbContext.CompanyProfiles
             .Join(dbContext.Accounts, c => c.Id, a => a.Id, (c, a) => new { c, a })
-            .Where(x => x.a.Status == 2)
+            .Where(x => x.a.Status == 2 && (queryInput.TransactionType == 0 || (x.c.TransactionType & queryInput.TransactionType) > 0))
             .Select(x => x.c);
 
         IQueryable<CompanyProfile> query = activeCompanies;
@@ -289,82 +289,45 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
         if (queryInput.Category > 0)
         {
             query = query.Where(c => 
-                (queryInput.TransactionType == 0 || (c.TransactionType & queryInput.TransactionType) > 0)
-                &&
-                (
-                    (c.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == c.Category))
-                    ||
-                    (from cp in dbContext.CompanyProducts
-                     join p in dbContext.Products on cp.Product equals p.Id
-                     where (p.Type == 0 || (cp.UnlistedType == 1 && p.Status == 2)) &&
-                           (cp.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == cp.Category))
-                     select cp).Any(cp => cp.Company == c.Id)
-                )
+                (c.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == c.Category))
+                ||
+                (from cp in dbContext.CompanyProducts
+                 join p in dbContext.Products on cp.Product equals p.Id
+                 where (p.Type == 0 || (cp.UnlistedType == 1 && p.Status == 2)) &&
+                       (cp.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == cp.Category))
+                 select cp).Any(cp => cp.Company == c.Id)
             );
-        }
-        else if (queryInput.TransactionType > 0)
-        {
-            query = query.Where(c => (c.TransactionType & queryInput.TransactionType) > 0);
         }
 
         query = query.ApplyFacets(dbContext, queryInput.InclFacets, queryInput.ExclFacets);
 
-        // Materialize all matching IDs in a single round-trip to avoid running the expensive
-        // correlated subquery 3 times (count + facets + page).
-        // Project only the Id (no blobs/text columns) so SQL Server can use covering indexes.
-        int[] allMatchingIds;
+        IQueryable<SearchItem> resultQuery;
 
         if (queryInput.Location > 0)
         {
             var coq = from c in query
-                      where dbContext.CompanyOfficeLocation(queryInput.Location).Any(co => co.Id == c.Id)
-                      orderby c.Created descending
-                      select c.Id;
+                      join co in dbContext.CompanyOfficeLocation(queryInput.Location) on c.Id equals co.Id
+                      select new { Company = c, co.Office };
 
-            allMatchingIds = await coq.ToArrayAsync();
+            resultQuery = coq
+                .OrderByDescending(x => x.Company.Created)
+                .Select(x => new SearchItem { Id = x.Company.Id, Office = x.Office > 0 ? (int?)x.Office : null });
+            
+            query = coq.Select(x => x.Company);
         }
         else
         {
-            allMatchingIds = await query
+            resultQuery = query
                 .OrderByDescending(c => c.Created)
-                .Select(c => c.Id)
-                .ToArrayAsync();
+                .Select(c => new SearchItem { Id = c.Id });
         }
 
-        var total = allMatchingIds.Length;
-        var pageIds = allMatchingIds
-            .Skip(queryInput.StartIndex)
-            .Take(queryInput.Length > 0 ? queryInput.Length : 20)
-            .ToArray();
-
-        // Build SearchItem array. For location queries we need the office — re-fetch just those IDs with office.
-        SearchItem[] companies;
-        if (queryInput.Location > 0)
-        {
-            var officeMap = await (from c in dbContext.CompanyProfiles
-                                   join co in dbContext.CompanyOfficeLocation(queryInput.Location) on c.Id equals co.Id
-                                   where pageIds.Contains(c.Id)
-                                   select new { c.Id, co.Office })
-                                  .ToArrayAsync();
-
-            companies = pageIds
-                .Select(id => {
-                    var o = officeMap.FirstOrDefault(x => x.Id == id);
-                    return new SearchItem { Id = id, Office = o != null && o.Office > 0 ? (int?)o.Office : null };
-                })
-                .ToArray();
-        }
-        else
-        {
-            companies = pageIds.Select(id => new SearchItem { Id = id }).ToArray();
-        }
+        var total = await query.CountAsync();
 
         BizSrt.Model.Semantic.FacetName[]? facets = null;
         if (queryInput.InclFacets != null)
         {
-            // Facet aggregation is now over the materialized ID set — no re-scan of the base query
-            var pfq = await (from c in dbContext.CompanyProfiles
-                             where allMatchingIds.Contains(c.Id)
+            var pfq = await (from c in query
                              join pf in dbContext.CompanyFacets on c.Id equals pf.Company
                              join pfv in dbContext.CompanyFacetValues on pf.FacetValue equals pfv.Id
                              group pfv by new { pfv.Name, pfv.Id } into pfg
@@ -373,6 +336,11 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
 
             facets = BizSrt.Data.Extensions.FacetExtensions.GetFacets(pfq, queryInput.InclFacets, total);
         }
+
+        var companies = await resultQuery
+            .Skip(queryInput.StartIndex)
+            .Take(queryInput.Length > 0 ? queryInput.Length : 20)
+            .ToArrayAsync();
 
         return new SearchOutput<SearchItem>
         {
