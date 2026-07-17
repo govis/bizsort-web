@@ -10,7 +10,9 @@ class Program
     static async Task Main(string[] args)
     {
         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
-        optionsBuilder.UseSqlServer("Server=.;Database=BizSort;Trusted_Connection=True;MultipleActiveResultSets=True;TrustServerCertificate=True", x => x.UseNetTopologySuite());
+        optionsBuilder.UseSqlServer("Server=.;Database=BizSort;Trusted_Connection=True;MultipleActiveResultSets=True;TrustServerCertificate=True", x => x.UseNetTopologySuite())
+            .EnableSensitiveDataLogging()
+            .LogTo(Console.WriteLine, Microsoft.Extensions.Logging.LogLevel.Information);
         using var dbContext = new AppDbContext(optionsBuilder.Options);
 
         var input = new SearchInput
@@ -24,36 +26,40 @@ class Program
             Length = 0
         };
 
-        Console.WriteLine("Running LINQNew...");
+        // Warm the SQL connection and EF Core internals before timing.
+        // This isolates the search query cost from ADO.NET connection establishment
+        // and EF Core cold-start overhead (~3-4s on first call).
+        Console.WriteLine("Warming connection...");
+        await dbContext.Database.ExecuteSqlRawAsync("SELECT 1");
+
+        Console.WriteLine("Running LINQNew (cold plan)...");
         try {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
             var newResult = await SearchParityTest.CompanySearchLINQNew(dbContext, input);
-            Console.WriteLine($"LINQNew: TotalCount = {newResult.TotalCount}, Series Length = {newResult.Series?.Length ?? 0}");
+            sw.Stop();
+            Console.WriteLine($"LINQNew (cold): TotalCount = {newResult.TotalCount}, Series Length = {newResult.Series?.Length ?? 0}, Time = {sw.ElapsedMilliseconds}ms");
         } catch (Exception ex) {
             Console.WriteLine($"LINQNew Error: {ex.Message}");
         }
 
-        Console.WriteLine("Running LINQUnion...");
+        Console.WriteLine("Running LINQNew (warm plan)...");
         try {
-            var unionResult = await SearchParityTest.CompanySearchLINQUnion(dbContext, input);
-            Console.WriteLine($"LINQUnion: TotalCount = {unionResult.TotalCount}, Series Length = {unionResult.Series?.Length ?? 0}");
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            var newResult = await SearchParityTest.CompanySearchLINQNew(dbContext, input);
+            sw.Stop();
+            Console.WriteLine($"LINQNew (warm): TotalCount = {newResult.TotalCount}, Series Length = {newResult.Series?.Length ?? 0}, Time = {sw.ElapsedMilliseconds}ms");
         } catch (Exception ex) {
-            Console.WriteLine($"LINQUnion Error: {ex.Message}");
+            Console.WriteLine($"LINQNew Error: {ex.Message}");
         }
 
-        Console.WriteLine("Running LINQOld...");
+        Console.WriteLine("Running LINQSQL...");
         try {
-            var oldResult = await SearchParityTest.CompanySearchLINQOld(dbContext, input);
-            Console.WriteLine($"LINQOld: TotalCount = {oldResult.TotalCount}, Series Length = {oldResult.Series?.Length ?? 0}");
-        } catch (Exception ex) {
-            Console.WriteLine($"LINQOld Error: {ex.Message}");
-        }
-
-        Console.WriteLine("Running SQL...");
-        try {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
             var sqlResult = await SearchParityTest.CompanySearchSQL(dbContext, input);
-            Console.WriteLine($"SQL: TotalCount = {sqlResult.TotalCount}, Series Length = {sqlResult.Series?.Length ?? 0}");
+            sw.Stop();
+            Console.WriteLine($"LINQSQL: TotalCount = {sqlResult.TotalCount}, Series Length = {sqlResult.Series?.Length ?? 0}, Time = {sw.ElapsedMilliseconds}ms");
         } catch (Exception ex) {
-            Console.WriteLine($"SQL Error: {ex.Message}");
+            Console.WriteLine($"LINQSQL Error: {ex.Message}");
         }
     }
 }

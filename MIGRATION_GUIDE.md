@@ -283,19 +283,15 @@ Legacy source files are located at `..\legacy\website\wwwroot\`. Key directories
 
 ## 8. Backend API & LINQ Guidelines
 
-When porting legacy C# code that constructs complex LINQ queries (especially those using `FacetSet` filtering, SQL Table-Valued Functions (TVFs) like `CompanyOfficeLocation`, or hierarchical category unwinding):
+👉 **All database, EF Core, and LINQ optimization guidelines have been consolidated into [database/LINQ_MODERNIZATION.md](file:///C:/Bizsort/bizsort-web/database/LINQ_MODERNIZATION.md).** 
 
-- **Use Reusable Extension Methods**: Do not inline complex `Where` or `Join` clauses repeatedly in endpoint methods.
-- **Implement `.GetFiltered()`**: Following the legacy codebase architecture, implement and use `public static IQueryable<T> GetFiltered(this IQueryable<T> query, AppDbContext dbContext, QueryInput queryInput)` extension methods (e.g., in `BizSrt.Api.Data.Extensions.QueryExtensions`).
-- **Building Blocks**: Use these extension methods as composable "building blocks" that take the base `IQueryable<T>` (e.g., `dbContext.CompanyProfiles` or `dbContext.CompanyProducts`) and append the required SQL TVF joins for location searching or facet filtering before returning the modified query to the service method.
-- **Stored Procedure Fallbacks**: When porting `Search` methods, ensure you maintain parity with the legacy dual-path architecture. If a user provides a `SearchQuery` or `SearchNear` parameter, bypass the complex LINQ queries entirely and execute the underlying database stored procedures (e.g., `CompanySearch`, `ProductSearch`) directly using `dbContext.Database.GetDbConnection().CreateCommand()`. The legacy complex LINQ structures should only be used when browsing by category without text search.
-
----
-*Last updated: July 07, 2026*
+This includes:
+- `GetFiltered` building blocks and extension methods.
+- Stored procedure fallbacks.
+- EF Core performance patterns (avoiding backward scans, triple-query penalty, N+1 caching).
+- Parameter padding issues.
 
 ## 9. Search Performance Patterns
-
-These patterns were discovered and applied while porting the Company and Product search flows. Apply them to all future search ports (Project, Job, Community).
 
 ### 9.1 Frontend: Async/Promise Bridge in ViewModel `fetchList`
 
@@ -327,65 +323,5 @@ getViewModel(name: string) {
 ```
 Also call `Semantic.Facet.deserialize(data.facets)` inside the service `search()` function after parsing JSON to back-populate `FacetValue.name` references (required for the filter dropdown to display group names).
 
-### 9.2 Backend: Avoid Triple-Query in LINQ Search
-
-**Problem**: The LINQ search path runs the same expensive correlated subquery (`Categories_Unwound.Any()` + `CompanyProducts.Any()`) **three times**:
-1. `CountAsync()` — for `TotalCount`
-2. Facet aggregation `ToArrayAsync()` — for filter counts
-3. Page result `ToArrayAsync()` — for the actual page
-
-Each run re-evaluates the entire predicate including TVF joins, which is costly.
-
-**Fix**: Materialize **all matching IDs** in a **single** query projecting only `Id` (SQL Server can satisfy this with a covering index, no column reads). Derive `total` from `.Length` in memory. Slice the page with LINQ `.Skip().Take()` in memory. Run facet aggregation against `allMatchingIds.Contains(c.Id)` — a simple `IN` clause:
-
-```csharp
-// Single DB round-trip for IDs (cheap — covering index, no data columns)
-var allMatchingIds = await query
-    .OrderByDescending(c => c.Created)
-    .Select(c => c.Id)
-    .ToArrayAsync();
-
-var total = allMatchingIds.Length;
-var pageIds = allMatchingIds.Skip(startIndex).Take(length).ToArray();
-var companies = pageIds.Select(id => new SearchItem { Id = id }).ToArray();
-
-// Facet aggregation on the pre-materialized set — no re-scan of the base predicate
-var pfq = await (from c in dbContext.CompanyProfiles
-                 where allMatchingIds.Contains(c.Id)
-                 join pf in dbContext.CompanyFacets on c.Id equals pf.Company
-                 ...
-```
-
-> [!NOTE]
-> `allMatchingIds.Contains(c.Id)` generates `WHERE Id IN (...)`. SQL Server limits parameters to ~2100. For extremely large result sets, consider batching or a temp table approach. In practice the category filter narrows results well below this limit.
-
-### 9.3 Backend: Avoid N+1 in Cache `ToPreview`
-
-**Problem**: `CachedCompanyProfile.ToPreview()` accesses `Offices` and `Products` via lazy `GetArray()` getters, each hitting the DB individually per company. For 20 companies on a cold cache: ~40 individual queries → ~9s.
-
-**Fix**: Batch-load all related collections in the cache's **multi-fetch constructor** alongside the profile query. Store them as plain `{ get; set; }` properties — no lazy loading:
-
-```csharp
-// In CompanyProfilesCache batch fetcher — 3 extra queries for all N companies, not N*3
-var allOffices = dbContext.CompanyOffices
-    .Where(co => accountIds.Contains(co.Company))
-    .Select(co => new { co.Company, co.Id, ... })
-    .AsNoTracking().ToList()
-    .GroupBy(co => co.Company)
-    .ToDictionary(g => g.Key, g => g.Select(...).ToArray());
-
-var allProducts = dbContext.CompanyProducts
-    .Where(cp => accountIds.Contains(cp.Company) && cp.UnlistedType == 0)
-    .Select(cp => new { cp.Company, cp.Product })
-    .AsNoTracking().ToList()
-    .GroupBy(cp => cp.Company)
-    .ToDictionary(g => g.Key, g => g.Select(cp => cp.Product).ToArray());
-
-// Assign in the Select:
-Offices = allOffices.GetValueOrDefault(p.Profile.Id, Array.Empty<CachedCompanyOffice>()),
-Products = allProducts.GetValueOrDefault(p.Profile.Id, Array.Empty<long>()),
-```
-
-> [!CAUTION]
-> Do **not** call `AsNoTracking()` on scalar projections like `.Select(cp => cp.Product)` — EF Core requires a reference-type entity for `AsNoTracking<TEntity>`. Only call it on entity or anonymous-type projections.
+👉 **For backend search optimization patterns (OPENJSON, Two-Query Split, caching), see [database/LINQ_MODERNIZATION.md](file:///C:/Bizsort/bizsort-web/database/LINQ_MODERNIZATION.md).**
 

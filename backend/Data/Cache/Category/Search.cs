@@ -21,9 +21,12 @@ namespace BizSrt.Data
                     else
                         q = q.Where(c => c.Name.Contains(ck.Name));
                     if (ck.Parent > 0)
+                    {
+                        var parentIds = dc.Categories_Unwound.Where(cu => cu.Parent == ck.Parent).Select(cu => cu.Child);
                         q = (from c in q
-                             where c.Id == ck.Parent || dc.Categories_Unwound.Any(cu => cu.Parent == ck.Parent && cu.Child == c.Id)
+                             where c.Id == ck.Parent || parentIds.Contains(c.Id)
                              select c);
+                    }
                     return q.Where(c => c.Id > 0).Select(c => c.Id).ToArray();
                 }
             })

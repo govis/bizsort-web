@@ -32,24 +32,39 @@ namespace BizSrt.Api.Data.Cache.Featured
 
             if (key.Item2 > 0)
             {
-                var coq = BizSrt.Data.QueryExtensions.LocationQuery(dbContext.CompanyOffices, dbContext, key.Item2);
+                var locIds = dbContext.Locations_Unwound.Where(lu => lu.Parent == key.Item2).Select(lu => lu.Child).ToList();
+                locIds.Add(key.Item2);
+
+                var companyIdsInLocation = dbContext.CompanyOffices.Where(co => locIds.Contains(co.Location)).Select(co => co.Company).Distinct();
 
                 cpq = from cp in cpq
-                      where coq.Any(co => co.Company == cp.Company)
-                      select cp; 
+                      join companyId in companyIdsInLocation on cp.Company equals companyId
+                      select cp;
             }
 
-            var qt = (from p in pq
-                      join cp in cpq on p.Id equals cp.Product
-                      join pi in dbContext.ProductMedia on p.Id equals pi.Product
-                      where pi.Type == (byte)BizSrt.Model.MediaType.Default_Image
-                      orderby p.Created descending
-                      select new { p.Id, pi.Metadata }).Take(500).AsEnumerable();
+            var allItems = (from p in pq
+                            join cp in cpq on p.Id equals cp.Product
+                            select new { p.Id, p.Created }).ToArray();
 
-            return qt.Where(p => p.Metadata != null && p.Metadata.Length > 0)
-                     .Select(p => p.Id)
-                     .Take(100)
-                     .ToArray();
+            var qt = allItems.OrderByDescending(p => p.Created).Select(p => p.Id).Take(500);
+
+            var result = new System.Collections.Generic.List<long>();
+            foreach (var id in qt)
+            {
+                var pm = dbContext.ProductMedia
+                    .Where(m => m.Product == id && m.Type == (byte)BizSrt.Model.MediaType.Default_Image)
+                    .Select(m => m.Metadata)
+                    .FirstOrDefault();
+
+                if (pm != null && pm.Length > 0)
+                {
+                    result.Add(id);
+                    if (result.Count >= 100)
+                        break;
+                }
+            }
+
+            return result.ToArray();
         }
     }
 }

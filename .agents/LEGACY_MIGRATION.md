@@ -31,129 +31,19 @@ The legacy codebase is split into two primary areas:
 
 ## Modernization Principles
 
-1. **Strict API Parity:** You must not invent new REST schemas. Your ported .NET Endpoints must exactly match what the legacy TypeScript `src/service/` layers expect.
-2. **Schema Name Remapping (Business -> Company):** During modernization, all instances of `Business` in the database schema and object models have been renamed to `Company` (e.g., `Businesses` table became `CompanyProfiles`, `BusinessOffices` became `CompanyOffices`, and LINQ variables `bi` -> `cm`, `bo` -> `co`). All database indexes have also been renamed to use the `Company*` prefix.
-3. **ViewModel Preservation:** Do not rip out the legacy `ViewModel` pattern for inputs. Extract the logic from Lit components into modern `frontend/src/viewmodel/` classes to maintain data-flow consistency.
-4. **No Novel DB Queries:** All complex EF queries already exist in `legacy/server/Data/`. Port them exactly as they are.
-5. **LINQ Building Blocks:** Legacy code constructed complex LINQ queries using reusable building blocks (e.g. `Company.GetActive()`, `Company.GetFiltered()`, `CompanyProduct.GetActive()`). When porting search methods for Company and Company Product profiles, implement these building blocks as reusable extension methods to maintain the legacy architecture.
-6. **EF Core 10 Query Translation (APPLY vs JOIN):** Legacy EF6 queries that heavily utilized the `let` keyword with multiple conditions (e.g., `let x = dbContext...FirstOrDefault() where x != null && x.Prop != null`) were natively translated into a single optimized `OUTER APPLY`. EF Core 10 parsing can sometimes regress these patterns into multiple redundant scalar subqueries. When porting these explicit "APPLY" patterns, either use standard `join` statements (with `.Distinct()` if necessary) OR explicitly structure `from...Take(1)` subqueries to guarantee performant SQL generation.
-
-   **How to Hint EF Core 10 to generate `CROSS APPLY` / `OUTER APPLY`:**
-   In SQL Server, `APPLY` operates like a `foreach` loop: it evaluates the right-hand table expression once for every single row returned by the left-hand table. EF Core will naturally generate a `CROSS APPLY` (like an INNER JOIN) or `OUTER APPLY` (like a LEFT JOIN) when you use correlated subqueries in your LINQ—specifically using a second `from` clause.
-
-   **To generate an `OUTER APPLY` (returns the row even if the subquery is empty):**
-   ```csharp
-   var query =
-       from c in dbContext.CompanyProfiles
-       // Notice how the right side depends on 'c.Id' and uses .Take(1)
-       from media in dbContext.CompanyMedia
-           .Where(m => m.Company == c.Id && m.Type == 1)
-           .Take(1)
-           .DefaultIfEmpty()
-       where media != null && media.Metadata.Length > 0
-       select c;
-   ```
-
-   **To generate a `CROSS APPLY` (drops the row if the subquery is empty):**
-   ```csharp
-   var query =
-       from c in dbContext.CompanyProfiles
-       from media in dbContext.CompanyMedia
-           .Where(m => m.Company == c.Id && m.Type == 1)
-           .Take(1)
-       // Omitting DefaultIfEmpty() makes it a CROSS APPLY
-       where media.Metadata.Length > 0
-       select c;
-   ```
-
-   *Rule of thumb:* If you encounter legacy code using `let x = dbContext.Table.FirstOrDefault(...)`, rewriting it to the second `from` clause with `.Take(1)` is the most reliable way to hint EF Core 10 to generate a clean, single `APPLY` without the "triple-subquery" bug.
-
-   - **`wwwroot/component/`**: Pre-compiled WebComponents and LitElements orchestrating ViewModels and UI.
-
-## Modernization Principles
+👉 **All database, EF Core, and LINQ optimization guidelines have been consolidated into [LINQ_MODERNIZATION.md](file:///C:/Bizsort/bizsort-web/database/LINQ_MODERNIZATION.md).**
 
 1. **Strict API Parity:** You must not invent new REST schemas. Your ported .NET Endpoints must exactly match what the legacy TypeScript `src/service/` layers expect.
 2. **Schema Name Remapping (Business -> Company):** During modernization, all instances of `Business` in the database schema and object models have been renamed to `Company` (e.g., `Businesses` table became `CompanyProfiles`, `BusinessOffices` became `CompanyOffices`, and LINQ variables `bi` -> `cm`, `bo` -> `co`). All database indexes have also been renamed to use the `Company*` prefix.
 3. **ViewModel Preservation:** Do not rip out the legacy `ViewModel` pattern for inputs. Extract the logic from Lit components into modern `frontend/src/viewmodel/` classes to maintain data-flow consistency.
 4. **No Novel DB Queries:** All complex EF queries already exist in `legacy/server/Data/`. Port them exactly as they are.
-5. **LINQ Building Blocks:** Legacy code constructed complex LINQ queries using reusable building blocks (e.g. `Company.GetActive()`, `Company.GetFiltered()`, `CompanyProduct.GetActive()`). When porting search methods for Company and Company Product profiles, implement these building blocks as reusable extension methods to maintain the legacy architecture.
-6. **EF Core 10 Query Translation (APPLY vs JOIN):** Legacy EF6 queries that heavily utilized the `let` keyword with multiple conditions (e.g., `let x = dbContext...FirstOrDefault() where x != null && x.Prop != null`) were natively translated into a single optimized `OUTER APPLY`. EF Core 10 parsing can sometimes regress these patterns into multiple redundant scalar subqueries. When porting these explicit "APPLY" patterns, either use standard `join` statements (with `.Distinct()` if necessary) OR explicitly structure `from...Take(1)` subqueries to guarantee performant SQL generation.
-
-   **How to Hint EF Core 10 to generate `CROSS APPLY` / `OUTER APPLY`:**
-   In SQL Server, `APPLY` operates like a `foreach` loop: it evaluates the right-hand table expression once for every single row returned by the left-hand table. EF Core will naturally generate a `CROSS APPLY` (like an INNER JOIN) or `OUTER APPLY` (like a LEFT JOIN) when you use correlated subqueries in your LINQ—specifically using a second `from` clause.
-
-   **To generate an `OUTER APPLY` (returns the row even if the subquery is empty):**
-   ```csharp
-   var query =
-       from c in dbContext.CompanyProfiles
-       // Notice how the right side depends on 'c.Id' and uses .Take(1)
-       from media in dbContext.CompanyMedia
-           .Where(m => m.Company == c.Id && m.Type == 1)
-           .Take(1)
-           .DefaultIfEmpty()
-       where media != null && media.Metadata.Length > 0
-       select c;
-   ```
-
-   **To generate a `CROSS APPLY` (drops the row if the subquery is empty):**
-   ```csharp
-   var query =
-       from c in dbContext.CompanyProfiles
-       from media in dbContext.CompanyMedia
-           .Where(m => m.Company == c.Id && m.Type == 1)
-           .Take(1)
-       // Omitting DefaultIfEmpty() makes it a CROSS APPLY
-       where media.Metadata.Length > 0
-       select c;
-   ```
-
-   *Rule of thumb:* If you encounter legacy code using `let x = dbContext.Table.FirstOrDefault(...)`, rewriting it to the second `from` clause with `.Take(1)` is the most reliable way to hint EF Core 10 to generate a clean, single `APPLY` without the "triple-subquery" bug.
-
-7. **LOB (Large Object) Columns over Network:** When querying entities that have `varbinary(max)` or `nvarchar(max)` columns (like `CompanyMedia.Content`), NEVER query the full entity if you only need the ID. EF Core 10 will attempt to download the multi-megabyte payloads for every record over the network just to populate the unused property. Always use `.Select(m => m.Id).FirstOrDefault()`.
-8. **Distinct() vs Any():** Avoid using `.Distinct()` on full entities (e.g., `select c).Distinct()`) when joining tables. EF Core 10 often translates this by fetching *all* scalar columns of the entity into a subquery to compute uniqueness before applying ordering. Instead, use an `.Any()` inside a `where` clause (e.g., `where otherTable.Any(o => o.Id == c.Id)`) which translates cleanly to an `EXISTS` statement.
-9. **Temp Data Set Materialization (`ToArrayAsync` vs The Triple-Query Penalty):** When porting dynamic "catch-all" queries (like complex Search methods), avoid re-executing the base query multiple times for counts, facets, and pagination. Instead, project only the `Id` and materialize the dataset into RAM (`var allMatchingIds = await query.Select(p => p.Id).ToArrayAsync();`). Modern EF Core 10 translates `.Contains(allMatchingIds)` in subsequent queries (like facet aggregations) cleanly into an `INNER JOIN OPENJSON(...)` statement. This trades a negligible network/serialization cost for a massive Database CPU saving, exactly mirroring how Stored Procedures use `@TableVariables`.
-10. **Cache Eviction Policy (LRU/LFU Hybrid):** Both the legacy system and the modern `BizSrt.Api.Foundation.Cache` utilize `IExpirationItem` implementations across cached models (e.g. `CachedValue`, `CachedSet`). These mandate `HitCount` (total access count) and `LastHit` (a global auto-incrementing access stamp) properties. During capacity cleanups, the Cache `Manager` evaluates `LastHit + HitCount` as a single score to safely identify and evict the lowest value (least popular + stalest) items without complex tracking graphs.
-11. **Cache Interface Collisions (`IKey<T>` vs EF Schema):** The legacy database occasionally uses columns named `Key` (e.g. `byte[] Key` in `CompanyFacetSet`). The caching layer expects these models to implement `IKey<T>`, which demands a generic `T Key { get; }` property, creating a compiler collision. **Always resolve this using Explicit Interface Implementation mapped to the Primary Key**, and strictly decorate it with `[NotMapped]`. Legacy EF6 ignored explicit interfaces, but EF Core 10's reflection engine will attempt to map the explicit interface to the DB if `[NotMapped]` is omitted!
+5. **Cache Eviction Policy (LRU/LFU Hybrid):** Both the legacy system and the modern `BizSrt.Api.Foundation.Cache` utilize `IExpirationItem` implementations across cached models (e.g. `CachedValue`, `CachedSet`). These mandate `HitCount` (total access count) and `LastHit` (a global auto-incrementing access stamp) properties. During capacity cleanups, the Cache `Manager` evaluates `LastHit + HitCount` as a single score to safely identify and evict the lowest value (least popular + stalest) items without complex tracking graphs.
+6. **Cache Interface Collisions (`IKey<T>` vs EF Schema):** The legacy database occasionally uses columns named `Key` (e.g. `byte[] Key` in `CompanyFacetSet`). The caching layer expects these models to implement `IKey<T>`, which demands a generic `T Key { get; }` property, creating a compiler collision. **Always resolve this using Explicit Interface Implementation mapped to the Primary Key**, and strictly decorate it with `[NotMapped]`. Legacy EF6 ignored explicit interfaces, but EF Core 10's reflection engine will attempt to map the explicit interface to the DB if `[NotMapped]` is omitted!
     ```csharp
     public int Id { get; set; }
     public byte[] Key { get; set; } // SQL column
     [NotMapped] int IKey<int>.Key => Id; // Cache Interface constraint
     ```
-12. **Correlated EXISTS Subqueries in OR Clauses (`.Any()` vs `.Union()`):** When evaluating complex conditions that join large tables (e.g., checking if a Company matches a category natively OR via its associated Products), avoid nesting an EF Core `.Any()` check inside an `OR` clause.
-    - **Approach 1 - Retaining `.Any()` (Rejected):** 
-      `query.Where(c => c.Category == cat || (from cp in dbContext... select cp).Any(cp => cp.Company == c.Id))`
-      *Reason against:* This translates into a SQL `OR EXISTS` subquery. The SQL Server query planner notoriously struggles to use indexes efficiently across `OR EXISTS` conditions over millions of rows, frequently resorting to catastrophic full-table scans and nested-loops that trigger 30-second `Execution Timeout` exceptions in production (highly susceptible to parameter sniffing).
-    - **Approach 2 - Server-side `.Union()` (Implemented):** 
-      Instead, calculate the two sets independently natively on the server, union them, and feed them into a `.Contains()` (`IN`) clause:
-      ```csharp
-      var selfMatches = dbContext.CompanyProfiles.Where(c => c.Category == cat).Select(c => c.Id);
-      var productMatches = (from cp in dbContext.CompanyProducts where cp.Category == cat select cp.Company);
-      var allMatches = selfMatches.Union(productMatches);
-      query = query.Where(c => allMatches.Contains(c.Id));
-      ```
-      *Reason for:* `.Contains()` translates to a SQL `IN` clause (or an `INNER JOIN` against the derived union table). This forces SQL Server to evaluate the two distinct filters independently on their respective indexes before combining them, executing flawlessly in milliseconds and completely bypassing the timeout vulnerabilities.
-13. **Eagerly Fetching Small Dimension Tables (`IN` vs `OR EXISTS`):** When checking if a column matches a specific value OR any of its hierarchical children (e.g., `Categories_Unwound`), avoid placing `.Any()` inside an `OR` clause directly in the main EF query.
-    - **Approach 1 - Retaining `OR .Any()` (Rejected):** 
-      `where c.Category == cat || dbContext.Categories_Unwound.Any(cu => cu.Parent == cat && cu.Child == c.Category)`
-      *Reason against:* This forces SQL Server to generate an `OR EXISTS` clause. When joined against massive tables (like `Products` or `CompanyProfiles`), bad parameter sniffing can trick the optimizer into performing a catastrophic nested loop scan, resulting in a 30-second `Execution Timeout Expired`.
-    - **Approach 2 - Eager Memory Array & `.Contains()` (Implemented):** 
-      Instead, eagerly fetch the small dimension table into memory *before* executing the main query, and then use `.Contains()`:
-      ```csharp
-      var catIds = await dbContext.Categories_Unwound.Where(cu => cu.Parent == cat).Select(cu => cu.Child).ToListAsync();
-      catIds.Add(cat);
-      query = query.Where(c => catIds.Contains(c.Category));
-      ```
-      *Reason for:* Because the `Unwound` dimension table only has a few rows for any given parent, fetching it into memory is virtually instantaneous. EF Core translates the subsequent `.Contains()` into a simple `IN (1, 2, 3...)` clause. This eliminates the `EXISTS` block entirely, guaranteeing the SQL Server uses its covering indexes perfectly without any parameter sniffing timeout vulnerabilities.
-14. **Hierarchical Tree Traversal & Deduplication (Closure Tables & `IN`/`EXISTS` vs `JOIN`):** The legacy database maintains `Categories_Unwound` and `Locations_Unwound` as "Closure Tables"—pre-calculated flattened sets mapping every `Parent` to *all* its hierarchical descendants (`Child`) across every depth level.
-    - **Approach 1 - `INNER JOIN` against the Hierarchy (Rejected):** 
-      `from c in dbContext.CompanyProfiles join lu in dbContext.Locations_Unwound on c.Location equals lu.Child where lu.Parent == targetLoc select c`
-      *Reason against:* Joining directly against the hierarchy table creates result duplication if a Company maps to multiple criteria within the same tree, forcing expensive `.Distinct()` calculations downstream.
-    - **Approach 2 - Eager `.Contains()` (`IN` Clause) (Implemented):** 
-      `var locIds = await dbContext.Locations_Unwound.Where(lu => lu.Parent == targetLoc).Select(lu => lu.Child).ToListAsync(); query.Where(c => locIds.Contains(c.Location));`
-      *Reason for:* EF Core generates an `IN (1, 2, 3)` clause. SQL Server natively processes `IN` by evaluating a true/false condition per row, inherently preventing the parent `CompanyProfiles` record from ever duplicating.
-    - **Approach 3 - Cross-Entity `.Any()` (`EXISTS` Clause) (Implemented):** 
-      `query.Where(c => dbContext.CompanyOffices.Where(co => locIds.Contains(co.Location)).Any(co => co.Company == c.Id))`
-      *Reason for:* When checking 1-to-Many nested relationships (e.g. a Company has 5 Offices in the target location tree), wrapping the check in `.Any()` generates an `EXISTS (...)` block. `EXISTS` short-circuits on the first matching office, correctly returning `true` and cleanly deduplicating the parent Company without any row expansion.
 
 ## Migration progress. **Please also refer to [LEGACY_BACKEND_TRACKER.md](file:///C:/Bizsort/bizsort-web/.agents/LEGACY_BACKEND_TRACKER.md) for a line-by-line backend tracking matrix and [LEGACY_FRONTEND_TRACKER.md](file:///C:/Bizsort/bizsort-web/.agents/LEGACY_FRONTEND_TRACKER.md) for the frontend tracking matrix.**
 

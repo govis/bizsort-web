@@ -134,28 +134,18 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
 
         if (queryInput.Category > 0)
         {
-            var categoryIds = await dbContext.Categories_Unwound
-                .Where(cu => cu.Parent == queryInput.Category)
-                .Select(cu => cu.Child)
-                .ToListAsync();
-            categoryIds.Add(queryInput.Category);
-
-            var companyCategoryMatches = dbContext.CompanyProfiles
-                .Where(c => categoryIds.Contains(c.Category))
-                .Select(c => c.Id);
+            var categoryIds = dbContext.Categories_Unwound.Where(cu => cu.Parent == queryInput.Category).Select(cu => cu.Child);
 
             var productCategoryMatches = (from cp in dbContext.CompanyProducts
                                           join p in dbContext.Products on cp.Product equals p.Id
                                           where (p.Type == 0 || (cp.UnlistedType == (byte)BizSrt.Model.Product.UnlistedType.Listed && p.Status == (byte)BizSrt.Model.Product.Status.Active)) &&
-                                                categoryIds.Contains(cp.Category)
+                                                (cp.Category == queryInput.Category || categoryIds.Contains(cp.Category))
                                           select cp.Company);
-
-            var matchingCompanyIds = companyCategoryMatches.Union(productCategoryMatches);
 
             query = query.Where(c => 
                 (queryInput.TransactionType == 0 || (c.TransactionType & queryInput.TransactionType) > 0)
                 &&
-                matchingCompanyIds.Contains(c.Id)
+                (c.Category == queryInput.Category || categoryIds.Contains(c.Category) || productCategoryMatches.Contains(c.Id))
             );
         }
         else if (queryInput.TransactionType > 0)
@@ -174,17 +164,18 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
         {
             var coq = from c in query
                       where dbContext.CompanyOffices.LocationQuery(dbContext, queryInput.Location).Any(co => co.Company == c.Id)
-                      orderby c.Created descending
-                      select c.Id;
+                      select new { c.Id, c.Created };
 
-            allMatchingIds = await coq.ToArrayAsync();
+            var allMatches = await coq.ToArrayAsync();
+            allMatchingIds = allMatches.OrderByDescending(c => c.Created).Select(c => c.Id).ToArray();
         }
         else
         {
-            allMatchingIds = await query
-                .OrderByDescending(c => c.Created)
-                .Select(c => c.Id)
+            var allMatches = await query
+                .Select(c => new { c.Id, c.Created })
                 .ToArrayAsync();
+                
+            allMatchingIds = allMatches.OrderByDescending(c => c.Created).Select(c => c.Id).ToArray();
         }
 
         var total = allMatchingIds.Length;

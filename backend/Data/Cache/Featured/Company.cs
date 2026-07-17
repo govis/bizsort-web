@@ -35,17 +35,20 @@ namespace BizSrt.Api.Data.Cache.Featured
 
             if (key.Item2 > 0)
             {
-                var coq = BizSrt.Data.QueryExtensions.LocationQuery(dbContext.CompanyOffices, dbContext, key.Item2);
+                var locIds = dbContext.Locations_Unwound.Where(lu => lu.Parent == key.Item2).Select(lu => lu.Child).ToList();
+                locIds.Add(key.Item2);
+
+                var companyIdsInLocation = dbContext.CompanyOffices.Where(co => locIds.Contains(co.Location)).Select(co => co.Company).Distinct();
 
                 cq = from c in cq
-                     where coq.Any(co => co.Company == c.Id)
-                     select c; 
+                     join id in companyIdsInLocation on c.Id equals id
+                     select c;
             }
 
-            var qt = (from b in cq
-                      where dbContext.CompanyMedia.Any(m => m.Company == b.Id && m.Type == (byte)BizSrt.Model.MediaType.Default_Image)
-                      orderby b.Created descending
-                      select b.Id).Take(500).AsEnumerable();
+            var allItems = (from b in cq
+                            select new { b.Id, b.Created }).ToArray();
+
+            var qt = allItems.OrderByDescending(x => x.Created).Select(x => x.Id).Take(500);
 
             var result = new System.Collections.Generic.List<int>();
             foreach (var id in qt)

@@ -22,12 +22,12 @@ namespace BizSrt.Data
                     else
                         q = q.Where(l => l.Name.Contains(lk.Name));
                     if (lk.Parent > 0)
+                    {
+                        var parentIds = dc.Locations_Unwound.Where(lu => lu.Parent == lk.Parent).Select(lu => lu.Child);
                         q = (from l in q
-                             where l.Id == lk.Parent || dc.Locations_Unwound.Any(lu => lu.Parent == lk.Parent && lu.Child == l.Id)
-                             /*join lu in dc.Locations_Unwound on new { Parent = lk.Parent, Child = l.Id } equals new { lu.Parent, lu.Child } into lut
-                             from lu in lut.DefaultIfEmpty()
-                             where l.Id == lk.Parent || lu != null*/
+                             where l.Id == lk.Parent || parentIds.Contains(l.Id)
                              select l);
+                    }
                     return q.Where(l => l.Id > 0).Select(l => l.Id).ToArray();
                 }
             })
