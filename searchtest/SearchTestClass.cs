@@ -97,7 +97,7 @@ namespace BizSrt.SearchTest
         {
             var query = dbContext.CompanyProfiles
                 .Join(dbContext.Accounts, c => c.Id, a => a.Id, (c, a) => new { c, a })
-                .Where(x => x.a.Status == 2 && (queryInput.TransactionType == 0 || (x.c.TransactionType & queryInput.TransactionType) > 0))
+                .Where(x => x.a.Status == (byte)BizSrt.Model.Status.Active && (queryInput.TransactionType == 0 || (x.c.TransactionType & queryInput.TransactionType) > 0))
                 .Select(x => x.c);
 
             // Category filter: keep as IQueryable OR EXISTS (Categories_Unwound).
@@ -337,22 +337,22 @@ namespace BizSrt.SearchTest
         {
             var activeCompanies = dbContext.CompanyProfiles
                 .Join(dbContext.Accounts, c => c.Id, a => a.Id, (c, a) => new { c, a })
-                .Where(x => x.a.Status == 2)
+                .Where(x => x.a.Status == (byte)BizSrt.Model.Status.Active && (queryInput.TransactionType == 0 || (x.c.TransactionType & queryInput.TransactionType) > 0))
                 .Select(x => x.c);
                 
-            // NOTE: The "TransactionType Grouping Bug" is intentionally preserved here to match legacy behavior.
-            // In this legacy code, the TransactionType check is grouped INSIDE the CategoryCheck, meaning
-            // if a company matches via ProductCheck, it bypasses the TransactionType filter entirely.
-            // This is fixed in CompanySearchLINQNew, CompanySearchLINQUnion, and the production codebase.
-            var cq = from c in activeCompanies
-                     where ((c.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == c.Category))
-                     && (queryInput.TransactionType == 0 || (c.TransactionType & (byte)queryInput.TransactionType) > 0)) ||
+            IQueryable<CompanyProfile> cq = activeCompanies;
+
+            if (queryInput.Category > 0)
+            {
+                cq = from c in cq
+                     where (c.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == c.Category)) ||
                      (from cp in dbContext.CompanyProducts
                       join p in dbContext.Products on cp.Product equals p.Id
-                      where (p.Type == 0 || (cp.UnlistedType == 1 && p.Status == 2)) &&
+                      where (p.Type == 0 || (cp.UnlistedType == (byte)BizSrt.Model.Product.UnlistedType.Listed && p.Status == (byte)BizSrt.Model.Product.Status.Active)) &&
                           (cp.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == cp.Category))
                       select cp).Any(cp => cp.Company == c.Id)
                      select c;
+            }
 
             var output = new SearchOutput<SearchItem>();
 
