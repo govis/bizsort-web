@@ -85,5 +85,22 @@ When a Company gets saved or updated, the `BizSrt.Worker` background indexer cal
    - The query validates that the company has NONE of the excluded facets for that Set (`bsfd.Exclude == true`).
 3. If it perfectly satisfies the set's rules, it adds the Company to that Set by inserting a row into **`FacetSetCompanies`**.
 
+## 7. Pagination Architecture
+
+The search engine employs a highly optimized, two-stage pagination strategy designed to minimize database load and network payload sizes during user interaction (like changing page sizes or navigating pages).
+
+### Stage 1: The Initial Lightweight Search (`fetchList`)
+When a user initiates a search, the backend search endpoint does **not** fetch or return massive, fully hydrated data objects (like company profiles). 
+Instead, it executes the search and returns an enormous array consisting strictly of lightweight entity ID references (and sometimes distances for proximity searches). 
+The frontend `Searchview` caches this complete set of IDs locally in memory (`this._buffer`).
+
+### Stage 2: Local Slicing & Hydration (`_populatePage` and `fetchPage`)
+When the user paginates through the list or alters the `pageSize` (e.g., from 24 to 48):
+1. **Local Slicing (`_populatePage`)**: The `Pager` viewmodel intercepts the request. It does **not** call the backend search endpoint again. Instead, it performs a zero-latency `this._buffer.slice(...)` to extract the exact subset of IDs required for the current page from the local cache.
+2. **Hydration (`fetchPage` / `toPreview`)**: The Pager passes this small subset of IDs to `fetchPage()`, which calls a secondary hydration endpoint (e.g., `toPreview()`). The backend takes these specific IDs, looks up the heavy profile data, and returns the fully detailed objects required for rendering.
+
+**Architectural Caveat (Buffer Lifecycle):**
+Because of this caching mechanism, you must **never** manually nullify or clear `this._buffer` simply because the user interacts with pagination controls (such as changing the page size dropdown). Destroying the buffer breaks the local caching strategy, forcing the client to re-execute the heavy, full-table search query against the backend just to fetch the exact same IDs it already possessed.
+
 ---
-*Documented on July 15, 2026 for AI Agents and Developers maintaining the legacy parity architecture.*
+*Documented on July 21, 2026 for AI Agents and Developers maintaining the legacy parity architecture.*

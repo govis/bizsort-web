@@ -163,7 +163,17 @@ export class Pager {
         return () => this._propertyChange.unsubscribe(observer);
     }
 
-    pageSizeOptions = [12, 24, 48, 96];
+    protected _pageSizes = [10, 50, 100];
+    get pageSizes(): number[] {
+        return this._pageSizes;
+    }
+    set pageSizes(sizes: number[]) {
+        if (this._pageSizes !== sizes && sizes && sizes.length > 0) {
+            this._pageSizes = sizes;
+            this.notifyProperty(['pageSizes']);
+            this.pageSize = sizes[0];
+        }
+    }
 
     protected _buffer: any[] | null = null;
     protected _fetchCount = 0;
@@ -222,13 +232,15 @@ export class Pager {
         }
     }
 
-    protected _pageSize = 12;
+    protected _pageSize = 0;
     get pageSize(): number {
-        return this._pageSize > 0 ? this._pageSize : 12;
+        return this._pageSize > 0 ? this._pageSize : (this.pageSizes.length > 0 ? this.pageSizes[0] : 10);
     }
     set pageSize(pageSize: number) {
         if (this._pageSize != pageSize) {
+            console.log(`[Pager] pageSize setter triggered. Changing from ${this._pageSize} to ${pageSize}`);
             this._pageSize = pageSize;
+            this.notifyProperty(['pageSize']);
             this._populatePage(0, {
                 setPage: true
             });
@@ -307,9 +319,11 @@ export class Pager {
     }
 
     _populatePage(pageIndex: number, options: notifyPageOptions) {
+        console.log(`[Pager] _populatePage called with pageIndex: ${pageIndex}. Current buffer length: ${this._buffer ? this._buffer.length : 0}`);
         if (this._buffer && this._buffer.length > 0 && pageIndex >= 0) {
             var startIndex = pageIndex * this.pageSize;
             var page = this._buffer.slice(startIndex, startIndex + this.pageSize);
+            console.log(`[Pager] Slicing buffer from ${startIndex} to ${startIndex + this.pageSize}. Yielded ${page.length} lightweight IDs.`);
 
             if (!options.addItems) {
                 this.fromRecord = startIndex + 1;

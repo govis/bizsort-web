@@ -7,8 +7,9 @@ import type { Semantic } from '../../viewmodel/list/filter';
 
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import '@awesome.me/webawesome/dist/components/tag/tag.js';
-import '@awesome.me/webawesome/dist/components/dropdown/dropdown.js';
-import '@awesome.me/webawesome/dist/components/dropdown-item/dropdown-item.js';
+import '@awesome.me/webawesome/dist/components/drawer/drawer.js';
+import '@awesome.me/webawesome/dist/components/button/button.js';
+import '@awesome.me/webawesome/dist/components/divider/divider.js';
 
 export class ListFilterAvailable extends LitElement implements IViewAdapter {
     @property({ type: Boolean, reflect: true }) declare hidden: boolean;
@@ -16,10 +17,12 @@ export class ListFilterAvailable extends LitElement implements IViewAdapter {
     viewModel: ListFilterAvailableViewModel;
     
     @state() declare _facets: Semantic.FacetName[];
+    @state() declare _drawerOpen: boolean;
 
     constructor() {
         super();
         this.hidden = true;
+        this._drawerOpen = false;
         this._facets = [];
         this.viewModel = new ListFilterAvailableViewModel(this);
     }
@@ -75,28 +78,32 @@ export class ListFilterAvailable extends LitElement implements IViewAdapter {
 
     render() {
         return html`
-            <wa-dropdown placement="bottom-start" hoist>
-                <wa-button slot="trigger" variant="neutral" is-icon-button pill class="filter-action">
-                    <wa-icon library="bizsrt" name="filter-list"></wa-icon>
-                </wa-button>
-                    ${this._facets.map(item => html`
-                        <div class="facet-header">${item.text}</div>
-                        ${item.values.map(value => html`
-                            <wa-dropdown-item value="${value.key}" @click=${() => this.viewModel.filterIn(value)}>
-                                ${value.text} (${value.count})
-                                <wa-button 
-                                    variant="text"
-                                    class="exclude-btn" 
-                                    is-icon-button
-                                    @click=${(e: Event) => { e.stopPropagation(); this.viewModel.filterOut(value); }}
-                                >
-                                    <wa-icon name="x" library="system"></wa-icon>
-                                </wa-button>
-                            </wa-dropdown-item>
-                        `)}
-                        <wa-divider></wa-divider>
+            <wa-button variant="neutral" is-icon-button pill class="filter-action" @click=${() => this._drawerOpen = true}>
+                <wa-icon library="bizsrt" name="filter-list"></wa-icon>
+            </wa-button>
+            <wa-drawer label="Filters" placement="start" style="--size: max-content;" light-dismiss ?open=${this._drawerOpen} @wa-after-hide=${() => this._drawerOpen = false}>
+                <div style="display: flex; flex-direction: column; gap: 16px; max-width: calc(35vw - 48px);">
+                    ${this._facets.map((item, index) => html`
+                        <div>
+                            <div class="facet-header" style="padding: 0 0 8px 0;">${item.text}</div>
+                            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                                ${item.values.map(value => html`
+                                    <wa-tag 
+                                        variant="neutral" 
+                                        style="cursor: pointer;"
+                                        @click=${(e: Event) => { e.stopPropagation(); this.viewModel.filterIn(value); }}
+                                        with-remove
+                                        @wa-remove=${(e: Event) => { e.stopPropagation(); this.viewModel.filterOut(value); }}
+                                    >
+                                        ${value.text} (${value.count})
+                                    </wa-tag>
+                                `)}
+                            </div>
+                            ${index < this._facets.length - 1 ? html`<wa-divider style="margin-top: 16px;"></wa-divider>` : ''}
+                        </div>
                     `)}
-            </wa-dropdown>
+                </div>
+            </wa-drawer>
         `;
     }
 }

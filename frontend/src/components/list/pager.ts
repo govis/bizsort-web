@@ -6,6 +6,8 @@ import type { IViewAdapter } from '../../viewmodel';
 import '@awesome.me/webawesome/dist/components/button/button.js';
 
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
+import '@awesome.me/webawesome/dist/components/select/select.js';
+import '@awesome.me/webawesome/dist/components/option/option.js';
 
 export class ListPager extends LitElement implements IViewAdapter {
     @property({ type: Object }) declare master: any;
@@ -72,19 +74,25 @@ export class ListPager extends LitElement implements IViewAdapter {
 
         switch (action) {
             case "Prev":
-                if (this._previousPage.canMove && pager.pageIndex > 0)
+                if (this._previousPage.canMove && pager.pageIndex > 0) {
                     pager.moveToPreviousPage();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
                 break;
             case "Next":
-                if (this._nextPage.canMove)
+                if (this._nextPage.canMove) {
                     pager.moveToNextPage();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
                 break;
             case "Page":
                 const pageNum = Number(target.dataset.page);
                 if (pageNum) {
                     const pageIndex = pageNum - 1;
-                    if (pager.pageIndex != pageIndex)
+                    if (pager.pageIndex != pageIndex) {
                         pager.moveToPage(pageIndex);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
                 }
                 break;
         }
@@ -100,13 +108,18 @@ export class ListPager extends LitElement implements IViewAdapter {
             justify-content: center;
             margin-top: 2rem;
             margin-bottom: 2rem;
-            gap: 0.5rem;
+            gap: 0.25rem;
         }
         
         :host([hidden]) {
             display: none !important;
         }
-        
+
+        wa-button[variant="brand"]:not([appearance="plain"]) {
+            /* Ensure the selected state looks like a rounded square */
+            --wa-border-radius-m: 4px;
+        }
+
         .page-button {
             min-width: 40px;
         }
@@ -115,10 +128,12 @@ export class ListPager extends LitElement implements IViewAdapter {
     render() {
         return html`
             <wa-button 
-                variant="text" 
+                variant="brand"
+                appearance="plain"
                 is-icon-button
-                ?disabled="${!(this.viewModel as any).canChangePage || (this.viewModel as any).pageIndex <= 0}" 
-                @click="${(this.viewModel as any).moveToPreviousPage}"
+                ?disabled="${!this._previousPage.canMove}" 
+                @click="${this._handleAction}"
+                data-action="Prev"
             >
                 <wa-icon name="chevron-left" library="system"></wa-icon>
             </wa-button>
@@ -126,7 +141,8 @@ export class ListPager extends LitElement implements IViewAdapter {
             ${this._pageButtons.map(page => html`
                 <wa-button 
                     class="page-button"
-                    variant=${page.selected ? 'brand' : 'neutral'}
+                    variant="brand"
+                    appearance=${page.selected ? 'filled' : 'plain'}
                     data-action="Page"
                     data-page=${page.pageNumber}
                     @click=${this._handleAction}
@@ -136,10 +152,12 @@ export class ListPager extends LitElement implements IViewAdapter {
             `)}
             
             <wa-button 
-                variant="text" 
+                variant="brand"
+                appearance="plain"
                 is-icon-button
-                ?disabled="${!(this.viewModel as any).canChangePage || !(this.viewModel as any).hasPage((this.viewModel as any).pageIndex + 1)}" 
-                @click="${() => (this.viewModel as any).moveToNextPage()}"
+                ?disabled="${!this._nextPage.canMove}" 
+                @click="${this._handleAction}"
+                data-action="Next"
             >
                 <wa-icon name="chevron-right" library="system"></wa-icon>
             </wa-button>
@@ -149,4 +167,68 @@ export class ListPager extends LitElement implements IViewAdapter {
 
 if (!customElements.get('list-pager')) {
     customElements.define('list-pager', ListPager);
+}
+
+export class ListPageSelect extends LitElement {
+    @property({ type: Object }) declare pager: any;
+    
+    private _unobserve: any;
+    
+    connectedCallback() {
+        super.connectedCallback();
+        if (this.pager && this.pager.observeProperty) {
+            this._unobserve = this.pager.observeProperty((sender: any, prop: string) => {
+                if (prop === 'pageSize' || prop === 'pageSizes') {
+                    this.requestUpdate();
+                }
+            });
+        }
+    }
+    
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        if (this._unobserve) this._unobserve();
+    }
+
+    static styles = css`
+        wa-select {
+            /* Color the text and icons primary blue to match pager */
+            --wa-form-control-value-color: var(--wa-color-primary-500, #4285f4);
+            --wa-color-neutral-on-quiet: var(--wa-color-primary-500, #4285f4); /* Select caret icon */
+            
+            /* Backgrounds */
+            --wa-form-control-background-color: transparent;
+            
+            /* Flat Underline Borders (Blue) */
+            --wa-form-control-border-color: var(--wa-color-primary-500, #4285f4);
+            --wa-form-control-border-width: 0 0 1px 0;
+            --wa-form-control-border-radius: 0;
+            
+            /* Disable Default Focus Ring */
+            --wa-focus-ring-width: 0;
+        }
+
+        wa-select:focus-within {
+            --wa-form-control-border-width: 0 0 2px 0;
+        }
+    `;
+
+    render() {
+        if (!this.pager || !this.pager.pageSizes || this.pager.pageSizes.length === 0) return html``;
+        
+        return html`
+            <wa-select size="medium" .value=${this.pager.pageSize.toString()} @change=${(e: any) => { 
+                const newSize = Number(e.target.value);
+                console.log('[ListPageSelect] Dropdown changed. Setting new page size:', newSize);
+                this.pager.pageSize = newSize; 
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}>
+                ${this.pager.pageSizes.map((size: number) => html`<wa-option value="${size}">${size} per page</wa-option>`)}
+            </wa-select>
+        `;
+    }
+}
+
+if (!customElements.get('list-page-select')) {
+    customElements.define('list-page-select', ListPageSelect);
 }

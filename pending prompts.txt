@@ -1,12 +1,5 @@
 legacy_indexer_porting_plan.md
 
-2. a copy of the SearchAsync in C:\Bizsort\bizsort-web\backend\Data\Company\Profile.cs without the 
-        if (!string.IsNullOrWhiteSpace(queryInput.SearchQuery) || queryInput.SearchNear != null)
-        {
-            return await ExecuteCompanySearchSpAsync(queryInput);
-        } block
-Call it CompanySearchTest-LINQNew
-
 
 
 make detailed updates to documentation about existing namespaces and their purpose, importance of following existing/legacy namespace conventions to avoid collisions and maintaining strict API parity and not inventing new LINQ queries and services and endpoints. We need to create a separate .md file to describe the legacy codebase in its entirety and to track what's been ported/modernized so far. It must be referenced at all times!  

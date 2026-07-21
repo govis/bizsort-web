@@ -1175,7 +1175,7 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyArticles` | | |
 | [ ] | ↳ `company/feed.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyFeed` | | |
-| [ ] | ↳ `company/header-layout.ts` | - | - |
+| [x] | ↳ `company/header-layout.ts` | `frontend/src/company/header-layout.ts` | Ported header layout component. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<company-header-layout>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyHeaderLayout` | | |
 | [ ] | ↳ `company/home.ts` | - | - |
@@ -1197,7 +1197,7 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyProduct` | | |
 | [ ] | ↳ `company/products.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyProducts` | | |
-| [ ] | ↳ `company/profile.ts` | - | - |
+| [x] | ↳ `company/profile.ts` | `frontend/src/company/profile.ts` | Ported company profile component. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<company-offce-select>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<company-profile>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyProfile` | | |
@@ -1209,7 +1209,7 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyProjects` | | |
 | [ ] | ↳ `company/promotions.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyPromotions` | | |
-| [ ] | ↳ `company/search.ts` | - | - |
+| [x] | ↳ `company/search.ts` | `frontend/src/company/search.ts` | Ported company search layout. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<company-search>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanySearch` | | |
 | [ ] | ↳ `crawler-main.ts` | - | - |

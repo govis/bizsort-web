@@ -15,7 +15,7 @@ export class ListHeader extends LitElement {
 
     static styles = css`
         :host {
-            font-size: 0.9rem;
+            font-size: var(--wa-font-size-m);
             color: var(--wa-color-neutral-600, #666);
             padding: 8px 0;
             display: flex;
@@ -24,7 +24,7 @@ export class ListHeader extends LitElement {
         }
 
         .empty-state {
-            font-size: 1rem;
+            font-size: var(--wa-font-size-m);
         }
         .empty-query {
             font-weight: 600;

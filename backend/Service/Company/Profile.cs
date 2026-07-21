@@ -35,6 +35,20 @@ public static class CompanyEndpoints
         {
             var input = JsonSerializer.Deserialize<SearchInput>(queryInput) ?? new SearchInput();
             var result = await companyService.SearchAsync(input);
+            if (result?.Facets != null)
+            {
+                foreach (var facet in result.Facets)
+                {
+                    facet.Text = BizSrt.Api.Data.Cache.LegacyCache.CompanyFacetNames[facet.Key] ?? string.Empty;
+                    if (facet.Values != null)
+                    {
+                        foreach (var fv in facet.Values)
+                        {
+                            fv.Text = BizSrt.Api.Data.Cache.LegacyCache.CompanyFacetValues[fv.Key]?.Text ?? string.Empty;
+                        }
+                    }
+                }
+            }
             return Results.Ok(result);
         });
 
@@ -90,6 +104,20 @@ public static class CompanyEndpoints
         {
             var input = JsonSerializer.Deserialize<SearchInput>(queryInput) ?? new SearchInput();
             var result = await companyService.SearchAsync(input); 
+            if (result?.Facets != null)
+            {
+                foreach (var facet in result.Facets)
+                {
+                    facet.Text = BizSrt.Api.Data.Cache.LegacyCache.CompanyFacetNames[facet.Key] ?? string.Empty;
+                    if (facet.Values != null)
+                    {
+                        foreach (var fv in facet.Values)
+                        {
+                            fv.Text = BizSrt.Api.Data.Cache.LegacyCache.CompanyFacetValues[fv.Key]?.Text ?? string.Empty;
+                        }
+                    }
+                }
+            }
             return Results.Ok(result);
         });
 

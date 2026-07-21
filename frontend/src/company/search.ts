@@ -11,6 +11,7 @@ import '../components/company/listview';
 import '../components/list/pager';
 import '../components/list/header';
 import '../components/list/filter';
+import '../components/list/pager'; // ensure it's imported
 import '../components/directory/header-layout';
 
 class CompanySearchViewModel extends Filterable(Searchview as any) {
@@ -74,6 +75,13 @@ class CompanySearchViewModel extends Filterable(Searchview as any) {
       callback(this.preparePage(page, results));
     }).catch(faultCallback);
   }
+
+  populateHeader(header: any) {
+    if (this.searchParams && (this.searchParams as any).searchQuery) {
+      header.query = (this.searchParams as any).searchQuery;
+    }
+    return header;
+  }
 }
 
 /**
@@ -117,11 +125,12 @@ export class CompanySearch extends LitElement implements IViewAdapter {
   
   viewModel: CompanySearchViewModel;
 
-  constructor() {
+    constructor() {
     super();
     // @ts-expect-error
     this.viewModel = new CompanySearchViewModel(this);
-    this.viewModel.pager.pageSize = 24; 
+    this.viewModel.pager.pageSizes = [20, 50, 100]; 
+    this.viewModel.pager.fetchLimit = 600;
   }
 
   connectedCallback() {
@@ -253,14 +262,16 @@ export class CompanySearch extends LitElement implements IViewAdapter {
         .searchNear=${this.searchNear}
       >
         <div class="content">
-          <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end;">
-            <div>
-              <h1>Search Results</h1>
+          <div class="page-header">
+            <div class="list-header-container" style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+              <list-filter-available></list-filter-available>
+              <list-filter-applied></list-filter-applied>
               <list-header entity="companies"></list-header>
+              <div style="margin-left: auto;">
+                <list-page-select .pager=${this.viewModel.pager}></list-page-select>
+              </div>
             </div>
-            <list-filter-available></list-filter-available>
           </div>
-          <list-filter-applied style="margin-bottom: 1rem;"></list-filter-applied>
 
           <company-listview .items="${this._items}"></company-listview>
           
