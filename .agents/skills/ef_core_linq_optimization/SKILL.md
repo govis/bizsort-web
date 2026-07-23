@@ -10,7 +10,7 @@ When writing or optimizing LINQ queries for the BizSort `.NET 10` application, i
 Always follow these guidelines, especially when querying large tables (e.g., `CompanyProfiles`, `CompanyProducts`, `CompanyMedia`).
 
 ## 1. Avoid SQL-Side Sorting on Complex Queries (The Backward-Scan Bug)
-**The Pitfall:** When appending `.OrderByDescending(c => c.Created)` to a complex query involving `OR EXISTS` or multiple `INNER JOINs`, SQL Server often assumes the fastest plan is to scan the index (e.g., `IX_CompanyProfiles_Created`) *backwards*. Evaluating complex nested-loop subqueries row-by-row during a backward scan exponentializes query execution time, causing massive CPU usage and timeouts.
+**The Pitfall:** When appending `.OrderByDescending(c => c.Created)` to a complex query involving `OR EXISTS` or multiple `INNER JOINs`, SQL Server often assumes the fastest plan is to scan the index (e.g., `IX_CompanyProfiles_Created`) *backwards*. Evaluating complex nested-loop subqueries row-by-row during a backward scan adds significant overhead to the execution plan. While modern SQL Server optimizers can handle this without timing out, it is typically **~2x slower** than deferring the sort.
 **The Solution:** Defer the sorting to application memory. Project the necessary sorting keys alongside the entity ID into an anonymous object, fetch them into a C# array using `ToArrayAsync()`, and then use LINQ to Objects to sort and paginate.
 ```csharp
 // BAD (Causes Backward Scan Timeout)
@@ -72,32 +72,31 @@ query = query.Where(c => dbContext.CompanyOffices.Any(co => co.Company == c.Id))
 **The Pitfall:** When building complex dynamic search pages, you typically need the Total Count, the Result Page, and the Facets. Executing the base EF Core query three times re-evaluates the massive SQL execution plan.
 **The Solution:** Project only the primary key (`Select(c => c.Id)`), materialize ALL matching IDs into memory (`ToArrayAsync()`), and pass that array into the subsequent Count, Fetch, and Facet queries using `.Contains()`. EF Core translates this into a highly optimized `INNER JOIN OPENJSON(...)` in SQL Server.
 
-## 7. Use the Two-Query Split for Orthogonal Filters (Location + Category)
-**The Pitfall:** When a query has two independent, expensive filters (e.g., Category via `OR EXISTS` + Location via a subquery), combining them into a single SQL statement forces SQL Server to optimize one massive plan. The interaction between filters can cause the plan to degrade catastrophically.
-**The Solution:** Run the two filters as two independent `await` queries sequentially (NOT `Task.WhenAll` — `DbContext` is NOT thread-safe!), then intersect the resulting ID arrays in memory using a `HashSet<int>`. Each query gets a clean, independently optimizable plan.
+## 7. Combine Orthogonal Filters (But Monitor for Plan Instability)
+**The Context:** When a query has two independent, expensive filters (e.g., Category via `OR EXISTS` + Location via a subquery), passing them both to a single `WHERE` clause requires SQL Server to optimize one massive plan. Historically, this caused plan instability and required a "Two-Query Split" (running Category and Location separately and intersecting in C#).
+**The Standard:** Modern SQL Server handles the combined query cleanly. The **Combined SQL** approach is significantly faster because it avoids the roundtrip overhead and C# intersection costs. Use this as your default.
 ```csharp
-// GOOD: Sequential execution, in-memory intersection
-// DbContext is not thread-safe — never use Task.WhenAll on two queries sharing a context!
-var categoryMatches = await query.Select(c => new { c.Id, c.Created }).ToArrayAsync();
+// GOOD: Combined SQL (Let SQL Server optimize the complete filter)
+var query = dbContext.CompanyProfiles
+    .Join(dbContext.Accounts, c => c.Id, a => a.Id, (c, a) => new { c, a })
+    .Where(x => x.a.Status == 2)
+    .Select(x => x.c);
 
-// Use IQueryable (not a materialized List) to avoid parameter padding:
-var childLocations = dbContext.Locations_Unwound
-    .Where(lu => lu.Parent == queryInput.Location).Select(lu => lu.Child);
-var locationCompanyIds = dbContext.CompanyOffices
-    .Where(co => co.Location == queryInput.Location || childLocations.Contains(co.Location))
-    .Select(co => co.Company).Distinct();
-var locationMatches = await locationCompanyIds.ToArrayAsync();
+// Category Filter
+query = query.Where(c => c.Category == targetCat || dbContext.Categories_Unwound.Any(cu => cu.Parent == targetCat && cu.Child == c.Category));
 
-var locationSet = new HashSet<int>(locationMatches);
-var allMatchingIds = categoryMatches
-    .Where(c => locationSet.Contains(c.Id))
-    .OrderByDescending(c => c.Created).Select(c => c.Id).ToArray();
+// Location Filter
+var childLocations = dbContext.Locations_Unwound.Where(lu => lu.Parent == targetLoc).Select(lu => lu.Child);
+query = query.Where(c => dbContext.CompanyOffices.Any(co => co.Company == c.Id && (co.Location == targetLoc || childLocations.Contains(co.Location))));
+
+var allMatches = await query.Select(c => new { c.Id, c.Created }).ToArrayAsync();
 ```
+**The Fallback:** If you observe catastrophic plan degradation (e.g., 4+ second execution times) as data grows, the fallback is the **Two-Query Split**. Run the two filters as independent `await` queries sequentially (NOT `Task.WhenAll`!), then intersect the resulting ID arrays using a `HashSet<int>`.
+
 **Prerequisite:** Ensure the join table (e.g., `CompanyOffices`) has an index on the filter column (`Location`) with the relevant FK (`Company`) as an INCLUDE column.
 ```sql
 CREATE INDEX IX_CompanyOffices_Location ON CompanyOffices ([Location]) INCLUDE (Company, [Order], Id);
 ```
-**Result:** `CompanySearchLINQNew` beats the legacy stored procedure by **~36% cold plan / ~55% warm plan** using this pattern.
 
 ## 8. EF Core Parameter Padding — Never Use `List<T>.Contains()` for Large Sets
 **The Problem:** EF Core 10 pads `List<T>.Contains()` to fixed bucket sizes to allow plan caching across similar query shapes. This means:

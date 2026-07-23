@@ -196,7 +196,7 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
         var total = allMatchingIds.Length;
         var pageIds = allMatchingIds
             .Skip(queryInput.StartIndex)
-            .Take(queryInput.Length > 0 ? queryInput.Length : 20)
+            .Take(queryInput.Length > 0 ? queryInput.Length : 100)
             .ToArray();
 
         SearchItem[] companies;
@@ -339,7 +339,7 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
 
         var companies = await resultQuery
             .Skip(queryInput.StartIndex)
-            .Take(queryInput.Length > 0 ? queryInput.Length : 20)
+            .Take(queryInput.Length > 0 ? queryInput.Length : 100)
             .ToArrayAsync();
 
         return new SearchOutput<SearchItem>
@@ -415,7 +415,7 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
             pLength.ParameterName = "@Length";
             pLength.DbType = System.Data.DbType.Int32;
             pLength.Direction = System.Data.ParameterDirection.InputOutput;
-            pLength.Value = queryInput.Length > 0 ? queryInput.Length : 20;
+            pLength.Value = queryInput.Length > 0 ? queryInput.Length : 100;
             command.Parameters.Add(pLength);
 
             var companies = new List<SearchItem>();
@@ -506,7 +506,7 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
         var products = await query
             .OrderByDescending(x => x.p.Created)
             .Skip(queryInput.StartIndex)
-            .Take(queryInput.Length > 0 ? queryInput.Length : 20)
+            .Take(queryInput.Length > 0 ? queryInput.Length : 100)
             .Select(x => new BizSrt.Model.EntityId<long> { Id = x.cp.Product })
             .ToArrayAsync();
 
@@ -530,7 +530,7 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
         var projects = await query
             .OrderByDescending(x => x.p.Created)
             .Skip(queryInput.StartIndex)
-            .Take(queryInput.Length > 0 ? queryInput.Length : 20)
+            .Take(queryInput.Length > 0 ? queryInput.Length : 100)
             .Select(x => new BizSrt.Model.EntityId<long> { Id = x.cp.Project })
             .ToArrayAsync();
 
@@ -559,7 +559,7 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
         var jobs = await query
             .OrderByDescending(x => x.p.Created)
             .Skip(queryInput.StartIndex)
-            .Take(queryInput.Length > 0 ? queryInput.Length : 20)
+            .Take(queryInput.Length > 0 ? queryInput.Length : 100)
             .Select(x => new BizSrt.Model.EntityId<long> { Id = x.j.Id })
             .ToArrayAsync();
 

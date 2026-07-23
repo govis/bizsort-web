@@ -130,7 +130,6 @@ export class CompanySearch extends LitElement implements IViewAdapter {
     // @ts-expect-error
     this.viewModel = new CompanySearchViewModel(this);
     this.viewModel.pager.pageSizes = [20, 50, 100]; 
-    this.viewModel.pager.fetchLimit = 600;
   }
 
   connectedCallback() {

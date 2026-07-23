@@ -1302,7 +1302,7 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `AddressFromGeocoder()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `AddressFromText()` | | |
 | [ ] | â†³ `class LocationSearchCache` | - | - |
-| [ ] | â†³ `class LocationSettingsCache` | - | - |
+| [x] | â†³ `class LocationSettingsCache` | `BizSrt.Api.Data.Cache.Location.LocationSettingsCache` | Ported and correctly initialized in LegacyCache. |
 | [ ] | â†³ `class LocationsCache` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `AutocompletePath()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Drop()` | | |
@@ -1407,19 +1407,20 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `ToString()` | | |
 | [ ] | â†³ `class Service` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `AddCommunityCompany()` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `DeleteCompanyFacetSet()` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `DeleteProductFacetSet()` | | |
+| | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `DeleteCompanyFacetSet()` | - | Dead code in legacy, unused. |
+| [x] | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `DeleteProductFacetSet()` | `BizSrt.Api.Process.Company.DeleteProductFacetSetAsync()` | Ported. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `GetEventId()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `IndexCommunityArticle()` | | |
 | [x] | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `IndexCompany()` | `BizSrt.Api.Process.Company.IndexCompanyAsync()` | Ported cache synchronization logic using generic IQueryable and Bitwise Dictionary logic. |
-| | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `IndexProduct()` | | |
+| [x] | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `IndexCompanyFacetSet()` | `BizSrt.Api.Process.Company.IndexCompanyFacetSetAsync()` | Ported indexing logic. |
+| [x] | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `IndexProduct()` | `BizSrt.Api.Process.Company.IndexProductAsync()` | Ported logic, caching, and facet generation. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `IndexProject()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `LogEvent()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `ResetCompanyCache()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `ResetProductCache()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `ResolveCategory()` | | |
 | [ ] | â†³ `class Session` | - | - |
-| [ ] | â†³ `class StreetNamesCache` | - | - |
+| [x] | â†³ `class StreetNamesCache` | `BizSrt.Api.Data.Cache.Location.StreetNamesCache` | Ported and correctly initialized in LegacyCache. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Equals()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `GetHashCode()` | | |
 | [ ] | â†³ `class Tool` | - | - |
@@ -3548,7 +3549,7 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `CompanyImage()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Get()` | | |
 | [x] | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `IndexCompany()` | `BizSrt.Api.Process.Company.IndexCompanyAsync()` | Ported cache synchronization logic using generic IQueryable and Bitwise Dictionary logic. |
-| | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `IndexProduct()` | | |
+| [x] | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `IndexProduct()` | `BizSrt.Api.Process.Company.IndexProductAsync()` | Ported logic, caching, and facet generation. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `IndexProject()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Module()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `ProcessAccountCreate()` | | |
@@ -3785,5 +3786,33 @@
 | | **Namespace: `User.Model.Promotion`** | | |
 | [ ] | â†³ `class Profile` | - | - |
 
-
-
+| | **Namespace: `Engine`** | | |
+| [ ] | â†³ `class Confirmation` | - | - |
+| [ ] | â†³ `class Dictionary` | - | - |
+| [ ] | â†³ `class Manager` | - | - |
+| [ ] | â†³ `class Message` | - | - |
+| [ ] | â†³ `class Worker` | - | - |
+| [ ] | â†³ `class Account.Account` | - | - |
+| [ ] | â†³ `class Account.Email` | - | - |
+| [ ] | â†³ `class Account.Password` | - | - |
+| [ ] | â†³ `class Community.Topic` | - | - |
+| [ ] | â†³ `class Company.DevStart` | - | - |
+| [ ] | â†³ `class Company.Extract` | - | - |
+| [ ] | â†³ `class Company.Import` | - | - |
+| [ ] | â†³ `class Company.ImportX` | - | - |
+| [x] | â†³ `class Company.Index` | `BizSrt.Worker.Company.Indexer` | Ported to background worker polling DB (EF Core) and pushing IndexCompany calls via gRPC. |
+| [ ] | â†³ `class Company.Metadata` | - | - |
+| [ ] | â†³ `class Company.Metadata1` | - | - |
+| [ ] | â†³ `class Company.PlaceLookup` | - | - |
+| [ ] | â†³ `class Company.Product` | - | - |
+| [ ] | â†³ `class Company.StaffReview` | - | - |
+| [ ] | â†³ `class Finance.Points` | - | - |
+| [x] | â†³ `class Product.FacetSet` | `BizSrt.Worker.Company.Product.FacetSetWorker` | Ported background worker polling product facet set operations via gRPC. |
+| [x] | â†³ `class Product.Index` | `BizSrt.Worker.Company.Product.IndexerWorker` | Ported product indexing worker via gRPC. |
+| [ ] | â†³ `class Product.Product` | - | - |
+| [ ] | â†³ `class Product.Review` | - | - |
+| [ ] | â†³ `class Project.Index` | - | - |
+| [ ] | â†³ `class Project.Project` | - | - |
+| [ ] | â†³ `class Service.Data` | - | - |
+| [ ] | â†³ `class Service.Engine` | - | - |
+| [ ] | â†³ `class Service.Process` | - | - |

@@ -21,7 +21,8 @@ namespace BizSrt.Api.Data.Cache
             CategorySearch = new BizSrt.Data.CategorySearchCache();
             LocationSearch = new BizSrt.Data.LocationSearchCache();
             AreaNames = new BizSrt.Data.AreaNamesCache();
-            LocationSettings = new Dictionary<int, BizSrt.Model.LocationSettings>();
+            StreetNames = new BizSrt.Api.Data.Cache.Location.StreetNamesCache();
+            LocationSettings = new BizSrt.Api.Data.Cache.Location.LocationSettingsCache();
             CompanyProfiles = new BizSrt.Api.Data.Cache.Company.CompanyProfilesCache();
             CompanyFacetNames = new BizSrt.Api.Data.Cache.Company.Facet.NamesCache();
             CompanyFacetValues = new BizSrt.Api.Data.Cache.Company.Facet.ValuesCache();
@@ -59,6 +60,6 @@ namespace BizSrt.Api.Data.Cache
         internal static BizSrt.Api.Data.Cache.Featured.FeaturedProductsCache FeaturedProducts { get; private set; }
         internal static BizSrt.Api.Data.Cache.ImagesCache Images { get; private set; }
         
-        internal static Dictionary<int, BizSrt.Model.LocationSettings> LocationSettings { get; private set; }
+        internal static BizSrt.Api.Data.Cache.Location.LocationSettingsCache LocationSettings { get; private set; }
     }
 }

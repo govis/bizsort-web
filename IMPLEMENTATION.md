@@ -9,6 +9,7 @@ The application is structured as a distributed system orchestrated by **.NET Asp
 ### Components:
 - **AppHost (`/apphost`)**: The .NET Aspire orchestrator. It manages the lifecycle of the backend and frontend, handles port allocation, and injects service discovery environment variables.
 - **Backend (`/backend`)**: A .NET 10 Minimal API. It handles business logic, data access via Entity Framework Core (SQL Server with NetTopologySuite), and image processing via ImageSharp.
+- **Worker (`/background`)**: A .NET BackgroundService application. It contains the legacy `Engine` polling workers that handle heavy asynchronous processing (like indexing and facet set calculations) and synchronizes updates with the Backend API via **gRPC**.
 - **Frontend (`/frontend`)**: A Next.js 16 application. It uses Lit 3.3 for web components and Web Awesome (`wa-` prefix) for UI elements, maintaining compatibility with the legacy component-based logic while utilizing modern React-based routing and SSR capabilities.
 
 ## 2. Backend (C#)
@@ -20,6 +21,11 @@ The backend was ported from the `Service`, `Model`, `Data`, and `Dev` folders in
 - **Minimal API Mapping**: Legacy `ApiController` routes (e.g., `svc/company/profile/view`) were mapped to `app.MapGet` in `backend/Endpoints/CompanyEndpoints.cs`.
 - **Entity Framework Core**: The `AppDbContext` supports 16 entity types with complex relationships (CompanyProfile, Offices, Products, Projects, Jobs, Communities, Affiliations, Promotions, Media).
 - **Service Layer**: `CompanyService` (14 methods) handles complex DTO mapping while utilizing modern C# features. `ImageService` handles on-the-fly image resizing via ImageSharp.
+
+### Memory Caching & gRPC Interface:
+- **Cache Ownership**: The `LegacyCache` system and all concrete memory caches (e.g., `CompanyProfilesCache`, `SetsCache`) are **fully owned and managed exclusively** by the Backend API process. These singletons cannot be instantiated or mutated by external processes.
+- **gRPC Interface**: To allow out-of-process background workers (from `/background`) to trigger cache-dependent operations (like `IndexCompany` or `IndexProductFacetSet`), the Backend exposes a **gRPC Service** (`CompanyGrpcService`). Background workers push commands via gRPC, ensuring that all complex indexing logic and cache synchronization executes natively within the API process where the cache singletons reside.
+> 👉 **For a deep dive into the cache eviction policies, `SetsCache` side-effects, and `IKey<T>` EF Core mappings, see [CACHE_ARCHITECTURE.md](file:///C:/Bizsort/bizsort-web/backend/CACHE_ARCHITECTURE.md).**
 
 ### Data Structure Mapping:
 | Legacy Concept | New Implementation | Location |
@@ -86,7 +92,16 @@ builder.AddNpmApp("frontend", "../frontend", "dev")
 1. Run `dotnet run --project apphost/BizSrt.AppHost.csproj`.
 2. Access the Aspire Dashboard to view logs and endpoint URLs.
 
-## 5. Current Status & TODOs:
+## 5. Background Workers & Data Processing
+
+The heavy asynchronous processing formerly handled by the legacy monolithic `Engine` namespace has been decoupled into the `/background` worker project (`BizSrt.Worker`). 
+
+### Polling & gRPC Architecture
+- **No Direct Cache Access**: Because the memory caches (`LegacyCache`) are tightly coupled and instantiated strictly inside the `BizSrt.Api` process, background workers cannot instantiate or interact with them directly. 
+- **Database Polling (`AsyncQueueWorker<T>`)**: Workers (such as `Company.Indexer` or `Product.FacetSetWorker`) execute timer sweeps querying the `AppDbContext` directly via Entity Framework Core to discover stale entities (e.g., polling `CompanyProfiles` where the `Indexed` timestamp is outdated). They do **not** pull work items from a traditional message broker for these scheduled synchronization tasks.
+- **gRPC Pushing**: Once a worker determines that an entity requires indexing or recalculation, it constructs a payload and **pushes** a request to the `backend` API over **gRPC** (e.g., `_grpcClient.IndexCompanyAsync()`). The backend API then executes the complex business logic (such as facet generation, spatial math, and read-through cache invalidation) natively within the API process where all singletons reside.
+
+## 6. Current Status & TODOs:
 - **Company Profile**: The profile page (`About`, `Products and Services`, `Articles` tabs) is ported and functional against the live database.
 - **Building Blocks**: Reusable components (`company-header-layout`, `layout-card`, `page-menu`, `search-box`, `search-category-menu`) are created but not yet composed into the main profile component.
 - **SSL Trust**: In some CLI environments, `https` profiles may fail due to untrusted dev certificates. Use the `http` profile if necessary.

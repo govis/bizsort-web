@@ -346,7 +346,7 @@ export class Pager {
             });
     }
 
-    protected _fetchLimit = 0;
+    protected _fetchLimit = 500;
     get fetchLimit(): number {
         return this._fetchLimit;
     }

@@ -86,6 +86,47 @@ namespace BizSrt.Api.Data.Cache.Company.Facet
 
             return 0;
         }
+
+        public override CachedSet this[int setId]
+        {
+            get
+            {
+                var set = base[setId];
+                if (set != null && set.Indexed)
+                {
+                    set.UseCount += 1;
+
+                    if ((set.UseCount % 10) == 0 || set.LastUsed < DateTime.UtcNow.AddHours(-1))
+                    {
+                        set.LastUsed = DateTime.UtcNow;
+
+                        _ = System.Threading.Tasks.Task.Run(async () =>
+                        {
+                            try
+                            {
+                                using var dc = BizSrt.Api.Data.Cache.LegacyCache.GetDbContext();
+                                var facetSet = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.SingleOrDefaultAsync(dc.CompanyFacetSets, las => las.Id == setId);
+                                if (facetSet != null)
+                                {
+                                    facetSet.UseCount = set.UseCount;
+                                    facetSet.LastUsed = set.LastUsed;
+                                    await dc.SaveChangesAsync();
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine(ex);
+                            }
+                        });
+                    }
+                    else
+                    {
+                        set.LastUsed = DateTime.UtcNow;
+                    }
+                }
+                return set;
+            }
+        }
     }
 
     public class CachedSet : BizSrt.Foundation.Cache.IExpirationItem

@@ -95,15 +95,13 @@ namespace BizSrt.SearchTest
 
         public static async Task<SearchOutput<SearchItem>> CompanySearchLINQNew(AppDbContext dbContext, SearchInput queryInput)
         {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+
             var query = dbContext.CompanyProfiles
                 .Join(dbContext.Accounts, c => c.Id, a => a.Id, (c, a) => new { c, a })
                 .Where(x => x.a.Status == (byte)BizSrt.Model.Status.Active && (queryInput.TransactionType == 0 || (x.c.TransactionType & queryInput.TransactionType) > 0))
                 .Select(x => x.c);
 
-            // Category filter: keep as IQueryable OR EXISTS (Categories_Unwound).
-            // EF Core's List<T>.Contains() pads to fixed bucket sizes (90 for 84 items, 600 for 566),
-            // generating @catIds1..@catIds90 named params which destroys plan compilation.
-            // OR EXISTS on Categories_Unwound is a compact 2-param subquery SQL Server handles cleanly.
             if (queryInput.Category > 0)
             {
                 var productCategoryMatches = (from cp in dbContext.CompanyProducts
@@ -122,11 +120,6 @@ namespace BizSrt.SearchTest
 
             query = query.ApplyFacets(dbContext, queryInput.InclFacets, queryInput.ExclFacets);
 
-            // Location filter: keep as IQueryable subquery — never materialize the child IDs.
-            // EF Core pads List<int> to fixed bucket sizes (600 slots for 566 items),
-            // generating @locIds1..@locIds600, which causes compilation timeouts.
-            // WHERE Location = @loc OR Location IN (SELECT Child FROM Locations_Unwound WHERE Parent = @loc)
-            // is a compact 1-param subquery SQL Server can handle efficiently.
             IQueryable<int>? locationCompanyIds = null;
             if (queryInput.Location > 0)
             {
@@ -144,15 +137,18 @@ namespace BizSrt.SearchTest
 
             if (locationCompanyIds != null)
             {
-                // Two-query split: category and location run as two independent SQL queries.
-                // Each gets a clean execution plan with no cross-filter interference.
-                // Intersect in C# memory using HashSet — avoids combined plan degradation.
-                // NOTE: DbContext is not thread-safe — must await sequentially.
+                sw.Restart();
                 var categoryMatches = await query
                     .Select(c => new { c.Id, c.Created })
                     .ToArrayAsync();
+                var catTime = sw.ElapsedMilliseconds;
 
+                sw.Restart();
                 var locationMatches = await locationCompanyIds.ToArrayAsync();
+                var locTime = sw.ElapsedMilliseconds;
+
+                Console.WriteLine($"    ├─ Category query:  {catTime}ms  ({categoryMatches.Length} rows)");
+                Console.WriteLine($"    ├─ Location query:  {locTime}ms  ({locationMatches.Length} rows)");
 
                 var locationSet = new HashSet<int>(locationMatches);
                 allMatchingIds = categoryMatches
@@ -163,11 +159,15 @@ namespace BizSrt.SearchTest
             }
             else
             {
+                sw.Restart();
                 var allMatches = await query.Select(c => new { c.Id, c.Created }).ToArrayAsync();
+                var catTime = sw.ElapsedMilliseconds;
+                Console.WriteLine($"    ├─ Category query:  {catTime}ms  ({allMatches.Length} rows)");
                 allMatchingIds = allMatches.OrderByDescending(c => c.Created).Select(c => c.Id).ToArray();
             }
 
             var total = allMatchingIds.Length;
+            Console.WriteLine($"    ├─ Intersection:    {total} matching IDs");
             var pageIds = allMatchingIds
                 .Skip(queryInput.StartIndex)
                 .Take(queryInput.Length > 0 ? queryInput.Length : 20)
@@ -176,21 +176,144 @@ namespace BizSrt.SearchTest
             SearchItem[] companies;
             if (locationCompanyIds != null)
             {
-                // Fetch all offices for the 20 page companies using the Company index (20 seeks).
-                // No location filter needed: all page companies already passed the location query,
-                // so they are guaranteed to have at least one office in the searched location.
-                // Pick the lowest-Order office per company — matches SP/TVF semantics (TOP 1 ORDER BY [Order]).
+                sw.Restart();
                 var pageIdsArray = pageIds;
                 var allOfficesForPage = await dbContext.CompanyOffices
                     .Where(co => pageIdsArray.Contains(co.Company))
                     .OrderBy(co => co.Order)
                     .Select(co => new { co.Company, co.Order, co.Id })
                     .ToArrayAsync();
+                var officeTime = sw.ElapsedMilliseconds;
+                Console.WriteLine($"    ├─ Office map:      {officeTime}ms  ({allOfficesForPage.Length} rows)");
 
-                // Group in C# memory — O(n) over ~100 rows.
                 var bestOfficeMap = allOfficesForPage
                     .GroupBy(o => o.Company)
-                    .ToDictionary(g => g.Key, g => g.First()); // already ordered by Order
+                    .ToDictionary(g => g.Key, g => g.First());
+
+                companies = pageIds
+                    .Select(id =>
+                    {
+                        bestOfficeMap.TryGetValue(id, out var o);
+                        return new SearchItem
+                        {
+                            Id = id,
+                            Office = o != null && o.Order != 0 ? (int?)o.Id : null
+                        };
+                    })
+                    .ToArray();
+            }
+            else
+            {
+                Console.WriteLine($"    ├─ Office map:      skipped (no location)");
+                companies = pageIds.Select(id => new SearchItem { Id = id }).ToArray();
+            }
+
+            BizSrt.Model.Semantic.FacetName[]? facets = null;
+            if (queryInput.InclFacets != null)
+            {
+                sw.Restart();
+                var idsJson = System.Text.Json.JsonSerializer.Serialize(allMatchingIds);
+                var pfq = await dbContext.Database
+                    .SqlQueryRaw<BizSrt.Data.Extensions.FacetExtensions.ValueCount>(@"
+                        SELECT pfv.Name, pfv.Id AS Value, COUNT(*) AS Count
+                        FROM CompanyFacets pf
+                        INNER JOIN OPENJSON({0}) ids ON pf.Company = ids.value
+                        INNER JOIN CompanyFacetValues pfv ON pf.FacetValue = pfv.Id
+                        GROUP BY pfv.Name, pfv.Id", idsJson)
+                    .ToArrayAsync();
+                var facetTime = sw.ElapsedMilliseconds;
+                Console.WriteLine($"    └─ Facets query:    {facetTime}ms  ({pfq.Length} facet values)");
+
+                facets = BizSrt.Data.Extensions.FacetExtensions.GetFacets(pfq, queryInput.InclFacets, total);
+            }
+
+            return new SearchOutput<SearchItem>
+            {
+                StartIndex = queryInput.StartIndex,
+                Series = companies,
+                TotalCount = total,
+                Facets = facets
+            };
+        }
+
+        /// <summary>
+        /// Variant A: Combined SQL — no two-query split.
+        /// Category + Location combined in a single SQL query using WHERE EXISTS.
+        /// Tests whether the rebuilt SQL Server handles the combined plan better.
+        /// </summary>
+        public static async Task<SearchOutput<SearchItem>> CompanySearchLINQCombined(AppDbContext dbContext, SearchInput queryInput)
+        {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+
+            var query = dbContext.CompanyProfiles
+                .Join(dbContext.Accounts, c => c.Id, a => a.Id, (c, a) => new { c, a })
+                .Where(x => x.a.Status == (byte)BizSrt.Model.Status.Active && (queryInput.TransactionType == 0 || (x.c.TransactionType & queryInput.TransactionType) > 0))
+                .Select(x => x.c);
+
+            if (queryInput.Category > 0)
+            {
+                var productCategoryMatches = (from cp in dbContext.CompanyProducts
+                                              join p in dbContext.Products on cp.Product equals p.Id
+                                              where (p.Type == 0 || (cp.UnlistedType == 1 && p.Status == 2)) &&
+                                                    (cp.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == cp.Category))
+                                              select cp);
+
+                query = query.Where(c => (c.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == c.Category))
+                    || productCategoryMatches.Any(cp => cp.Company == c.Id));
+            }
+            else if (queryInput.TransactionType > 0)
+            {
+                query = query.Where(c => (c.TransactionType & queryInput.TransactionType) > 0);
+            }
+
+            query = query.ApplyFacets(dbContext, queryInput.InclFacets, queryInput.ExclFacets);
+
+            // Combined: add location filter directly to the IQueryable (no split)
+            if (queryInput.Location > 0)
+            {
+                var childLocations = dbContext.Locations_Unwound
+                    .Where(lu => lu.Parent == queryInput.Location)
+                    .Select(lu => lu.Child);
+
+                query = query.Where(c => dbContext.CompanyOffices
+                    .Any(co => co.Company == c.Id &&
+                        (co.Location == queryInput.Location || childLocations.Contains(co.Location))));
+            }
+
+            sw.Restart();
+            var allMatches = await query
+                .Select(c => new { c.Id, c.Created })
+                .ToArrayAsync();
+            var combinedTime = sw.ElapsedMilliseconds;
+            Console.WriteLine($"    ├─ Combined query:  {combinedTime}ms  ({allMatches.Length} rows)");
+
+            var allMatchingIds = allMatches
+                .OrderByDescending(c => c.Created)
+                .Select(c => c.Id)
+                .ToArray();
+
+            var total = allMatchingIds.Length;
+            var pageIds = allMatchingIds
+                .Skip(queryInput.StartIndex)
+                .Take(queryInput.Length > 0 ? queryInput.Length : 20)
+                .ToArray();
+
+            SearchItem[] companies;
+            if (queryInput.Location > 0)
+            {
+                sw.Restart();
+                var pageIdsArray = pageIds;
+                var allOfficesForPage = await dbContext.CompanyOffices
+                    .Where(co => pageIdsArray.Contains(co.Company))
+                    .OrderBy(co => co.Order)
+                    .Select(co => new { co.Company, co.Order, co.Id })
+                    .ToArrayAsync();
+                var officeTime = sw.ElapsedMilliseconds;
+                Console.WriteLine($"    ├─ Office map:      {officeTime}ms  ({allOfficesForPage.Length} rows)");
+
+                var bestOfficeMap = allOfficesForPage
+                    .GroupBy(o => o.Company)
+                    .ToDictionary(g => g.Key, g => g.First());
 
                 companies = pageIds
                     .Select(id =>
@@ -212,9 +335,7 @@ namespace BizSrt.SearchTest
             BizSrt.Model.Semantic.FacetName[]? facets = null;
             if (queryInput.InclFacets != null)
             {
-                // allMatchingIds.Contains(c.Id) generates 900 named params (820 IDs padded to nearest bucket).
-                // OPENJSON join approach: pass IDs as a single JSON string, join CompanyFacets directly.
-                // Unlike the FROM (subquery) pattern, this allows the optimizer to use the Company index.
+                sw.Restart();
                 var idsJson = System.Text.Json.JsonSerializer.Serialize(allMatchingIds);
                 var pfq = await dbContext.Database
                     .SqlQueryRaw<BizSrt.Data.Extensions.FacetExtensions.ValueCount>(@"
@@ -224,6 +345,664 @@ namespace BizSrt.SearchTest
                         INNER JOIN CompanyFacetValues pfv ON pf.FacetValue = pfv.Id
                         GROUP BY pfv.Name, pfv.Id", idsJson)
                     .ToArrayAsync();
+                var facetTime = sw.ElapsedMilliseconds;
+                Console.WriteLine($"    └─ Facets query:    {facetTime}ms  ({pfq.Length} facet values)");
+
+                facets = BizSrt.Data.Extensions.FacetExtensions.GetFacets(pfq, queryInput.InclFacets, total);
+            }
+
+            return new SearchOutput<SearchItem>
+            {
+                StartIndex = queryInput.StartIndex,
+                Series = companies,
+                TotalCount = total,
+                Facets = facets
+            };
+        }
+
+        /// <summary>
+        /// Variant B: OPENJSON for Location — materialize category IDs first,
+        /// then pass them via OPENJSON to a raw SQL location-intersected query.
+        /// Tests whether OPENJSON is faster than the IQueryable subquery for location.
+        /// </summary>
+        public static async Task<SearchOutput<SearchItem>> CompanySearchLINQOpenJsonLocation(AppDbContext dbContext, SearchInput queryInput)
+        {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+
+            var query = dbContext.CompanyProfiles
+                .Join(dbContext.Accounts, c => c.Id, a => a.Id, (c, a) => new { c, a })
+                .Where(x => x.a.Status == (byte)BizSrt.Model.Status.Active && (queryInput.TransactionType == 0 || (x.c.TransactionType & queryInput.TransactionType) > 0))
+                .Select(x => x.c);
+
+            if (queryInput.Category > 0)
+            {
+                var productCategoryMatches = (from cp in dbContext.CompanyProducts
+                                              join p in dbContext.Products on cp.Product equals p.Id
+                                              where (p.Type == 0 || (cp.UnlistedType == 1 && p.Status == 2)) &&
+                                                    (cp.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == cp.Category))
+                                              select cp);
+
+                query = query.Where(c => (c.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == c.Category))
+                    || productCategoryMatches.Any(cp => cp.Company == c.Id));
+            }
+            else if (queryInput.TransactionType > 0)
+            {
+                query = query.Where(c => (c.TransactionType & queryInput.TransactionType) > 0);
+            }
+
+            query = query.ApplyFacets(dbContext, queryInput.InclFacets, queryInput.ExclFacets);
+
+            // Step 1: category query (same as LINQNew)
+            sw.Restart();
+            var categoryMatches = await query
+                .Select(c => new { c.Id, c.Created })
+                .ToArrayAsync();
+            var catTime = sw.ElapsedMilliseconds;
+            Console.WriteLine($"    ├─ Category query:  {catTime}ms  ({categoryMatches.Length} rows)");
+
+            int[] allMatchingIds;
+
+            if (queryInput.Location > 0)
+            {
+                // Step 2: Use OPENJSON to pass category IDs + do location intersection in SQL
+                sw.Restart();
+                var catIdsJson = System.Text.Json.JsonSerializer.Serialize(categoryMatches.Select(c => c.Id).ToArray());
+                var intersected = await dbContext.Database
+                    .SqlQueryRaw<int>(@"
+                        SELECT DISTINCT CAST(ids.[value] AS int) AS [Value]
+                        FROM OPENJSON({0}) ids
+                        INNER JOIN CompanyOffices co ON co.Company = CAST(ids.[value] AS int)
+                        WHERE co.[Location] = {1}
+                           OR co.[Location] IN (SELECT lu.Child FROM Locations_Unwound lu WHERE lu.Parent = {1})",
+                        catIdsJson, queryInput.Location)
+                    .ToArrayAsync();
+                var locTime = sw.ElapsedMilliseconds;
+                Console.WriteLine($"    ├─ Location OPENJSON: {locTime}ms  ({intersected.Length} rows)");
+
+                // We need Created for ordering — look it up from categoryMatches
+                var intersectedSet = new HashSet<int>(intersected);
+                allMatchingIds = categoryMatches
+                    .Where(c => intersectedSet.Contains(c.Id))
+                    .OrderByDescending(c => c.Created)
+                    .Select(c => c.Id)
+                    .ToArray();
+            }
+            else
+            {
+                allMatchingIds = categoryMatches
+                    .OrderByDescending(c => c.Created)
+                    .Select(c => c.Id)
+                    .ToArray();
+            }
+
+            var total = allMatchingIds.Length;
+            Console.WriteLine($"    ├─ Intersection:    {total} matching IDs");
+            var pageIds = allMatchingIds
+                .Skip(queryInput.StartIndex)
+                .Take(queryInput.Length > 0 ? queryInput.Length : 20)
+                .ToArray();
+
+            SearchItem[] companies;
+            if (queryInput.Location > 0)
+            {
+                sw.Restart();
+                var pageIdsArray = pageIds;
+                var allOfficesForPage = await dbContext.CompanyOffices
+                    .Where(co => pageIdsArray.Contains(co.Company))
+                    .OrderBy(co => co.Order)
+                    .Select(co => new { co.Company, co.Order, co.Id })
+                    .ToArrayAsync();
+                var officeTime = sw.ElapsedMilliseconds;
+                Console.WriteLine($"    ├─ Office map:      {officeTime}ms  ({allOfficesForPage.Length} rows)");
+
+                var bestOfficeMap = allOfficesForPage
+                    .GroupBy(o => o.Company)
+                    .ToDictionary(g => g.Key, g => g.First());
+
+                companies = pageIds
+                    .Select(id =>
+                    {
+                        bestOfficeMap.TryGetValue(id, out var o);
+                        return new SearchItem
+                        {
+                            Id = id,
+                            Office = o != null && o.Order != 0 ? (int?)o.Id : null
+                        };
+                    })
+                    .ToArray();
+            }
+            else
+            {
+                companies = pageIds.Select(id => new SearchItem { Id = id }).ToArray();
+            }
+
+            BizSrt.Model.Semantic.FacetName[]? facets = null;
+            if (queryInput.InclFacets != null)
+            {
+                sw.Restart();
+                var idsJson = System.Text.Json.JsonSerializer.Serialize(allMatchingIds);
+                var pfq = await dbContext.Database
+                    .SqlQueryRaw<BizSrt.Data.Extensions.FacetExtensions.ValueCount>(@"
+                        SELECT pfv.Name, pfv.Id AS Value, COUNT(*) AS Count
+                        FROM CompanyFacets pf
+                        INNER JOIN OPENJSON({0}) ids ON pf.Company = ids.value
+                        INNER JOIN CompanyFacetValues pfv ON pf.FacetValue = pfv.Id
+                        GROUP BY pfv.Name, pfv.Id", idsJson)
+                    .ToArrayAsync();
+                var facetTime = sw.ElapsedMilliseconds;
+                Console.WriteLine($"    └─ Facets query:    {facetTime}ms  ({pfq.Length} facet values)");
+
+                facets = BizSrt.Data.Extensions.FacetExtensions.GetFacets(pfq, queryInput.InclFacets, total);
+            }
+
+            return new SearchOutput<SearchItem>
+            {
+                StartIndex = queryInput.StartIndex,
+                Series = companies,
+                TotalCount = total,
+                Facets = facets
+            };
+        }
+
+        /// <summary>
+        /// Variant C: EXISTS-based Location — use .Any() instead of .Distinct() for location dedup.
+        /// The current LINQNew uses DISTINCT on CompanyOffices. This variant tests whether
+        /// EXISTS (correlated subquery per category row) is faster than the DISTINCT approach.
+        /// Still uses the two-query split.
+        /// </summary>
+        public static async Task<SearchOutput<SearchItem>> CompanySearchLINQExistsLocation(AppDbContext dbContext, SearchInput queryInput)
+        {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+
+            var query = dbContext.CompanyProfiles
+                .Join(dbContext.Accounts, c => c.Id, a => a.Id, (c, a) => new { c, a })
+                .Where(x => x.a.Status == (byte)BizSrt.Model.Status.Active && (queryInput.TransactionType == 0 || (x.c.TransactionType & queryInput.TransactionType) > 0))
+                .Select(x => x.c);
+
+            if (queryInput.Category > 0)
+            {
+                var productCategoryMatches = (from cp in dbContext.CompanyProducts
+                                              join p in dbContext.Products on cp.Product equals p.Id
+                                              where (p.Type == 0 || (cp.UnlistedType == 1 && p.Status == 2)) &&
+                                                    (cp.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == cp.Category))
+                                              select cp);
+
+                query = query.Where(c => (c.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == c.Category))
+                    || productCategoryMatches.Any(cp => cp.Company == c.Id));
+            }
+            else if (queryInput.TransactionType > 0)
+            {
+                query = query.Where(c => (c.TransactionType & queryInput.TransactionType) > 0);
+            }
+
+            query = query.ApplyFacets(dbContext, queryInput.InclFacets, queryInput.ExclFacets);
+
+            // Step 1: category query (same as LINQNew)
+            sw.Restart();
+            var categoryMatches = await query
+                .Select(c => new { c.Id, c.Created })
+                .ToArrayAsync();
+            var catTime = sw.ElapsedMilliseconds;
+            Console.WriteLine($"    ├─ Category query:  {catTime}ms  ({categoryMatches.Length} rows)");
+
+            int[] allMatchingIds;
+
+            if (queryInput.Location > 0)
+            {
+                // EXISTS-based: for each category-matched company, check if it has an office in the location
+                // This avoids the DISTINCT aggregate on CompanyOffices
+                var childLocations = dbContext.Locations_Unwound
+                    .Where(lu => lu.Parent == queryInput.Location)
+                    .Select(lu => lu.Child);
+
+                sw.Restart();
+                // Use a raw SQL approach: pass category IDs via OPENJSON, then filter with EXISTS on offices
+                var catIdsJson = System.Text.Json.JsonSerializer.Serialize(categoryMatches.Select(c => c.Id).ToArray());
+                var intersected = await dbContext.Database
+                    .SqlQueryRaw<int>(@"
+                        SELECT CAST(ids.[value] AS int) AS [Value]
+                        FROM OPENJSON({0}) ids
+                        WHERE EXISTS (
+                            SELECT 1 FROM CompanyOffices co
+                            WHERE co.Company = CAST(ids.[value] AS int)
+                              AND (co.[Location] = {1}
+                                OR co.[Location] IN (SELECT lu.Child FROM Locations_Unwound lu WHERE lu.Parent = {1}))
+                        )",
+                        catIdsJson, queryInput.Location)
+                    .ToArrayAsync();
+                var locTime = sw.ElapsedMilliseconds;
+                Console.WriteLine($"    ├─ Location EXISTS: {locTime}ms  ({intersected.Length} rows)");
+
+                var intersectedSet = new HashSet<int>(intersected);
+                allMatchingIds = categoryMatches
+                    .Where(c => intersectedSet.Contains(c.Id))
+                    .OrderByDescending(c => c.Created)
+                    .Select(c => c.Id)
+                    .ToArray();
+            }
+            else
+            {
+                allMatchingIds = categoryMatches
+                    .OrderByDescending(c => c.Created)
+                    .Select(c => c.Id)
+                    .ToArray();
+            }
+
+            var total = allMatchingIds.Length;
+            Console.WriteLine($"    ├─ Intersection:    {total} matching IDs");
+            var pageIds = allMatchingIds
+                .Skip(queryInput.StartIndex)
+                .Take(queryInput.Length > 0 ? queryInput.Length : 20)
+                .ToArray();
+
+            SearchItem[] companies;
+            if (queryInput.Location > 0)
+            {
+                sw.Restart();
+                var pageIdsArray = pageIds;
+                var allOfficesForPage = await dbContext.CompanyOffices
+                    .Where(co => pageIdsArray.Contains(co.Company))
+                    .OrderBy(co => co.Order)
+                    .Select(co => new { co.Company, co.Order, co.Id })
+                    .ToArrayAsync();
+                var officeTime = sw.ElapsedMilliseconds;
+                Console.WriteLine($"    ├─ Office map:      {officeTime}ms  ({allOfficesForPage.Length} rows)");
+
+                var bestOfficeMap = allOfficesForPage
+                    .GroupBy(o => o.Company)
+                    .ToDictionary(g => g.Key, g => g.First());
+
+                companies = pageIds
+                    .Select(id =>
+                    {
+                        bestOfficeMap.TryGetValue(id, out var o);
+                        return new SearchItem
+                        {
+                            Id = id,
+                            Office = o != null && o.Order != 0 ? (int?)o.Id : null
+                        };
+                    })
+                    .ToArray();
+            }
+            else
+            {
+                companies = pageIds.Select(id => new SearchItem { Id = id }).ToArray();
+            }
+
+            BizSrt.Model.Semantic.FacetName[]? facets = null;
+            if (queryInput.InclFacets != null)
+            {
+                sw.Restart();
+                var idsJson = System.Text.Json.JsonSerializer.Serialize(allMatchingIds);
+                var pfq = await dbContext.Database
+                    .SqlQueryRaw<BizSrt.Data.Extensions.FacetExtensions.ValueCount>(@"
+                        SELECT pfv.Name, pfv.Id AS Value, COUNT(*) AS Count
+                        FROM CompanyFacets pf
+                        INNER JOIN OPENJSON({0}) ids ON pf.Company = ids.value
+                        INNER JOIN CompanyFacetValues pfv ON pf.FacetValue = pfv.Id
+                        GROUP BY pfv.Name, pfv.Id", idsJson)
+                    .ToArrayAsync();
+                var facetTime = sw.ElapsedMilliseconds;
+                Console.WriteLine($"    └─ Facets query:    {facetTime}ms  ({pfq.Length} facet values)");
+
+                facets = BizSrt.Data.Extensions.FacetExtensions.GetFacets(pfq, queryInput.InclFacets, total);
+            }
+
+            return new SearchOutput<SearchItem>
+            {
+                StartIndex = queryInput.StartIndex,
+                Series = companies,
+                TotalCount = total,
+                Facets = facets
+            };
+        }
+
+        /// <summary>
+        /// Variant D: SQL-side ORDER BY — re-tests the backward scan bug.
+        /// Previously this caused 60+ second timeouts because SQL Server scanned 
+        /// IX_CompanyProfiles_Created backwards while evaluating OR EXISTS subqueries row-by-row.
+        /// Tests whether the rebuilt SQL Server handles this plan better.
+        /// Uses Combined SQL (Variant A base) + SQL-side OrderByDescending.
+        /// </summary>
+        public static async Task<SearchOutput<SearchItem>> CompanySearchLINQSqlOrderBy(AppDbContext dbContext, SearchInput queryInput)
+        {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+
+            var query = dbContext.CompanyProfiles
+                .Join(dbContext.Accounts, c => c.Id, a => a.Id, (c, a) => new { c, a })
+                .Where(x => x.a.Status == (byte)BizSrt.Model.Status.Active && (queryInput.TransactionType == 0 || (x.c.TransactionType & queryInput.TransactionType) > 0))
+                .Select(x => x.c);
+
+            if (queryInput.Category > 0)
+            {
+                var productCategoryMatches = (from cp in dbContext.CompanyProducts
+                                              join p in dbContext.Products on cp.Product equals p.Id
+                                              where (p.Type == 0 || (cp.UnlistedType == 1 && p.Status == 2)) &&
+                                                    (cp.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == cp.Category))
+                                              select cp);
+
+                query = query.Where(c => (c.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == c.Category))
+                    || productCategoryMatches.Any(cp => cp.Company == c.Id));
+            }
+
+            query = query.ApplyFacets(dbContext, queryInput.InclFacets, queryInput.ExclFacets);
+
+            if (queryInput.Location > 0)
+            {
+                var childLocations = dbContext.Locations_Unwound
+                    .Where(lu => lu.Parent == queryInput.Location)
+                    .Select(lu => lu.Child);
+
+                query = query.Where(c => dbContext.CompanyOffices
+                    .Any(co => co.Company == c.Id &&
+                        (co.Location == queryInput.Location || childLocations.Contains(co.Location))));
+            }
+
+            // THIS IS THE KEY DIFFERENCE: ORDER BY in SQL instead of C# memory
+            sw.Restart();
+            var allMatchingIds = await query
+                .OrderByDescending(c => c.Created)
+                .Select(c => c.Id)
+                .ToArrayAsync();
+            var queryTime = sw.ElapsedMilliseconds;
+            Console.WriteLine($"    ├─ Query+Sort SQL:  {queryTime}ms  ({allMatchingIds.Length} rows)");
+
+            var total = allMatchingIds.Length;
+            var pageIds = allMatchingIds
+                .Skip(queryInput.StartIndex)
+                .Take(queryInput.Length > 0 ? queryInput.Length : 20)
+                .ToArray();
+
+            SearchItem[] companies;
+            if (queryInput.Location > 0)
+            {
+                sw.Restart();
+                var pageIdsArray = pageIds;
+                var allOfficesForPage = await dbContext.CompanyOffices
+                    .Where(co => pageIdsArray.Contains(co.Company))
+                    .OrderBy(co => co.Order)
+                    .Select(co => new { co.Company, co.Order, co.Id })
+                    .ToArrayAsync();
+                var officeTime = sw.ElapsedMilliseconds;
+                Console.WriteLine($"    ├─ Office map:      {officeTime}ms  ({allOfficesForPage.Length} rows)");
+
+                var bestOfficeMap = allOfficesForPage
+                    .GroupBy(o => o.Company)
+                    .ToDictionary(g => g.Key, g => g.First());
+
+                companies = pageIds
+                    .Select(id =>
+                    {
+                        bestOfficeMap.TryGetValue(id, out var o);
+                        return new SearchItem
+                        {
+                            Id = id,
+                            Office = o != null && o.Order != 0 ? (int?)o.Id : null
+                        };
+                    })
+                    .ToArray();
+            }
+            else
+            {
+                companies = pageIds.Select(id => new SearchItem { Id = id }).ToArray();
+            }
+
+            BizSrt.Model.Semantic.FacetName[]? facets = null;
+            if (queryInput.InclFacets != null)
+            {
+                sw.Restart();
+                var idsJson = System.Text.Json.JsonSerializer.Serialize(allMatchingIds);
+                var pfq = await dbContext.Database
+                    .SqlQueryRaw<BizSrt.Data.Extensions.FacetExtensions.ValueCount>(@"
+                        SELECT pfv.Name, pfv.Id AS Value, COUNT(*) AS Count
+                        FROM CompanyFacets pf
+                        INNER JOIN OPENJSON({0}) ids ON pf.Company = ids.value
+                        INNER JOIN CompanyFacetValues pfv ON pf.FacetValue = pfv.Id
+                        GROUP BY pfv.Name, pfv.Id", idsJson)
+                    .ToArrayAsync();
+                var facetTime = sw.ElapsedMilliseconds;
+                Console.WriteLine($"    └─ Facets query:    {facetTime}ms  ({pfq.Length} facet values)");
+
+                facets = BizSrt.Data.Extensions.FacetExtensions.GetFacets(pfq, queryInput.InclFacets, total);
+            }
+
+            return new SearchOutput<SearchItem>
+            {
+                StartIndex = queryInput.StartIndex,
+                Series = companies,
+                TotalCount = total,
+                Facets = facets
+            };
+        }
+
+        /// <summary>
+        /// Variant E: GroupBy + First Office Map.
+        /// Re-tests the EF Core GroupBy().Select(g => g.OrderBy().First()) approach
+        /// that previously generated correlated SELECT TOP(1) subqueries (4,105ms).
+        /// Uses Combined SQL (Variant A base) but with GroupBy office selection.
+        /// </summary>
+        public static async Task<SearchOutput<SearchItem>> CompanySearchLINQGroupByOffice(AppDbContext dbContext, SearchInput queryInput)
+        {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+
+            var query = dbContext.CompanyProfiles
+                .Join(dbContext.Accounts, c => c.Id, a => a.Id, (c, a) => new { c, a })
+                .Where(x => x.a.Status == (byte)BizSrt.Model.Status.Active && (queryInput.TransactionType == 0 || (x.c.TransactionType & queryInput.TransactionType) > 0))
+                .Select(x => x.c);
+
+            if (queryInput.Category > 0)
+            {
+                var productCategoryMatches = (from cp in dbContext.CompanyProducts
+                                              join p in dbContext.Products on cp.Product equals p.Id
+                                              where (p.Type == 0 || (cp.UnlistedType == 1 && p.Status == 2)) &&
+                                                    (cp.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == cp.Category))
+                                              select cp);
+
+                query = query.Where(c => (c.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == c.Category))
+                    || productCategoryMatches.Any(cp => cp.Company == c.Id));
+            }
+
+            query = query.ApplyFacets(dbContext, queryInput.InclFacets, queryInput.ExclFacets);
+
+            if (queryInput.Location > 0)
+            {
+                var childLocations = dbContext.Locations_Unwound
+                    .Where(lu => lu.Parent == queryInput.Location)
+                    .Select(lu => lu.Child);
+
+                query = query.Where(c => dbContext.CompanyOffices
+                    .Any(co => co.Company == c.Id &&
+                        (co.Location == queryInput.Location || childLocations.Contains(co.Location))));
+            }
+
+            sw.Restart();
+            var allMatches = await query
+                .Select(c => new { c.Id, c.Created })
+                .ToArrayAsync();
+            var queryTime = sw.ElapsedMilliseconds;
+            Console.WriteLine($"    ├─ Combined query:  {queryTime}ms  ({allMatches.Length} rows)");
+
+            var allMatchingIds = allMatches
+                .OrderByDescending(c => c.Created)
+                .Select(c => c.Id)
+                .ToArray();
+
+            var total = allMatchingIds.Length;
+            var pageIds = allMatchingIds
+                .Skip(queryInput.StartIndex)
+                .Take(queryInput.Length > 0 ? queryInput.Length : 20)
+                .ToArray();
+
+            SearchItem[] companies;
+            if (queryInput.Location > 0)
+            {
+                // THIS IS THE KEY DIFFERENCE: EF Core GroupBy + First in SQL
+                sw.Restart();
+                var pageIdsArray = pageIds;
+                var officeMap = await dbContext.CompanyOffices
+                    .Where(co => pageIdsArray.Contains(co.Company))
+                    .GroupBy(co => co.Company)
+                    .Select(g => new { Company = g.Key, Office = g.OrderBy(x => x.Order).First() })
+                    .ToArrayAsync();
+                var officeTime = sw.ElapsedMilliseconds;
+                Console.WriteLine($"    ├─ Office GroupBy:  {officeTime}ms  ({officeMap.Length} rows)");
+
+                var bestOfficeMap = officeMap.ToDictionary(o => o.Company, o => o.Office);
+
+                companies = pageIds
+                    .Select(id =>
+                    {
+                        bestOfficeMap.TryGetValue(id, out var o);
+                        return new SearchItem
+                        {
+                            Id = id,
+                            Office = o != null && o.Order != 0 ? (int?)o.Id : null
+                        };
+                    })
+                    .ToArray();
+            }
+            else
+            {
+                companies = pageIds.Select(id => new SearchItem { Id = id }).ToArray();
+            }
+
+            BizSrt.Model.Semantic.FacetName[]? facets = null;
+            if (queryInput.InclFacets != null)
+            {
+                sw.Restart();
+                var idsJson = System.Text.Json.JsonSerializer.Serialize(allMatchingIds);
+                var pfq = await dbContext.Database
+                    .SqlQueryRaw<BizSrt.Data.Extensions.FacetExtensions.ValueCount>(@"
+                        SELECT pfv.Name, pfv.Id AS Value, COUNT(*) AS Count
+                        FROM CompanyFacets pf
+                        INNER JOIN OPENJSON({0}) ids ON pf.Company = ids.value
+                        INNER JOIN CompanyFacetValues pfv ON pf.FacetValue = pfv.Id
+                        GROUP BY pfv.Name, pfv.Id", idsJson)
+                    .ToArrayAsync();
+                var facetTime = sw.ElapsedMilliseconds;
+                Console.WriteLine($"    └─ Facets query:    {facetTime}ms  ({pfq.Length} facet values)");
+
+                facets = BizSrt.Data.Extensions.FacetExtensions.GetFacets(pfq, queryInput.InclFacets, total);
+            }
+
+            return new SearchOutput<SearchItem>
+            {
+                StartIndex = queryInput.StartIndex,
+                Series = companies,
+                TotalCount = total,
+                Facets = facets
+            };
+        }
+
+        /// <summary>
+        /// Variant F: ROW_NUMBER() Office Map.
+        /// Re-tests raw SQL ROW_NUMBER() OVER (PARTITION BY Company ORDER BY [Order])
+        /// with Company IN (@pageIds) as the leading predicate.
+        /// Previously was fast (34ms) but required fragile SQL string building.
+        /// </summary>
+        public static async Task<SearchOutput<SearchItem>> CompanySearchLINQRowNumberOffice(AppDbContext dbContext, SearchInput queryInput)
+        {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+
+            var query = dbContext.CompanyProfiles
+                .Join(dbContext.Accounts, c => c.Id, a => a.Id, (c, a) => new { c, a })
+                .Where(x => x.a.Status == (byte)BizSrt.Model.Status.Active && (queryInput.TransactionType == 0 || (x.c.TransactionType & queryInput.TransactionType) > 0))
+                .Select(x => x.c);
+
+            if (queryInput.Category > 0)
+            {
+                var productCategoryMatches = (from cp in dbContext.CompanyProducts
+                                              join p in dbContext.Products on cp.Product equals p.Id
+                                              where (p.Type == 0 || (cp.UnlistedType == 1 && p.Status == 2)) &&
+                                                    (cp.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == cp.Category))
+                                              select cp);
+
+                query = query.Where(c => (c.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == c.Category))
+                    || productCategoryMatches.Any(cp => cp.Company == c.Id));
+            }
+
+            query = query.ApplyFacets(dbContext, queryInput.InclFacets, queryInput.ExclFacets);
+
+            if (queryInput.Location > 0)
+            {
+                var childLocations = dbContext.Locations_Unwound
+                    .Where(lu => lu.Parent == queryInput.Location)
+                    .Select(lu => lu.Child);
+
+                query = query.Where(c => dbContext.CompanyOffices
+                    .Any(co => co.Company == c.Id &&
+                        (co.Location == queryInput.Location || childLocations.Contains(co.Location))));
+            }
+
+            sw.Restart();
+            var allMatches = await query
+                .Select(c => new { c.Id, c.Created })
+                .ToArrayAsync();
+            var queryTime = sw.ElapsedMilliseconds;
+            Console.WriteLine($"    ├─ Combined query:  {queryTime}ms  ({allMatches.Length} rows)");
+
+            var allMatchingIds = allMatches
+                .OrderByDescending(c => c.Created)
+                .Select(c => c.Id)
+                .ToArray();
+
+            var total = allMatchingIds.Length;
+            var pageIds = allMatchingIds
+                .Skip(queryInput.StartIndex)
+                .Take(queryInput.Length > 0 ? queryInput.Length : 20)
+                .ToArray();
+
+            SearchItem[] companies;
+            if (queryInput.Location > 0)
+            {
+                // THIS IS THE KEY DIFFERENCE: ROW_NUMBER() via raw SQL with OPENJSON
+                sw.Restart();
+                var pageIdsJson = System.Text.Json.JsonSerializer.Serialize(pageIds);
+                var officeMap = await dbContext.Database
+                    .SqlQueryRaw<OfficeMapResult>(@"
+                        SELECT Company, Id AS Office FROM (
+                            SELECT co.Company, co.Id, ROW_NUMBER() OVER (PARTITION BY co.Company ORDER BY co.[Order]) AS rn
+                            FROM CompanyOffices co
+                            INNER JOIN OPENJSON({0}) ids ON co.Company = CAST(ids.[value] AS int)
+                        ) ranked WHERE rn = 1", pageIdsJson)
+                    .ToArrayAsync();
+                var officeTime = sw.ElapsedMilliseconds;
+                Console.WriteLine($"    ├─ Office ROW_NUM: {officeTime}ms  ({officeMap.Length} rows)");
+
+                var bestOfficeMap = officeMap.ToDictionary(o => o.Company, o => o.Office);
+
+                companies = pageIds
+                    .Select(id =>
+                    {
+                        bestOfficeMap.TryGetValue(id, out var o);
+                        return new SearchItem
+                        {
+                            Id = id,
+                            Office = o > 0 ? (int?)o : null
+                        };
+                    })
+                    .ToArray();
+            }
+            else
+            {
+                companies = pageIds.Select(id => new SearchItem { Id = id }).ToArray();
+            }
+
+            BizSrt.Model.Semantic.FacetName[]? facets = null;
+            if (queryInput.InclFacets != null)
+            {
+                sw.Restart();
+                var idsJson = System.Text.Json.JsonSerializer.Serialize(allMatchingIds);
+                var pfq = await dbContext.Database
+                    .SqlQueryRaw<BizSrt.Data.Extensions.FacetExtensions.ValueCount>(@"
+                        SELECT pfv.Name, pfv.Id AS Value, COUNT(*) AS Count
+                        FROM CompanyFacets pf
+                        INNER JOIN OPENJSON({0}) ids ON pf.Company = ids.value
+                        INNER JOIN CompanyFacetValues pfv ON pf.FacetValue = pfv.Id
+                        GROUP BY pfv.Name, pfv.Id", idsJson)
+                    .ToArrayAsync();
+                var facetTime = sw.ElapsedMilliseconds;
+                Console.WriteLine($"    └─ Facets query:    {facetTime}ms  ({pfq.Length} facet values)");
 
                 facets = BizSrt.Data.Extensions.FacetExtensions.GetFacets(pfq, queryInput.InclFacets, total);
             }

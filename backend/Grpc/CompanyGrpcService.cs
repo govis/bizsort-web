@@ -23,5 +23,35 @@ namespace BizSrt.Api.Grpc
 
             return new IndexCompanyResponse { Success = true };
         }
+
+        public override async Task<IndexProductResponse> IndexProduct(IndexProductRequest request, ServerCallContext context)
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var dc = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            await Process.Company.IndexProductAsync(dc, request.ProductId, context.CancellationToken);
+
+            return new IndexProductResponse { Success = true };
+        }
+
+        public override async Task<IndexProductFacetSetResponse> IndexProductFacetSet(IndexProductFacetSetRequest request, ServerCallContext context)
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var dc = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            await Process.Company.IndexProductFacetSetAsync(dc, request.SetId, context.CancellationToken);
+
+            return new IndexProductFacetSetResponse { Success = true };
+        }
+
+        public override async Task<DeleteProductFacetSetResponse> DeleteProductFacetSet(DeleteProductFacetSetRequest request, ServerCallContext context)
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var dc = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+            await Process.Company.DeleteProductFacetSetAsync(dc, request.SetId, context.CancellationToken);
+
+            return new DeleteProductFacetSetResponse { Success = true };
+        }
     }
 }

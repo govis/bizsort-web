@@ -2,6 +2,11 @@
 
 This document captures the chronological attempts, experiments, and failures we encountered while optimizing the `CompanySearch` LINQ queries. It serves as a historical record of what was tried, what failed, and why.
 
+> [!IMPORTANT] **Post-Rebuild Context (July 2026)**
+> The timings and "timeouts" listed in the sections below refer to performance **before** the SQL Server installation was rebuilt. 
+> After the rebuild, the query optimizer handles these plans much better. Many of the "failures" below (like the backward scan bug or the combined query instability) no longer time out, and in some cases, are now the fastest approach. 
+> See **Section 6** at the bottom of this document for the post-rebuild updates.
+
 ---
 
 ## 1. Category Filter Query
@@ -99,3 +104,18 @@ This document captures the chronological attempts, experiments, and failures we 
 ### Parallel Query Execution
 - **Approach:** We attempted to run the Category filter and Location filter in parallel using `Task.WhenAll` to save time.
 - **Result:** **FAIL (`InvalidOperationException`)**. EF Core `DbContext` is explicitly not thread-safe. "A second operation was started on this context instance before a previous operation completed." We reverted to running the Two-Query split sequentially using standard `await`.
+
+---
+
+## 6. Post SQL Server Rebuild Updates (July 2026)
+
+After rebuilding the SQL Server installation, the query optimizer's behavior changed dramatically, eliminating the cold plan compilation bottlenecks. We re-tested all the above approaches. 
+
+**Key Reversals:**
+
+1. **Combined SQL is now the Winner:** The Two-Query Split (§5.2) was originally adopted because combining Category and Location filters into a single SQL statement caused the optimizer to generate a catastrophic execution plan. On the rebuilt server, the single Combined SQL query is optimized perfectly and is now the **fastest overall approach** (~137ms cold / ~63ms warm).
+2. **Backward Scan Bug is Fixed:** The SQL-side `OrderByDescending` issue (§5.1) no longer causes a 60+ second timeout. The rebuilt server handles it in ~228ms. However, this is still ~2x slower than deferring the sort to C# memory, so the in-memory sorting recommendation remains.
+3. **GroupBy + First is Fixed (Warm):** The correlated `SELECT TOP(1)` subquery approach (§3.1) no longer takes 4,105ms. It runs in 3ms when warm, though it suffers a 200ms cold plan compilation penalty. In-memory `GroupBy` remains the standard.
+4. **Parameter Padding remains Critical:** The rebuilt SQL Server did *not* change the fact that EF Core pads `List<T>.Contains()` to fixed buckets (90, 600, 900 params). Passing >10 items via `.Contains()` still causes severe plan bloat. The `OPENJSON` and `IQueryable` subquery mitigations are still mandatory.
+
+For full benchmark numbers and generated SQL of the new implementations, see `PerformanceOptimizationTest.md`.
