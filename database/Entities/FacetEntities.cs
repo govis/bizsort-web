@@ -114,3 +114,11 @@ public class CompanyProductFacetSetDetail
     [ForeignKey("Set")]
     public CompanyProductFacetSet CompanyProductFacetSet { get; set; } = null!;
 }
+
+[Table("FacetSetCompanyProducts")]
+[PrimaryKey(nameof(FacetSet), nameof(Product))]
+public class FacetSetCompanyProduct
+{
+    public int FacetSet { get; set; }
+    public long Product { get; set; }
+}

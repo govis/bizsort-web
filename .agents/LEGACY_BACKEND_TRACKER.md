@@ -2993,10 +2993,10 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `ApplyDispatchBehavior()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `BeforeSendRequest()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Validate()` | | |
-| | **Namespace: `Foundation.StringEnum`** | | |
-| [ ] | â†³ `class StringValueAttribute` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `GetStringValue()` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `GetValues()` | | |
+| x | **Namespace: `BizSrt.Foundation.StringEnum`** (Ported from `Foundation.StringEnum`) | | |
+| x | â†³ `class StringValueAttribute` | - | - |
+| x | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `GetStringValue()` | | |
+| x | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `GetValues()` | | |
 | | **Namespace: `Model`** | | |
 | [ ] | â†³ `class Account` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Convert()` | | |

@@ -323,7 +323,7 @@ namespace BizSrt.Api.Process
             foreach (var facet in facets)
             {
                 var facetName = BizSrt.Api.Data.Cache.LegacyCache.CompanyProductFacetNames[facet.Name, BizSrt.Foundation.Cache.TwoKeySuppress.None, facet.Name];
-                var facetValue = BizSrt.Api.Data.Cache.LegacyCache.CompanyProductFacetValues[new BizSrt.Api.Data.Cache.Company.Product.Facet.CachedValue.Key { Name = facetName, ValueType = (byte)facet.ValueType, Value = facet.ValueData }, BizSrt.Foundation.Cache.TwoKeySuppress.None, facet.ValueText];
+                var facetValue = BizSrt.Api.Data.Cache.LegacyCache.CompanyProductFacetValues[new BizSrt.Api.Data.Cache.Product.Facet.CachedValue.Key { Name = facetName, ValueType = (byte)facet.ValueType, Value = facet.ValueData }, BizSrt.Foundation.Cache.TwoKeySuppress.None, facet.ValueText];
                 
                 var pf = cache.SingleOrDefault(cpf => cpf.Product == productId && cpf.FacetValue == facetValue);
                 if (pf == null)
@@ -413,7 +413,7 @@ namespace BizSrt.Api.Process
             if (facets.Length > 0)
             {
                 var facetSet = await dc.CompanyProductFacetSets.SingleAsync(bfs => bfs.Id == setId, cancellationToken);
-                var cq = BizSrt.Api.Data.Company.Product.ProfileQueryExtensions.Get(dc, new BizSrt.Model.Semantic.FacetFilter(facets, false), new BizSrt.Model.Semantic.FacetFilter(facets, true));
+                var cq = BizSrt.Api.Data.Company.ProductQueryExtensions.Get(dc, new BizSrt.Model.Semantic.FacetFilter(facets, false), new BizSrt.Model.Semantic.FacetFilter(facets, true));
 
                 var existingFsp = await dc.FacetSetCompanyProducts.Where(fsp => fsp.FacetSet == setId).ToArrayAsync(cancellationToken);
                 dc.FacetSetCompanyProducts.RemoveRange(existingFsp);
@@ -453,9 +453,9 @@ namespace BizSrt.Api.Process
                         });
                     }
                 }
-                if (product.Type != 0)
+                if (product.Type != null)
                 {
-                    var types = BizSrt.Api.Data.Cache.LegacyCache.Dictionary?.Get<BizSrt.Model.Product.ProductType>(BizSrt.Model.DictionaryType.ProductType);
+                    var types = BizSrt.Api.Data.Cache.LegacyCache.Dictionary.Get<global::BizSrt.Model.ProductType>(BizSrt.Model.DictionaryType.ProductType);
                     if (types != null)
                     {
                         foreach (var t in types)
@@ -518,7 +518,7 @@ namespace BizSrt.Api.Process
                 {
                     Name = "Status",
                     ValueData = new byte[] { (byte)product.Status },
-                    ValueText = BizSrt.Foundation.Text.StringEnum.GetStringValue(statusEnum)
+                    ValueText = BizSrt.Foundation.StringEnum.Extensions.GetStringValue(statusEnum)
                 });
             }
         }

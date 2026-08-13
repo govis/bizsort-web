@@ -21,7 +21,7 @@ namespace BizSrt.Api.Data.Cache
             CategorySearch = new BizSrt.Data.CategorySearchCache();
             LocationSearch = new BizSrt.Data.LocationSearchCache();
             AreaNames = new BizSrt.Data.AreaNamesCache();
-            StreetNames = new BizSrt.Api.Data.Cache.Location.StreetNamesCache();
+            StreetNames = new BizSrt.Data.StreetNamesCache();
             LocationSettings = new BizSrt.Api.Data.Cache.Location.LocationSettingsCache();
             CompanyProfiles = new BizSrt.Api.Data.Cache.Company.CompanyProfilesCache();
             CompanyFacetNames = new BizSrt.Api.Data.Cache.Company.Facet.NamesCache();

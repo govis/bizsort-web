@@ -1,5 +1,35 @@
+can you make sure notes are up to date
+/resume 1ad51775-7022-4a39-a138-65c42d5b2612
+check how IndexCompanyAsync in backend\Process\Company.cs creates "Category" facets for every company, can you check the undelying table(s) and create new query variant "LINQNew" that leverages Facets for Category query instead of doing Categories_Unwound
+
+can you double check these newly added code members for any deviations from legacy code base
+The backend build is now completely fixed and passing!
+
+  Here is a summary of what was causing the compilation failures and the steps I took to resolve them:
+
+  1. Missing Entity Mapping: The FacetSetCompanyProducts DbSet and its corresponding entity class
+  FacetSetCompanyProduct were entirely missing from the modernized AppDbContext.cs and FacetEntities.cs. I implemented
+  this cross-reference entity to allow the indexing worker to properly link Product Facet Sets to their resolved
+  Products.
+  2. Missing ProductQueryExtensions: The modern architecture introduced ProfileQueryExtensions for Company Profile
+  filtering, but the equivalent logic for Products (Entity.Product.Get with FacetFilter inputs in legacy) wasn't ported.
+  I created backend/Data/Company/ProductQueryExtensions.cs to handle EF Core LINQ query generation for Product Facet
+  filtering (IQueryable<Product> Get()).
+  3. Namespace & Type Collisions:
+      • The Product Facet Cache objects inside LegacyCache were being referenced with an incorrect nested namespace
+      (BizSrt.Api.Data.Cache.Company.Product instead of BizSrt.Api.Data.Cache.Product).
+      • The LegacyCache.Dictionary.Get<T> method clashed with BizSrt.Model.Product.ProductType because it expected the
+      parent BizSrt.Model.ProductType (which inherits from DictionaryItem<short>). I explicitly forced global::BizSrt.
+      Model.ProductType resolution.
+      • Fixed an instantiation bug in LegacyCache where it tried to instantiate BizSrt.Api.Data.Cache.Location.
+      StreetNamesCache instead of BizSrt.Data.StreetNamesCache.
+  4. Missing HTML Stripper Method: Legacy's BizSrt.Foundation.Text.HtmlToText() did not exist in the modern foundation
+  structure. Instead of calling a missing method, I switched the facet resolution logic for the Status enum to natively
+  use statusEnum.ToString().
+
+  I ran dotnet build and it completed successfully with 0 errors. Let me know if you'd like me to commit these fixes or
+  if there is anything else you'd like to dive into!
+
 legacy_indexer_porting_plan.md
-
-
 
 make detailed updates to documentation about existing namespaces and their purpose, importance of following existing/legacy namespace conventions to avoid collisions and maintaining strict API parity and not inventing new LINQ queries and services and endpoints. We need to create a separate .md file to describe the legacy codebase in its entirety and to track what's been ported/modernized so far. It must be referenced at all times!  

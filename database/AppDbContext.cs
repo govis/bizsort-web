@@ -53,6 +53,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public virtual DbSet<CompanyProductFacetName> CompanyProductFacetNames { get; set; }
     public virtual DbSet<CompanyProductFacetSet> CompanyProductFacetSets { get; set; }
     public virtual DbSet<CompanyProductFacetSetDetail> CompanyProductFacetSetDetails { get; set; }
+    public virtual DbSet<FacetSetCompanyProduct> FacetSetCompanyProducts { get; set; }
 
     public IQueryable<CompanyOfficeId> CompanyOfficeLocation(int location)
     {
