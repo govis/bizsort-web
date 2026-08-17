@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="shadow" filterUnits="userSpaceOnUse">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3" result="shadow"></feGaussianBlur>
+      <feOffset in="shadow" dx="2" dy="2" result="shadow"></feOffset>
+      <feMerge>
+        <feMergeNode in="shadow"></feMergeNode>
+        <feMergeNode in="SourceGraphic"></feMergeNode>
+      </feMerge>
+    </filter>
+  </defs>
+  <polygon filter="url(#shadow)" fill="#FDD836" points="118.8,43.9 118.8,94.6 84.3,94.6"></polygon>
+  <polyline filter="url(#shadow)" fill="#FDD836" points="82.3,94.6 82.3,40.8 118.8,40.8"></polyline>
+  <rect filter="url(#shadow)" fill="#4DAF4E" x="59.7" y="41.1" width="16.2" height="53.6"></rect>
+  <path filter="url(#shadow)" fill="#38A4DD" d="M54.7,68c0,14.9-13.2,26.7-29.3,26.7c0-26.9,0-26.7,0-53.6C41.4,41.1,54.7,53.1,54.7,68z"></path>
+  <rect filter="url(#shadow)" fill="#38A4DD" x="9.2" y="4.1" width="16.2" height="90.6"></rect>
+  <text fill="#fff" x="6" y="128" textLength="120" style="font-size:34px;font-family:Times New Roman,Times,serif">SORT</text>
+</svg>

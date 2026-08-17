@@ -1,0 +1,194 @@
+---
+import { ViewTransitions } from 'astro:transitions';
+
+interface Props {
+	title: string;
+	description?: string;
+}
+
+const { title, description = 'BizSort - Business Directory' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content={description} />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/png" href="/favicon.png" />
+		<title>{title}</title>
+		<ViewTransitions />
+		
+		<style is:global>
+			:root {
+				--wa-font-sans: 'Roboto', 'Noto', sans-serif;
+			}
+			body {
+				margin: 0;
+				font-family: var(--wa-font-sans);
+				min-height: 100vh;
+				-webkit-font-smoothing: antialiased;
+				background-color: #f5f5f5;
+			}
+
+			/* Loading Animation Overlay */
+			#global-loader {
+				position: fixed;
+				top: 0;
+				left: 0;
+				width: 100vw;
+				height: 100vh;
+				background-color: #E0E0E0;
+				z-index: 9999;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				transition: opacity 0.5s ease-out, visibility 0.5s ease-out, background-color 0.5s ease-out;
+			}
+
+			/* When the page loads, hide the loader */
+			html.is-loaded #global-loader {
+				opacity: 0;
+				visibility: hidden;
+			}
+
+			/* Default gray colors while loading */
+			#global-loader .biz { fill: #BDBDBD; transition: fill 0.5s ease-out; }
+			#global-loader .sort { fill: #757575; transition: fill 0.5s ease-out; }
+
+			/* Reveal full colors just before fading out */
+			html.is-revealing #global-loader .biz-yellow { fill: #FDD836; }
+			html.is-revealing #global-loader .biz-green { fill: #4DAF4E; }
+			html.is-revealing #global-loader .biz-blue { fill: #38A4DD; }
+			html.is-revealing #global-loader .sort { fill: #fff; }
+			html.is-revealing #global-loader { background-color: transparent; }
+
+			/* ========================================= */
+			/* EXPLICIT VIEW TRANSITIONS (Manual Parity) */
+			/* ========================================= */
+
+			@keyframes slide-from-right {
+				from { transform: translateX(100%); }
+				to { transform: none; }
+			}
+			@keyframes slide-to-left {
+				from { transform: none; }
+				to { transform: translateX(-100%); }
+			}
+			@keyframes slide-from-left {
+				from { transform: translateX(-100%); }
+				to { transform: none; }
+			}
+			@keyframes slide-to-right {
+				from { transform: none; }
+				to { transform: translateX(100%); }
+			}
+			@keyframes fade-in {
+				from { opacity: 0; }
+				to { opacity: 1; }
+			}
+			@keyframes fade-out {
+				from { opacity: 1; }
+				to { opacity: 0; }
+			}
+
+			/* FORWARD TRANSITION */
+			html[data-app-transition="forward"]::view-transition-old(root) {
+				animation: slide-to-left 400ms cubic-bezier(0.4, 0, 0.2, 1) both;
+			}
+			html[data-app-transition="forward"]::view-transition-new(root) {
+				animation: slide-from-right 400ms cubic-bezier(0.4, 0, 0.2, 1) both;
+			}
+
+			/* BACK TRANSITION */
+			html[data-app-transition="back"]::view-transition-old(root) {
+				animation: slide-to-right 400ms cubic-bezier(0.4, 0, 0.2, 1) both;
+			}
+			html[data-app-transition="back"]::view-transition-new(root) {
+				animation: slide-from-left 400ms cubic-bezier(0.4, 0, 0.2, 1) both;
+			}
+
+			/* ENTRY / FADE TRANSITION */
+			html[data-app-transition="entry"]::view-transition-old(root) {
+				animation: fade-out 400ms ease-in both;
+			}
+			html[data-app-transition="entry"]::view-transition-new(root) {
+				animation: fade-in 400ms ease-in both;
+			}
+		</style>
+	</head>
+	<body>
+		<!-- Legacy SVG Loader -->
+		<div id="global-loader">
+			<svg viewBox="0 0 128 128" class="biz-sort" style="width:100px;height:100px;">
+				<defs>
+					<filter id="shadow" filterUnits="userSpaceOnUse">
+						<feGaussianBlur in="SourceAlpha" stdDeviation="3" result="shadow"></feGaussianBlur>
+						<feOffset in="shadow" dx="2" dy="2" result="shadow"></feOffset>
+						<feMerge>
+							<feMergeNode in="shadow"></feMergeNode>
+							<feMergeNode in="SourceGraphic"></feMergeNode>
+						</feMerge>
+					</filter>
+				</defs>
+				<polygon class="biz biz-yellow" filter="url(#shadow)" points="118.8,43.9 118.8,94.6 84.3,94.6"></polygon>
+				<polyline class="biz biz-yellow" filter="url(#shadow)" points="82.3,94.6 82.3,40.8 118.8,40.8"></polyline>
+				<rect class="biz biz-green" filter="url(#shadow)" x="59.7" y="41.1" width="16.2" height="53.6"></rect>
+				<path class="biz biz-blue" filter="url(#shadow)" d="M54.7,68c0,14.9-13.2,26.7-29.3,26.7c0-26.9,0-26.7,0-53.6C41.4,41.1,54.7,53.1,54.7,68z"></path>
+				<rect class="biz biz-blue" filter="url(#shadow)" x="9.2" y="4.1" width="16.2" height="90.6"></rect>
+				<text class="sort" x="6" y="128" textLength="120" style="font-size:34px;font-family:Times New Roman,Times,serif">SORT</text>
+			</svg>
+		</div>
+
+		<!-- Astro's default transition applies when no manual override is provided -->
+		<main transition:animate="slide">
+			<slot />
+		</main>
+
+		<script>
+			import { navigate } from 'astro:transitions/client';
+			import { setBasePath } from '@awesome.me/webawesome/dist/utilities/base-path.js';
+			
+			// Configure WebAwesome before any components load
+			setBasePath('https://cdn.jsdelivr.net/npm/@awesome.me/webawesome@3.8.0/dist/');
+
+			// SPA Navigation listener (replaces Shell.go history.pushState)
+			window.addEventListener('app-navigate', (e: any) => {
+				const url = e.detail.url;
+				const transition = e.detail.options?.transition?.toLowerCase();
+
+				// Mixed Implementation: If a manual transition is provided (e.g. "Forward"),
+				// we tag the HTML so our CSS keyframes override Astro's default.
+				// If not provided, we remove the attribute and Astro's automatic slide/fade takes over.
+				if (transition) {
+					document.documentElement.setAttribute('data-app-transition', transition);
+				} else {
+					document.documentElement.removeAttribute('data-app-transition');
+				}
+
+				navigate(url);
+			});
+
+			// Handle the SVG animation transitions
+			document.addEventListener('astro:page-load', () => {
+				const html = document.documentElement;
+				
+				// Transition 1: Colorize the logo
+				html.classList.add('is-revealing');
+				
+				// Transition 2: Fade out the overlay
+				setTimeout(() => {
+					html.classList.add('is-loaded');
+					html.classList.remove('is-revealing');
+				}, 400);
+			});
+			
+			// When SPA navigating, show loader again if it takes a while
+			document.addEventListener('astro:before-preparation', () => {
+				const html = document.documentElement;
+				html.classList.remove('is-loaded');
+				html.classList.remove('is-revealing');
+			});
+		</script>
+	</body>
+</html>

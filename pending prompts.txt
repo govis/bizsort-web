@@ -5,6 +5,8 @@ check how IndexCompanyAsync in backend\Process\Company.cs creates "Category" fac
 can you double check these newly added code members for any deviations from legacy code base
 The backend build is now completely fixed and passing!
 
+given that both Astro and Nuxt are powered by Vite, can you double-check frontend\SPA_MODERNIZATION.md and frontend specific notes in IMPLEMENTATION.md,  LEGACY_SPA_ARCHITECTURE.md, MIGRATION_GUIDE.md to see if there's anything we can't do with Astro and might need Nuxt for?
+
   Here is a summary of what was causing the compilation failures and the steps I took to resolve them:
 
   1. Missing Entity Mapping: The FacetSetCompanyProducts DbSet and its corresponding entity class

@@ -1,39 +1,41 @@
-# BizSort Web - TODOs & Future Tasks
+# BizSort Web - Astro Modernization TODOs
 
-This document tracks the remaining tasks for porting the legacy BizSort application to the modern Next.js + Lit + Web Awesome stack.
+This document tracks the tasks required to fully transition the frontend from Next.js (React) to **Astro**, taking full advantage of Astro's native HTML/Web Component support to drop React wrappers entirely.
 
-## 1. High Priority: Featured Sections (Profile Page)
+## 1. Astro Migration Core (In Progress)
+- [x] **Initialize Astro**: Set up `frontend-astro` with Vite config, `process.env` shims, and Lit support.
+- [x] **Un-wrap Profile Page**: Restored `<company-header-layout>` inside `frontend/src/company/profile.ts` so the Web Component manages its own layout shell again.
+- [x] **Astro Profile Route**: Created `src/pages/company/[id].astro` to fetch data server-side and render `<company-profile>` natively without React.
+- [ ] **Migrate Middleware**: Port the Next.js `middleware.ts` logic (legacy `?t=` token redirection) to Astro's `src/middleware.ts`.
+- [ ] **Un-wrap Remaining Pages**: Remove React wrappers (`bundle.tsx`) and reintegrate layout logic into:
+  - `company/home.ts`
+  - `company/search.ts`
+  - `product/home.ts`
+  - `product/search.ts`
+- [ ] **Astro Routes**: Create corresponding `.astro` routes for the above pages in `src/pages/`.
+- [ ] **SPA Routing (ViewTransitions)**: Add `<ViewTransitions />` to Astro layouts and update `Navigation.go()` in `frontend/src/navigation.ts` to use Astro's `navigate()` API for soft page transitions.
+- [ ] **Cleanup**: Delete Next.js specific files (`frontend/src/app/`, `bundle.tsx`, `next.config.ts`, etc.) and move `frontend/src` directly into `frontend-astro`.
+
+## 2. Featured Sections (Profile Page)
 The core profile page is ported, but the following featured sections need to be implemented using existing backend endpoints:
-- **Product Slider**: Port the featured products carousel.
-- **Affiliations Slider**: Port the company affiliations carousel.
-- **Communities Slider**: Port the company communities carousel.
+- [ ] **Product Slider**: Port the featured products carousel.
+- [ ] **Affiliations Slider**: Port the company affiliations carousel.
+- [ ] **Communities Slider**: Port the company communities carousel.
 
-## 2. Header & Search Enhancements
-- ~~**Condensing Header**: Implement the legacy scroll-condensing behavior in `company-header-layout` (where the logo dynamically resizes and hides when the user scrolls down).~~ ✅ (Completed)
-- ~~**Location-Aware Category Search**: Update the `search-category-menu` stub to support "in [city]" and "near [postal code]" utilizing geolocation data, matching the legacy functionality.~~ ✅ (Completed)
-- **Refactor `reflectToken` (Global Data Flow)**: We need to modify/refactor the `reflectToken` logic across the board (including `CategoryInputViewModel` and `LocationInputViewModel`). Instead of pulling from a global token, components must be refactored to read these values dynamically from Next.js `params` / `searchParams` passed down as React props from the Server Components.
-- ~~**Implement `Validateable` Rules for Location Input**~~ ✅ (Completed): The `LocationInputViewModel` has ported its `Validateable` rules, including calling `_geoinput.validate()` and `_geoinput.resolve()` to translate Google Places into database IDs.
+## 3. Header & Search Enhancements
+- [x] **Condensing Header**: Implemented legacy scroll-condensing behavior.
+- [x] **Location-Aware Category Search**: `search-category-menu` stub updated.
+- [ ] **Refactor `reflectToken` (Global Data Flow)**: Components must dynamically read URL parameters instead of relying on global tokens.
+- [x] **Implement `Validateable` Rules for Location Input**: `LocationInputViewModel` ported.
 
-## 3. Global Components (App Shell)
-- **Implement `message-toast`**: Port the legacy global toast notification system into a client component wrapper rendered in the Root Layout.
-- **Implement `signin-form`**: Port the universal sign-in modal/form into a client component wrapper rendered in the Root Layout.
-
-## 4. SEO Metadata (Advanced)
-- We have basic Next.js metadata, but we need to port the extensive **JSON-LD** schema, breadcrumbs, and canonical URLs that the legacy app generated for rich search engine indexing.
+## 4. Global Components (App Shell)
+- [ ] **Implement `message-toast`**: Port the legacy global toast notification system into a client component wrapper rendered in the Astro Layout.
+- [ ] **Implement `signin-form`**: Port the universal sign-in modal/form.
 
 ## 5. Remaining Legacy Pages
-Currently, only the main `profile` and `home` pages are ported. The Next.js App Router (Nested Layouts) architecture is now fully established, replacing the legacy `web-main.ts` routes. The `frontend/src/company/` directory needs components for the following legacy company pages:
-- `articles`
-- `feed`
-- ~~`home` & SPA Architecture Modernization~~ ✅ (Completed)
-- `index`
-- `job` & `jobs`
-- `marketplace`
-- `news`
-- `product` & `products`
-- `project` & `projects`
-- `promotions`
-- `search`
+Once the Astro core is established, we need to port the remaining legacy pages to Lit/Astro:
+- `articles`, `feed`, `job`, `jobs`, `marketplace`, `news`, `product`, `products`, `project`, `projects`, `promotions`, `search`.
 
-## 6. Mock Data / Database Validation
-- Ensure all new components properly handle empty states if the live database (SQL Server instance) doesn't have data for a specific feature.
+## 6. SEO Metadata & JSON-LD
+- [x] Basic dynamic SEO injection via `.astro` frontmatter.
+- [ ] Full JSON-LD schema generation for companies and products server-side.

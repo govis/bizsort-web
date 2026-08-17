@@ -1,0 +1,44 @@
+---
+// src/pages/company/[id].astro
+// ALL CODE IN THIS FENCE RUNS EXCLUSIVELY ON THE SERVER (NODE.JS)
+
+import Layout from '../../layouts/Layout.astro';
+import { view } from '../../service/company';
+
+const { id } = Astro.params;
+const companyId = parseInt(id as string, 10);
+
+// We bypass SSL for the local .NET backend during SSR
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
+// 1. Fetch data on the server using the unified service helper!
+let company: any = null;
+try {
+  company = await view(companyId);
+} catch (err) {
+  console.error("Failed to fetch company", err);
+}
+
+// 2. Compute SEO properties Server-Side
+const title = company?.category 
+  ? `${company.name} - ${company.category.name} | BizSort (Astro)`
+  : `${company?.name || 'Company'} | BizSort (Astro)`;
+
+const description = company?.text || undefined;
+
+// 3. Serialize the complex object into a string for the HTML attribute
+const companyJson = JSON.stringify(company || {});
+---
+
+<Layout title={title} description={description}>
+  <div style="background: #111827; color: white; padding: 1rem 2rem; text-align: center;">
+    🚀 Rendered with Astro (Zero React Wrappers)
+  </div>
+
+  <company-profile company={companyJson}></company-profile>
+
+  <script>
+    // Import the real component!
+    import '../../company/profile.ts';
+  </script>
+</Layout>
