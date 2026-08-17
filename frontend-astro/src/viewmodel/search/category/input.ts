@@ -1,5 +1,5 @@
-import { IViewAdapter, Validateable, ViewModel } from '../../../viewmodel'
-import { IdName, Autocomplete } from '../../../model/foundation'
+import { type IViewAdapter, Validateable, ViewModel } from '../../../viewmodel'
+import type { IdName, Autocomplete } from '../../../model/foundation'
 import { autocomplete as fetchCategories } from '../../../service/category'
 import { Autocomplete as AutocompleteViewModel } from '../../group/autocomplete'
 

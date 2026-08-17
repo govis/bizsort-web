@@ -1,8 +1,8 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { IdName, Autocomplete as AutocompleteModel } from '../../model/foundation';
+import type { IdName, Autocomplete as AutocompleteModel } from '../../model/foundation';
 import { Autocomplete as AutocompleteViewModel } from '../../viewmodel/group/autocomplete';
-import { IViewAdapter } from '../../viewmodel';
+import type { IViewAdapter } from '../../viewmodel';
 
 import '@awesome.me/webawesome/dist/components/popup/popup.js';
 import '@awesome.me/webawesome/dist/components/dropdown-item/dropdown-item.js';
@@ -106,3 +106,4 @@ export class GroupAutocomplete extends LitElement implements IViewAdapter {
         `;
     }
 }
+

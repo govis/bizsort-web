@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
-import { IdName, Autocomplete } from '../../../model/foundation';
+import type { IdName, Autocomplete } from '../../../model/foundation';
 import { autocomplete as fetchCategories } from '../../../service/category';
 
 import '@awesome.me/webawesome/dist/components/input/input.js';
@@ -11,7 +11,7 @@ import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import '@awesome.me/webawesome/dist/components/popup/popup.js';
 import type WaInput from '@awesome.me/webawesome/dist/components/input/input.js';
 import { Input as CategoryInputViewModel } from '../../../viewmodel/search/category/input';
-import { IViewAdapter } from '../../../viewmodel';
+import type { IViewAdapter } from '../../../viewmodel';
 import type WaDropdown from '@awesome.me/webawesome/dist/components/dropdown/dropdown.js';
 import '../../group/autocomplete';
 
@@ -221,7 +221,7 @@ export class SearchCategoryInput extends LitElement implements IViewAdapter {
             ${this.selected && this.selected.id ? html`
                 <wa-tag 
                     variant="neutral" 
-                    size="medium" 
+                    size="m" 
                     with-remove 
                     @wa-remove=${this.handleClear}
                 >
@@ -231,3 +231,5 @@ export class SearchCategoryInput extends LitElement implements IViewAdapter {
         `;
     }
 }
+
+

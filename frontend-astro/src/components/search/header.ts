@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { SearchHome$ } from '../../viewmodel/search/home';
-import { IViewAdapter } from '../../viewmodel';
+import type { IViewAdapter } from '../../viewmodel';
 import { Navigation, Company, Product } from '../../navigation';
 
 import './category/input';
@@ -127,7 +127,7 @@ export class SearchHeader extends LitElement implements IViewAdapter {
     }
 
     .geo-action {
-      /* wa-button defaults to size="medium" which is exactly 40px tall/wide when used as an icon button */
+      /* wa-button defaults to size="m" which is exactly 40px tall/wide when used as an icon button */
       margin-right: 0.25rem;
       margin-bottom: 12px; /* Match input offset */
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
@@ -289,7 +289,7 @@ export class SearchHeader extends LitElement implements IViewAdapter {
             @geomodeChange=${(e: CustomEvent) => this._geoMode = e.detail.value}
           ></search-location-input>
           
-          <wa-button class="search-button" is-icon-button pill variant="brand" size="large" @click=${this._handleSearch}>
+          <wa-button class="search-button" is-icon-button pill variant="brand" size="l" @click=${this._handleSearch}>
             <wa-icon name="search"></wa-icon>
           </wa-button>
         </div>
@@ -297,3 +297,5 @@ export class SearchHeader extends LitElement implements IViewAdapter {
     `;
   }
 }
+
+

@@ -1,7 +1,9 @@
 import { Semantic } from '../model/foundation';
 import type { SliceOutput, SearchItem } from '../components/types.js';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
+const API_BASE = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_URL) 
+  || (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.PUBLIC_API_URL)
+  || 'https://localhost:5001';
 
 /**
  * Fetches a list of featured product entity IDs.

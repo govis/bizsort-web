@@ -1,5 +1,6 @@
 ---
-import { ViewTransitions } from 'astro:transitions';
+import { ClientRouter } from 'astro:transitions';
+import '@awesome.me/webawesome/dist/styles/themes/default.css';
 
 interface Props {
 	title: string;
@@ -15,13 +16,25 @@ const { title, description = 'BizSort - Business Directory' } = Astro.props;
 		<meta charset="UTF-8" />
 		<meta name="description" content={description} />
 		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/png" href="/favicon.png" />
+		<link rel="icon" type="image/x-icon" href="/favicon.ico" />
 		<title>{title}</title>
-		<ViewTransitions />
+		<ClientRouter />
 		
 		<style is:global>
 			:root {
 				--wa-font-sans: 'Roboto', 'Noto', sans-serif;
+				--background: #ffffff;
+				--foreground: #171717;
+				--primary-theme-color: #448aff;
+				--text-color-on-primary: #fff;
+				--header-color2: #3367d6;
+				--header-icon-color: #82b1ff;
+				--color-accent1: #e040fb;
+				--color-accent2: #03a9f4;
+				--color-red-hot: #d50000;
+				--page-text-color: #616161;
+				--page-accent-color: #37474f;
+				--page-background-color: #fafafa;
 			}
 			body {
 				margin: 0;
@@ -148,9 +161,11 @@ const { title, description = 'BizSort - Business Directory' } = Astro.props;
 		<script>
 			import { navigate } from 'astro:transitions/client';
 			import { setBasePath } from '@awesome.me/webawesome/dist/utilities/base-path.js';
+			import { registerIcons } from '../icons';
 			
 			// Configure WebAwesome before any components load
 			setBasePath('https://cdn.jsdelivr.net/npm/@awesome.me/webawesome@3.8.0/dist/');
+			registerIcons();
 
 			// SPA Navigation listener (replaces Shell.go history.pushState)
 			window.addEventListener('app-navigate', (e: any) => {

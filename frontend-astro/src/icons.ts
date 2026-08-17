@@ -4,11 +4,13 @@ export async function registerIcons() {
 
     // Register the custom bizsrt legacy icon library
     registerIconLibrary('bizsrt', {
-        resolver: name => `/images/bizsrt/${name}.svg`
+        resolver: name => `/images/bizsrt/${name}.svg`,
+        mutator: svg => svg.setAttribute('fill', 'currentColor')
     });
 
     // Register the custom flags legacy icon library
     registerIconLibrary('flags', {
-        resolver: name => `/images/flags/${name}.svg`
+        resolver: name => `/images/flags/${name}.svg`,
+        mutator: svg => svg.setAttribute('fill', 'currentColor')
     });
 }

@@ -1,7 +1,7 @@
 /// <reference types="google.maps" />
-import { LitElement, html, css, PropertyValues } from 'lit';
+import { LitElement, html, css, type PropertyValues } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
-import { IdName, Autocomplete } from '../../../model/foundation';
+import type { IdName, Autocomplete } from '../../../model/foundation';
 import { autocomplete as fetchLocations } from '../../../service/location';
 import { setOptions, importLibrary } from '@googlemaps/js-api-loader';
 
@@ -13,7 +13,7 @@ import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import '@awesome.me/webawesome/dist/components/popup/popup.js';
 import type WaInput from '@awesome.me/webawesome/dist/components/input/input.js';
 import { Input as LocationInputViewModel } from '../../../viewmodel/search/location/input';
-import { IViewAdapter } from '../../../viewmodel';
+import type { IViewAdapter } from '../../../viewmodel';
 import type WaDropdown from '@awesome.me/webawesome/dist/components/dropdown/dropdown.js';
 import '../../group/autocomplete';
 
@@ -262,3 +262,4 @@ export class SearchLocationInput extends LitElement implements IViewAdapter {
         `;
     }
 }
+

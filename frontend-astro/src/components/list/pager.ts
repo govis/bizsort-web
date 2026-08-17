@@ -217,7 +217,7 @@ export class ListPageSelect extends LitElement {
         if (!this.pager || !this.pager.pageSizes || this.pager.pageSizes.length === 0) return html``;
         
         return html`
-            <wa-select size="medium" .value=${this.pager.pageSize.toString()} @change=${(e: any) => { 
+            <wa-select size="m" .value=${this.pager.pageSize.toString()} @change=${(e: any) => { 
                 const newSize = Number(e.target.value);
                 console.log('[ListPageSelect] Dropdown changed. Setting new page size:', newSize);
                 this.pager.pageSize = newSize; 
@@ -232,3 +232,4 @@ export class ListPageSelect extends LitElement {
 if (!customElements.get('list-page-select')) {
     customElements.define('list-page-select', ListPageSelect);
 }
+

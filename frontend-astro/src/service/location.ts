@@ -1,6 +1,9 @@
-import { IdName, Autocomplete, Node, ResolvedLocation, SubType } from '../model/foundation';
+import type { IdName, Autocomplete, Node, SubType } from '../model/foundation';
+import { ResolvedLocation } from '../model/foundation';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
+const API_BASE = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_URL) 
+  || (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.PUBLIC_API_URL)
+  || 'https://localhost:5001';
 
 export async function autocomplete(parent: number, name: string, scope?: IdName): Promise<Autocomplete[]> {
     const scopeParam = scope ? `&scope=${JSON.stringify({ ...scope, name: encodeURIComponent(scope.name) })}` : '';

@@ -1,4 +1,4 @@
-import { IViewAdapter, Validateable, ViewModel } from '../../viewmodel';
+import { type IViewAdapter, Validateable, ViewModel } from '../../viewmodel';
 import { Input as CategoryInput } from './category/input';
 import { Input as LocationInput } from './location/input';
 
@@ -100,3 +100,4 @@ export class SearchHome$ extends ViewModel {
         }
     }
 }
+

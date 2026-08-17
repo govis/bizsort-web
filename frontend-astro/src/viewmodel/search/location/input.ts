@@ -1,4 +1,4 @@
-import { ErrorInfo, IViewAdapter, Validateable, ViewModel, ErrorMessageType } from '../../../viewmodel'
+import { ErrorInfo, type IViewAdapter, Validateable, ViewModel, ErrorMessageType } from '../../../viewmodel'
 import { ResolvedLocation } from '../../../model/foundation'
 
 export interface IInput extends ViewModel {
@@ -10,7 +10,7 @@ export interface IInput extends ViewModel {
 import { Autocomplete as AutocompleteViewModel } from '../../group/autocomplete'
 import { autocomplete as fetchLocations, get as getLocation } from '../../../service/location'
 import { Location as LocationSettings } from '../../../settings'
-import { IdName } from '../../../model/foundation'
+import type { IdName } from '../../../model/foundation'
 
 export class Input extends ViewModel implements IInput {
     public initialized: boolean = false;

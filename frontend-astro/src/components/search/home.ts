@@ -10,7 +10,7 @@ import './category/input';
 import './location/input';
 
 import { SearchHome$ } from '../../viewmodel/search/home';
-import { IViewAdapter } from '../../viewmodel';
+import type { IViewAdapter } from '../../viewmodel';
 import { SearchCategoryInput } from './category/input';
 import { SearchLocationInput } from './location/input';
 import { Navigation, Company, Product } from '../../navigation';
@@ -275,7 +275,7 @@ export class SearchHome extends LitElement implements IViewAdapter {
     }
 
     .geo-action {
-      /* wa-button defaults to size="medium" which is exactly 40px tall/wide when used as an icon button */
+      /* wa-button defaults to size="m" which is exactly 40px tall/wide when used as an icon button */
       margin-right: 0.25rem;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
       border-radius: var(--wa-border-radius-circle, 50%);
@@ -390,7 +390,7 @@ export class SearchHome extends LitElement implements IViewAdapter {
         <slot></slot>
 
         <div class="search-fab">
-          <wa-button variant="brand" size="large" is-icon-button pill @click="${this._search}">
+          <wa-button variant="brand" size="l" is-icon-button pill @click="${this._search}">
             <wa-icon name="search" style="font-size: 1.2rem;"></wa-icon>
           </wa-button>
         </div>
@@ -402,3 +402,5 @@ export class SearchHome extends LitElement implements IViewAdapter {
 if (!customElements.get('search-home')) {
   customElements.define('search-home', SearchHome);
 }
+
+

@@ -1,6 +1,6 @@
 import { List, Semantic } from '../../model/foundation';
 import type { EntityId } from '../../model/foundation';
-import { ViewModel, IViewAdapter } from '../../viewmodel';
+import { ViewModel, type IViewAdapter } from '../../viewmodel';
 import { Event } from '../../global';
 import type { Constructor, IEventHandler, Action } from '../../global';
 
@@ -651,3 +651,4 @@ export abstract class Searchview extends View {
         }
     }
 }
+

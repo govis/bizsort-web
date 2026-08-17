@@ -37,11 +37,11 @@ WebAwesome v3 dropped the framework prefix for standard DOM events on form contr
 
 ## 5. Styling & CSS Variables (Strict Rules)
 
-- WebAwesome manages interaction states (hover, active, focus) heavily using `color-mix()` on its internal CSS variables.
+- WebAwesome manages interaction states (hover, active, focus) heavily using a `color-mix()` based state engine on its internal CSS variables (which may be pre-compiled in distribution bundles, but the architectural constraint remains).
 - **NEVER** manually target internal shadow parts (like `::part(base)`) to overwrite core properties like `background-color`, `color`, `width`, `height`, `padding`, or `border-radius`. 
-  - Doing this for colors permanently breaks the component's interactive states. Use variables like `--wa-color-neutral-fill-loud` instead of `background-color`.
+  - Doing this for colors permanently paints over the component's interactive states, completely destroying the hover and active effects.
   - Doing this for sizing or radius breaks the component's internal geometry and padding logic.
-- **ALWAYS** inspect the WebAwesome source code for the specific internal CSS variables (e.g., `--wa-color-neutral-fill-loud`, `--wa-color-fill-normal`) and override those variables on the host element or via `::slotted()` rules to ensure state logic remains intact.
+- **ALWAYS "PIPE" YOUR VARIABLES:** Inspect the WebAwesome source code for the specific internal CSS variables (e.g., `--wa-color-brand-fill-loud`, `--wa-color-fill-normal`) and "pipe" your custom colors into those variables on the host element or via `::slotted()` rules. WebAwesome will then take your base color and use its internal state engine to automatically generate the perfect hover/active layers for you.
 
 ## 6. `<wa-tag>` and Removable/Closable Attributes
 
@@ -90,3 +90,15 @@ wa-input {
 
 - **Track Width Units:** When customizing the active tab indicator line thickness (e.g., `--track-width`), **always use `rem` units** (e.g., `--track-width: 0.15rem;`) instead of `px` (like `2px`). WebAwesome's internal JavaScript engine calculates the dynamic active indicator width on render. Passing raw pixel strings can break its internal parser, causing it to fall back to `1px` after the initial render cycle.
 - **Cascading Variables:** You do not need `!important` or hacky overrides for variables like `--safe-track-width`. Apply variables directly to the `<wa-tab-group>` host element, and they will cascade into the shadow DOM correctly.
+
+## 12. Custom Icon Libraries and `currentColor`
+
+- In WebAwesome v3.11+, when registering custom SVG icon libraries via `registerIconLibrary()`, custom SVGs that lack a hardcoded `fill` attribute will default to black (browser default), rather than automatically inheriting the host element's text color.
+- To ensure your custom icons behave like native system icons and inherit CSS `color`, you **MUST** provide a `mutator` callback during registration to explicitly inject `fill="currentColor"`.
+- **Example:**
+```typescript
+registerIconLibrary('my-icons', {
+    resolver: name => \`/images/\${name}.svg\`,
+    mutator: svg => svg.setAttribute('fill', 'currentColor')
+});
+```
