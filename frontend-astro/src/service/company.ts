@@ -50,6 +50,36 @@ export async function getFeatured(index: number, length: number, category: numbe
 }
 
 /**
+ * Fetches affiliations for a specific company.
+ * Matches legacy: /api/company/profile/getAffiliations
+ */
+export async function getAffiliations(companyId: number, index: number = 0, length: number = 10): Promise<SliceOutput<SearchItem>> {
+  const sliceInput = JSON.stringify({ index, length });
+  const response = await fetch(`${API_BASE}/api/company/profile/getAffiliations?company=${companyId}&sliceInput=${sliceInput}`);
+  
+  if (!response.ok) {
+    throw new Error(`Failed to fetch affiliations: ${response.statusText}`);
+  }
+  
+  return await response.json();
+}
+
+/**
+ * Fetches communities for a specific company.
+ * Matches legacy: /api/company/profile/getCommunities
+ */
+export async function getCommunities(companyId: number, index: number = 0, length: number = 10): Promise<any> {
+  const sliceInput = JSON.stringify({ index, length });
+  const response = await fetch(`${API_BASE}/api/company/profile/getCommunities?company=${companyId}&sliceInput=${sliceInput}`);
+  
+  if (!response.ok) {
+    throw new Error(`Failed to fetch communities: ${response.statusText}`);
+  }
+  
+  return await response.json();
+}
+
+/**
  * Ported legacy toPreview method.
  * Hydrates an array of SearchItems (which just contain IDs) into full Preview models.
  * Legacy backend method: Data.Company.Profile.ToPreview

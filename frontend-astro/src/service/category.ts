@@ -4,8 +4,9 @@ const API_BASE = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_
   || (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.PUBLIC_API_URL)
   || 'https://localhost:5001';
 
-export async function autocomplete(parent: number, name: string, scope?: IdName): Promise<Autocomplete[]> {
-    const scopeParam = scope ? `&scope=${JSON.stringify({ ...scope, name: encodeURIComponent(scope.name) })}` : '';
+export async function autocomplete(parent: number, name: string, scope?: IdName): Promise<any> {
+  try {
+    const scopeParam = scope ? `&scope=${JSON.stringify(scope)}` : '';
     const response = await fetch(`${API_BASE}/api/category/autocomplete?parent=${parent}&name=${encodeURIComponent(name)}${scopeParam}`);
     
     if (!response.ok) {
@@ -29,7 +30,7 @@ export async function get(category: number, type?: number): Promise<any> {
 }
 
 export async function getPath(category: number, scope?: IdName): Promise<IdName[]> {
-    const scopeParam = scope ? `&scope=${JSON.stringify({ ...scope, name: encodeURIComponent(scope.name) })}` : '';
+    const scopeParam = scope ? `&scope=${JSON.stringify(scope)}` : '';
     const response = await fetch(`${API_BASE}/api/category/getPath?category=${category}${scopeParam}`);
     
     if (!response.ok) {

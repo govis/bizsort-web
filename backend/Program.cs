@@ -60,6 +60,7 @@ app.MapCategoryEndpoints();
 app.MapLocationEndpoints();
 app.MapImageEndpoints();
 BizSrt.Api.Service.Product.ProductEndpoints.MapProductEndpoints(app);
+BizSrt.Api.Service.Community.CommunityEndpoints.MapCommunityEndpoints(app);
 
 app.MapGrpcService<BizSrt.Api.Grpc.CompanyGrpcService>();
 app.Run();

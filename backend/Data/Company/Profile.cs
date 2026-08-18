@@ -31,23 +31,10 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
 {
     public async Task<Profile?> ViewAsync(int id)
     {
-        var company = await dbContext.CompanyProfiles
-            .Include(c => c.Offices)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(c => c.Id == id);
+        var cachedCompany = BizSrt.Api.Data.Cache.LegacyCache.CompanyProfiles[id];
+        if (cachedCompany is null) return null;
 
-        if (company is null) return null;
-
-        string? categoryName = null;
-        if (company.Category > 0)
-        {
-            categoryName = await dbContext.Categories
-                .Where(c => c.Id == company.Category)
-                .Select(c => c.Name)
-                .FirstOrDefaultAsync();
-        }
-
-        var offices = company.Offices.OrderBy(o => o.Order).Select(o => new BizSrt.Model.Company.Office
+        var offices = cachedCompany.Offices.OrderBy(o => o.Order).Select(o => new BizSrt.Model.Company.Office
         {
             Id = o.Id,
             Name = o.Name ?? "",
@@ -56,7 +43,7 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
             Fax = o.Fax,
             Location = new BizSrt.Model.Location 
             { 
-                Address = $"{o.StreetNumber} {o.Address1}, {o.PostalCode}".Trim().Trim(','),
+                Address = o.Address.Address,
                 GeoLocation = o.GeoLocation is NetTopologySuite.Geometries.Point p 
                     ? new BizSrt.Model.Geolocation { Lat = p.Y, Lng = p.X } 
                     : null
@@ -65,15 +52,16 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
 
         var profile = new Profile
         {
-            Id = company.Id,
-            Name = company.Name,
-            Email = (company.Options & 1) > 0 ? company.Email : null,
-            WebSite = company.WebSite,
-            RichText = company.RichText is not null ? System.Text.Encoding.UTF8.GetString(company.RichText) : null,
-            Text = company.Text,
-            Category = company.Category > 0 ? new BizSrt.Model.Category { Id = company.Category, Name = categoryName ?? "" } : null,
+            Id = cachedCompany.Id,
+            Name = cachedCompany.Name,
+            Email = cachedCompany.Options.Publish_Email ? cachedCompany.Email : null,
+            WebSite = cachedCompany.WebSite,
+            RichText = cachedCompany.RichText,
+            Text = cachedCompany.Text,
+            Category = cachedCompany.Category > 0 ? BizSrt.Api.Data.Cache.LegacyCache.Categories[cachedCompany.Category].ToModel(BizSrt.Model.Group.DisplayType.Name) : null,
             HeadOffice = offices.Length > 0 ? offices[0] : null,
             Offices = offices,
+            Image = cachedCompany.Image,
             Offerings = new Page_Offerings { View = ProductsView.NoProducts, HideOfferings = false },
             HasAffiliations = await dbContext.CompanyAffiliations.AnyAsync(a => a.From == id || (a.To == id && !a.Pending)),
             HasCommunities = await dbContext.CompanyCommunities.AnyAsync(cc => cc.Company == id)
@@ -603,22 +591,19 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
 
     public async Task<BizSrt.Model.Product.Profile?> GetProductProfileAsync(int companyId, long productId)
     {
-        var cp = await dbContext.CompanyProducts
-            .Include(x => x.ProductNavigation)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Company == companyId && x.Product == productId);
-
-        if (cp is null) return null;
+        await Task.CompletedTask;
+        var cachedProduct = BizSrt.Api.Data.Cache.LegacyCache.CompanyProducts[productId];
+        if (cachedProduct is null || cachedProduct.CompanyId != companyId) return null;
 
         return new BizSrt.Model.Product.Profile
         {
-            Id = cp.Product,
-            Title = cp.ProductNavigation.Title ?? "",
-            RichText = cp.ProductNavigation.RichText,
-            Text = cp.ProductNavigation.Text,
-            WebUrl = cp.ProductNavigation.WebUrl,
-            Status = (BizSrt.Model.Product.Status)cp.ProductNavigation.Status,
-            Updated = cp.ProductNavigation.Updated
+            Id = cachedProduct.Id,
+            Title = cachedProduct.Title,
+            RichText = cachedProduct.RichText,
+            Text = cachedProduct.Text,
+            WebUrl = cachedProduct.WebUrl,
+            Status = (BizSrt.Model.Product.Status)cachedProduct.Status,
+            Updated = cachedProduct.Updated
         };
     }
 
@@ -664,5 +649,96 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
             Status = (BizSrt.Model.Product.Status)cp.ProjectNavigation.Status,
             Updated = cp.ProjectNavigation.Updated
         };
+    }
+    private string FormatAddress(CompanyOffice o)
+    {
+        var parts = new List<string>();
+        string streetName = null;
+        if (o.StreetName.HasValue && o.StreetName.Value > 0)
+        {
+            var cachedStreet = BizSrt.Api.Data.Cache.LegacyCache.StreetNames[o.StreetName.Value];
+            if (cachedStreet != null)
+                streetName = cachedStreet.Name;
+        }
+
+        string city = null;
+        string state = null;
+        string county = null;
+        string country = null;
+
+        if (o.Location > 0)
+        {
+            var loc = BizSrt.Api.Data.Cache.LegacyCache.Locations[o.Location];
+            while (loc != null && loc.Id > 1)
+            {
+                if (loc.Type == BizSrt.Model.LocationType.City) city = loc.Name;
+                else if (loc.Type == BizSrt.Model.LocationType.State) state = loc.Name;
+                else if (loc.Type == BizSrt.Model.LocationType.County) county = loc.Name;
+                else if (loc.Type == BizSrt.Model.LocationType.Country) country = loc.Name;
+                
+                if (loc.ParentKey > 0)
+                    loc = BizSrt.Api.Data.Cache.LegacyCache.Locations[loc.ParentKey] as BizSrt.Api.Data.Cache.Location.CachedLocation;
+                else
+                    loc = null;
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(city))
+        {
+            if (!string.IsNullOrWhiteSpace(streetName))
+            {
+                if (!string.IsNullOrWhiteSpace(o.StreetNumber))
+                {
+                    if (!string.IsNullOrWhiteSpace(o.Address1))
+                    {
+                        if (o.Address1.Length <= 10)
+                            parts.Add($"{o.StreetNumber} {streetName} {o.Address1}");
+                        else
+                            parts.Add($"{o.Address1} {o.StreetNumber} {streetName}");
+                    }
+                    else
+                        parts.Add($"{o.StreetNumber} {streetName}");
+                }
+                else
+                {
+                    if (!string.IsNullOrWhiteSpace(o.Address1))
+                        parts.Add($"{o.Address1} {streetName}");
+                    else
+                        parts.Add(streetName);
+                }
+                parts.Add(city);
+            }
+            else if (!string.IsNullOrWhiteSpace(o.Address1))
+            {
+                parts.Add($"{o.Address1} {city}");
+            }
+            else
+            {
+                parts.Add(city);
+            }
+        }
+        
+        if (!string.IsNullOrWhiteSpace(state))
+        {
+            if (!string.IsNullOrWhiteSpace(county))
+                parts.Add(county);
+            if (!string.IsNullOrWhiteSpace(o.PostalCode))
+                parts.Add($"{state} {o.PostalCode}");
+            else
+                parts.Add(state);
+        }
+        else if (!string.IsNullOrWhiteSpace(county))
+        {
+            if (!string.IsNullOrWhiteSpace(o.PostalCode))
+                parts.Add($"{county} {o.PostalCode}");
+            else
+                parts.Add(county);
+        }
+        else if (!string.IsNullOrWhiteSpace(o.PostalCode))
+        {
+            parts.Add(o.PostalCode);
+        }
+        
+        return string.Join(", ", parts).Trim();
     }
 }

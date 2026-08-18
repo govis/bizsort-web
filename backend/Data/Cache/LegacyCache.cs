@@ -34,6 +34,7 @@ namespace BizSrt.Api.Data.Cache
             CompanyProductFacetSets = new BizSrt.Api.Data.Cache.Product.Facet.SetsCache();
             FeaturedProducts = new BizSrt.Api.Data.Cache.Featured.FeaturedProductsCache();
             Images = new BizSrt.Api.Data.Cache.ImagesCache();
+            Communities = new BizSrt.Api.Data.Cache.Community.CommunitiesCache();
         }
 
         public static AppDbContext GetDbContext()
@@ -61,5 +62,6 @@ namespace BizSrt.Api.Data.Cache
         internal static BizSrt.Api.Data.Cache.ImagesCache Images { get; private set; }
         
         internal static BizSrt.Api.Data.Cache.Location.LocationSettingsCache LocationSettings { get; private set; }
+        internal static BizSrt.Api.Data.Cache.Community.CommunitiesCache Communities { get; private set; }
     }
 }

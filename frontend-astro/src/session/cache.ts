@@ -1,5 +1,6 @@
 export enum SessionCacheType {
   CompanyProfile = 1,
+  CommunityProfile = 2,
   // Other cache types can be added here
 }
 

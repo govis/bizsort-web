@@ -1,6 +1,8 @@
 # Migration Guidelines: Legacy to Lit & Web Awesome
 
-This document outlines the standardized workflow for porting legacy Polymer/Material components to the modernized **Next.js 16 + Lit 3.3 + Web Awesome** stack.
+This document outlines the standardized workflow for porting legacy Polymer/Material components to the modernized **Astro + Lit 3.3 + Web Awesome** stack.
+
+> **CRITICAL NOTE:** Astro is now the sole active frontend development branch and the official target for porting from the legacy website (`C:\Bizsort\legacy\website`). The previous `frontend-nextjs` and `frontend-nuxt` branches were architectural experiments that are now officially shelved.
 
 👉 **For a complete overview of the architectural paradigm shift (from the legacy SPA router to Next.js App Router), please read [SPA_MODERNIZATION.md](file:///C:/Bizsort/bizsort-web/frontend/SPA_MODERNIZATION.md).**
 

@@ -261,7 +261,7 @@ public partial class Community
     public string Name { get; set; } = string.Empty;
     public string? Alias { get; set; }
     public string? Text { get; set; }
-    public byte[]? RichText { get; set; }
+    public string? RichText { get; set; }
     public int? Location { get; set; }
     public string? PostalCode { get; set; }
     public string? StreetNumber { get; set; }

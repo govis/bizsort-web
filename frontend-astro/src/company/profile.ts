@@ -22,6 +22,9 @@ import '../components/layout/card';
 import '../components/menu/page';
 import '../components/search/category/menu';
 import '../components/map/view';
+import '../components/product/slider';
+import '../components/company/slider';
+import '../components/community/slider';
 
 export class CompanyProfile extends LitElement {
   static get properties() {
@@ -59,6 +62,38 @@ export class CompanyProfile extends LitElement {
     return office.name || "Office";
   }
 
+  private _formatAddress(address: any): string {
+    if (!address) return '';
+    if (typeof address === 'string') return address;
+    const props = address.Properties || address;
+    const parts = [];
+    if (props.StreetNumber && props.StreetName) {
+      if (props.Address1) {
+        if (props.Address1.length <= 10) parts.push(`${props.StreetNumber} ${props.StreetName} ${props.Address1}`);
+        else parts.push(`${props.Address1} ${props.StreetNumber} ${props.StreetName}`);
+      } else {
+        parts.push(`${props.StreetNumber} ${props.StreetName}`);
+      }
+    } else if (props.StreetName) {
+      parts.push(props.Address1 ? `${props.Address1} ${props.StreetName}` : props.StreetName);
+    } else if (props.Address1) {
+      parts.push(props.Address1);
+    }
+    
+    if (props.City) parts.push(props.City);
+    
+    let stateZip = '';
+    if (props.State) {
+      stateZip = props.State;
+      if (props.PostalCode) stateZip += ` ${props.PostalCode}`;
+    } else if (props.PostalCode) {
+      stateZip = props.PostalCode;
+    }
+    if (stateZip) parts.push(stateZip);
+    
+    return parts.join(', ');
+  }
+
   private _getOsmMapUrl(office?: Office) {
     if (!office?.location?.geoLocation) return '';
     const { lat, lng } = office.location.geoLocation;
@@ -70,7 +105,7 @@ export class CompanyProfile extends LitElement {
   private _getLogoUrl(): string {
     if (!this.company?.image?.imageId) return '';
     const backendUrl = (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_API_URL) || 'https://localhost:5001';
-    return `${backendUrl}/api/image/get?entity=${this.company.image.entity}&id=${this.company.image.imageId}&w=140&h=140`;
+    return `${backendUrl}/api/image/get?entity=${this.company.image.entity}&id=${this.company.image.imageId}&width=200`;
   }
 
   static styles = css`
@@ -247,27 +282,26 @@ export class CompanyProfile extends LitElement {
     return html`
       <style>
         wa-tab-group {
-          --indicator-color: white;
-          --track-color: transparent;
+          /* Tab group styles */
           width: 100%;
         }
-        wa-tab {
-          color: rgba(255, 255, 255, 0.7);
+        wa-tab-group::part(body) {
+          display: none;
         }
-        wa-tab[active] {
-          color: white;
+        wa-tab {
+          --wa-color-neutral-on-quiet: rgba(255, 255, 255, 0.7);
+          --wa-color-brand-on-quiet: white;
+        }
+        wa-tab-panel {
+          display: none;
         }
       </style>
-      <company-header-layout title-text="${this.company.name}">
-        <div slot="logo" style="width: 100%; height: 100%;">
-          ${logoUrl ? html`
-            <img src="${logoUrl}" alt="${this.company.name} logo" style="width: 100%; height: 100%; object-fit: contain; background-color: white;" />
-          ` : html`
-            <div style="display: flex; align-items: center; justify-content: center; height: 100%;">
-              ${this.company.name.substring(0, 2).toUpperCase()}
-            </div>
-          `}
-        </div>
+      <company-header-layout title-text="${this.company.name}" ?no-image="${!logoUrl}">
+        ${logoUrl ? html`
+          <div slot="logo" style="width: 100%; height: 100%;">
+            <img src="${logoUrl}" alt="${this.company.name} logo" style="width: 100%; height: 100%; object-fit: contain; background-color: white; display: block;" />
+          </div>
+        ` : ''}
 
         <search-box slot="navbar"></search-box>
 
@@ -287,13 +321,20 @@ export class CompanyProfile extends LitElement {
         </page-menu>
 
         <div slot="tabs">
-          <wa-tab-group @wa-tab-show="${(e: any) => this._handleTabChange(e)}">
+          <wa-tab-group style="--indicator-color: white; --track-color: transparent;" @wa-tab-show="${(e: any) => this._handleTabChange(e)}">
             <wa-tab slot="nav" panel="about" ?active="${this.activeTab === 'about'}">About</wa-tab>
             ${this.company.offerings?.view ? html`<wa-tab slot="nav" panel="products" ?active="${this.activeTab === 'products'}">${this.company.offerings.label || 'What we Do'}</wa-tab>` : ''}
             ${this.company.projects != null ? html`<wa-tab slot="nav" panel="projects" ?active="${this.activeTab === 'projects'}">${this.company.projects.label || 'Projects'}</wa-tab>` : ''}
             ${this.company.jobs != null ? html`<wa-tab slot="nav" panel="jobs" ?active="${this.activeTab === 'jobs'}">${this.company.jobs.label || 'Jobs'}</wa-tab>` : ''}
             ${this.company.news != null ? html`<wa-tab slot="nav" panel="news" ?active="${this.activeTab === 'news'}">${this.company.news.label || 'News'}</wa-tab>` : ''}
             ${this.company.articles != null ? html`<wa-tab slot="nav" panel="articles" ?active="${this.activeTab === 'articles'}">${this.company.articles.label || 'Articles'}</wa-tab>` : ''}
+            
+            <wa-tab-panel name="about"></wa-tab-panel>
+            <wa-tab-panel name="products"></wa-tab-panel>
+            <wa-tab-panel name="projects"></wa-tab-panel>
+            <wa-tab-panel name="jobs"></wa-tab-panel>
+            <wa-tab-panel name="news"></wa-tab-panel>
+            <wa-tab-panel name="articles"></wa-tab-panel>
           </wa-tab-group>
         </div>
 
@@ -344,18 +385,20 @@ export class CompanyProfile extends LitElement {
             <div class="info-list">
               ${this._selectedOffice ? html`
                 <div class="info-item" @click="${() => window.open(`https://www.google.com/maps/search/?api=1&query=${this._selectedOffice?.location?.geoLocation?.lat},${this._selectedOffice?.location?.geoLocation?.lng}`)}">
-                  <wa-icon name="geo-alt"></wa-icon>
-                  <span>${this._selectedOffice.location?.address}</span>
+                  <wa-icon name="location-dot"></wa-icon>
+                  <span>
+                    ${this._formatAddress(this._selectedOffice.location?.address)}
+                  </span>
                 </div>
 
                 <div class="info-item">
-                  <wa-icon name="telephone"></wa-icon>
+                  <wa-icon name="phone"></wa-icon>
                   <span>${this._selectedOffice.phone}${this._selectedOffice.phone1 ? `, ${this._selectedOffice.phone1}` : ''}</span>
                 </div>
 
                 ${this._selectedOffice.fax ? html`
                   <div class="info-item">
-                    <wa-icon name="printer"></wa-icon>
+                    <wa-icon name="print"></wa-icon>
                     <span>${this._selectedOffice.fax}</span>
                   </div>
                 ` : ''}
@@ -370,17 +413,17 @@ export class CompanyProfile extends LitElement {
 
               ${this.company!.webSite ? html`
                 <a href="${this.company!.webSite}" target="_blank" rel="noopener" class="info-item">
-                  <wa-icon name="box-arrow-up-right"></wa-icon>
+                  <wa-icon name="arrow-up-right-from-square"></wa-icon>
                   <span>${this.company!.webSite}</span>
                 </a>
               ` : ''}
 
               ${this.company!.category ? html`
-                <div class="info-item">
+                <div class="info-item" style="padding-top: 0; padding-bottom: 0;">
                   <div class="category-item">
                     <div class="category-item-left">
                       <wa-icon name="folder"></wa-icon>
-                      <span>${this.company!.category.name}</span>
+                      <span style="margin-top: 5px;">${this.company!.category.name}</span>
                     </div>
                     <search-category-menu 
                       .category="${this.company!.category}"
@@ -392,7 +435,7 @@ export class CompanyProfile extends LitElement {
 
               ${this.company!.appUri ? html`
                 <a href="${this.company!.appUri}" target="_blank" rel="noopener" class="info-item">
-                  <wa-icon name="phone"></wa-icon>
+                  <wa-icon name="mobile-screen-button"></wa-icon>
                   <span>Mobile App</span>
                 </a>
               ` : ''}
@@ -428,6 +471,27 @@ export class CompanyProfile extends LitElement {
             ${this.company!.richText ? unsafeHTML(this.company!.richText) : this.company!.description}
           </div>
         </layout-card>
+      ` : ''}
+
+      ${(this.company!.offerings as any)?.items?.length > 0 ? html`
+        <div class="slider-container" style="margin-top: 2rem;">
+          <h2 style="font-size: 1.25rem; margin-bottom: 1rem; color: #333; text-align: center;">Featured Products and Services</h2>
+          <product-slider .companyId="${this.companyId}" .productRefs="${(this.company!.offerings as any)?.items}"></product-slider>
+        </div>
+      ` : ''}
+
+      ${this.company!.hasAffiliations ? html`
+        <div class="slider-container" style="margin-top: 2rem;">
+          <h2 style="font-size: 1.25rem; margin-bottom: 1rem; color: #333; text-align: center;">Company Affiliations</h2>
+          <company-slider .companyId="${this.companyId}"></company-slider>
+        </div>
+      ` : ''}
+
+      ${this.company!.hasCommunities ? html`
+        <div class="slider-container" style="margin-top: 2rem;">
+          <h2 style="font-size: 1.25rem; margin-bottom: 1rem; color: #333; text-align: center;">Communities</h2>
+          <community-slider .companyId="${this.companyId}"></community-slider>
+        </div>
       ` : ''}
     `;
   }

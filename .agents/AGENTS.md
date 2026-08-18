@@ -4,6 +4,12 @@ This file contains structural and naming conventions that all agents must follow
 
 **CRITICAL:** You must also reference [LEGACY_MIGRATION.md](file:///C:/Bizsort/bizsort-web/.agents/LEGACY_MIGRATION.md) for a complete overview of the legacy architecture and the ongoing modernization progress. This tracker file is the absolute source of truth for what has been ported (e.g. ViewModels, Components, Caching) and what is pending.
 
+**CRITICAL: FRONTEND TARGET AND LEGACY PATH**
+- **Astro is the Active Branch:** Astro (`frontend-astro`) is the sole active frontend development branch and the official target for UI modernization. The `frontend-nextjs` and `frontend-nuxt` directories were architectural experiments and are now **shelved**. Do not write code for them.
+- **Legacy Source Locations:** The legacy codebase is NOT located inside the `bizsort-web` repository. It is located externally:
+  - **Frontend:** `C:\Bizsort\legacy\website` (contains legacy Polymer components, `wwwroot`, tokens, endpoints mapping).
+  - **Backend / Background:** `C:\Bizsort\legacy\server` (contains legacy C# services, models, data access, and worker engines).
+
 ## Legacy Compatibility Rules
 
 ### 1. Folder Structure

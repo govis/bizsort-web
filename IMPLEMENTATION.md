@@ -1,6 +1,8 @@
 # BizSort Web Implementation Documentation
 
-This document describes the modernization of the BizSort Web application, migrating from a legacy Polymer/Material Web Components stack to a modern architecture using .NET 10, Next.js 16, Lit 3.3, Web Awesome, and .NET Aspire.
+This document describes the modernization of the BizSort Web application, migrating from a legacy Polymer/Material Web Components stack to a modern architecture using .NET 10, Astro, Lit 3.3, Web Awesome, and .NET Aspire.
+
+> **CRITICAL NOTE:** Astro is now the active frontend development branch and the official target for porting from the legacy website (`C:\Bizsort\legacy\website`). The previous `frontend-nextjs` and `frontend-nuxt` branches were experiments that are now officially shelved.
 
 ## 1. System Architecture
 
@@ -10,7 +12,7 @@ The application is structured as a distributed system orchestrated by **.NET Asp
 - **AppHost (`/apphost`)**: The .NET Aspire orchestrator. It manages the lifecycle of the backend and frontend, handles port allocation, and injects service discovery environment variables.
 - **Backend (`/backend`)**: A .NET 10 Minimal API. It handles business logic, data access via Entity Framework Core (SQL Server with NetTopologySuite), and image processing via ImageSharp.
 - **Worker (`/background`)**: A .NET BackgroundService application. It contains the legacy `Engine` polling workers that handle heavy asynchronous processing (like indexing and facet set calculations) and synchronizes updates with the Backend API via **gRPC**.
-- **Frontend (`/frontend`)**: A Next.js 16 application. It uses Lit 3.3 for web components and Web Awesome (`wa-` prefix) for UI elements, maintaining compatibility with the legacy component-based logic while utilizing modern React-based routing and SSR capabilities.
+- **Frontend (`/frontend-astro`)**: An Astro application. It uses Lit 3.3 for web components and Web Awesome (`wa-` prefix) for UI elements, maintaining compatibility with the legacy component-based logic while utilizing modern Astro-based routing and SSR capabilities.
 
 ## 2. Backend (C#)
 

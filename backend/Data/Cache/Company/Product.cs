@@ -20,6 +20,19 @@ public class CachedCompanyProduct : PartCache, IKey<long>, IExpirationItem
     public short Type { get; set; }
     public int CompanyId { get; set; }
     public string Text { get; set; } = string.Empty;
+    private string? _richText;
+    public string? RichText 
+    { 
+        get 
+        {
+            return Get(ref _richText, Id, (id) =>
+            {
+                using var dc = LegacyCache.GetDbContext();
+                var product = dc.Products.Where(p => p.Id == id).Select(p => new { p.RichText }).SingleOrDefault();
+                return product?.RichText;
+            });
+        } 
+    }
     public string PreviewText => TextConverter.Varchar(Text, 250);
     public string Title { get; set; } = string.Empty;
     public short Category { get; set; }

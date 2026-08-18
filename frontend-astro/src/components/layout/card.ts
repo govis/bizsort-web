@@ -32,7 +32,7 @@ export class LayoutCard extends LitElement {
     .card::part(header) {
       font-size: 20px;
       font-weight: 400;
-      color: #4285f4;
+      color: #333;
       border-bottom: 1px solid #e0e0e0;
       padding: 1rem 1.5rem;
     }

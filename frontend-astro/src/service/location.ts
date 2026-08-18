@@ -6,7 +6,7 @@ const API_BASE = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_
   || 'https://localhost:5001';
 
 export async function autocomplete(parent: number, name: string, scope?: IdName): Promise<Autocomplete[]> {
-    const scopeParam = scope ? `&scope=${JSON.stringify({ ...scope, name: encodeURIComponent(scope.name) })}` : '';
+    const scopeParam = scope ? `&scope=${JSON.stringify(scope)}` : '';
     const response = await fetch(`${API_BASE}/api/location/autocomplete?parent=${parent}&name=${encodeURIComponent(name)}${scopeParam}`);
     
     if (!response.ok) {

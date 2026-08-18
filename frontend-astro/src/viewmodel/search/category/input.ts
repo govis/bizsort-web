@@ -89,7 +89,7 @@ export class Input extends ViewModel  {
         this.selected = this._scope;
     }
 
-    protected _autocomplete: AutocompleteViewModel;
+    protected _autocomplete!: AutocompleteViewModel;
     get autocomplete(): AutocompleteViewModel {
         return this._autocomplete;
     }

@@ -1,5 +1,8 @@
 porting the URL token deserialization and session authentication logic into Astro's src/middleware.ts? (This was the final big item from our SPA_MODERNIZATION.md plan!
 
+
+The legacy "Featured Sliders" had a "slice-based" API backing them and they swapped individual items continuously in a loop. Can you review their implementation once more. I assume the new slider implementation if more inline with a more modern approach (Experience similar to what one would find on Netflix) is it correct?
+
 can you make sure notes are up to date
 /resume 1ad51775-7022-4a39-a138-65c42d5b2612
 check how IndexCompanyAsync in backend\Process\Company.cs creates "Category" facets for every company, can you check the undelying table(s) and create new query variant "LINQNew" that leverages Facets for Category query instead of doing Categories_Unwound

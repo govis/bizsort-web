@@ -19,8 +19,15 @@ export class SearchCategoryMenu extends LitElement {
 
   static styles = css`
     :host { display: inline-block; }
-    wa-button {
-      --wa-color-neutral-on-quiet: var(--wa-color-neutral-600);
+    .menu-trigger {
+      cursor: pointer;
+      font-size: 1.25rem;
+      color: var(--wa-color-neutral-600);
+      padding: 4px;
+      outline: none;
+    }
+    .menu-trigger:hover, .menu-trigger:focus {
+      color: var(--wa-color-neutral-900);
     }
   `;
 
@@ -41,9 +48,7 @@ export class SearchCategoryMenu extends LitElement {
       // Fallback if data isn't loaded yet
       return html`
         <wa-dropdown placement="bottom-end">
-          <wa-button slot="trigger" variant="text" size="small" is-icon-button>
-            <wa-icon name="caret-down-fill"></wa-icon>
-          </wa-button>
+          <wa-icon slot="trigger" name="ellipsis-vertical" library="system" class="menu-trigger" tabindex="0"></wa-icon>
           <wa-dropdown-item>Search Category</wa-dropdown-item>
         </wa-dropdown>
       `;
@@ -55,9 +60,7 @@ export class SearchCategoryMenu extends LitElement {
 
     return html`
       <wa-dropdown placement="bottom-end">
-        <wa-button slot="trigger" variant="text" size="small" is-icon-button>
-          <wa-icon name="caret-down-fill"></wa-icon>
-        </wa-button>
+        <wa-icon slot="trigger" name="ellipsis-vertical" library="system" class="menu-trigger" tabindex="0"></wa-icon>
         
         <wa-dropdown-item @click="${(e: Event) => this._handleAction(e, 'in')}">
           in ${city}

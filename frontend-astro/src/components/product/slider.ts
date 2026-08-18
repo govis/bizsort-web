@@ -1,63 +1,44 @@
-import { LitElement, html, css } from 'lit';
-import { repeat } from 'lit/directives/repeat.js';
+import { html, css } from 'lit';
 import type { ProductPreview } from '../types.js';
 import { toPreview } from '../../service/product';
 import { Product } from '../../navigation';
+import { ListSlider } from '../list/slider';
 import './card';
 
-import '@awesome.me/webawesome/dist/components/spinner/spinner.js';
-import '@awesome.me/webawesome/dist/components/icon/icon.js';
-import '@awesome.me/webawesome/dist/components/button/button.js';
-
-export class ProductSlider extends LitElement {
+export class ProductSlider extends ListSlider<ProductPreview> {
   static get properties() {
     return {
-      _items: { state: true },
-      _loading: { state: true },
-      _nextIndex: { state: true },
-      companyId: { type: Number, attribute: 'company-id' },
+      ...super.properties,
       productRefs: { type: Array, attribute: false }
     };
   }
 
-  declare companyId?: number;
   declare productRefs?: any[];
-
-  declare private _items: ProductPreview[];
-  declare private _loading: boolean;
-  declare private _nextIndex: number;
   declare private _displayOptions: any;
 
   constructor() {
     super();
-    this._items = [];
-    this._loading = false;
-    this._nextIndex = 0;
     this._displayOptions = { company: false };
   }
 
   connectedCallback() {
     super.connectedCallback();
-    this._fetchProducts();
+    this.fetchPage();
   }
 
   willUpdate(changed: Map<string, unknown>) {
     if (changed.has('productRefs') && changed.get('productRefs') !== undefined) {
-      this._items = [];
-      this._nextIndex = 0;
-      this._fetchProducts();
+      this.reset();
+      this.fetchPage();
     }
   }
 
-  private async _fetchProducts() {
+  protected async fetchPage() {
     if (!this.productRefs || this.productRefs.length === 0) return;
     this._loading = true;
     try {
-      // Legacy ProductSlider mapped productRefs to preview models via toPreview
-      // using the companyId context so the preview doesn't redundanty render company info
       const previews = await toPreview(this.productRefs);
       this._items = [...this._items, ...previews];
-      // Note: slider usually shows all of them if productRefs is pre-populated
     } catch (e) {
       console.error('Slider products error:', e);
     } finally {
@@ -73,59 +54,38 @@ export class ProductSlider extends LitElement {
     }
   }
 
-  static styles = css`
-    :host {
-      display: block;
-      padding: 1rem 0;
-    }
-
-    .carousel {
-      display: flex;
-      gap: 1rem;
-      overflow-x: auto;
-      padding: 0.5rem;
-      scroll-snap-type: x mandatory;
-      scrollbar-width: thin;
-    }
-
-    .carousel::-webkit-scrollbar {
-      height: 8px;
-    }
-
-    .carousel::-webkit-scrollbar-thumb {
-      background: #ccc;
-      border-radius: 4px;
-    }
-
-    product-card {
-      scroll-snap-align: start;
-      flex-shrink: 0;
-    }
-
-    .loading {
-      display: flex;
-      justify-content: center;
-      padding: 2rem;
-    }
-  `;
-
-  render() {
+  protected renderItem(item: ProductPreview) {
     return html`
-      ${this._items.length > 0 ? html`
-        <div class="carousel">
-          ${repeat(this._items, (item) => item.id, (item) => html`
-            <product-card .model="${item}" @product-select="${this._handleProductSelect}"></product-card>
-          `)}
-        </div>
-      ` : ''}
-
-      ${this._loading ? html`
-        <div class="loading">
-          <wa-spinner style="font-size: 2rem;"></wa-spinner>
-        </div>
-      ` : ''}
+      <product-card .model="${item}" @product-select="${this._handleProductSelect}"></product-card>
     `;
   }
+
+  static styles = [
+    ListSlider.styles,
+    css`
+      product-card {
+        scroll-snap-align: start;
+        flex-shrink: 0;
+        animation: card-enter 500ms cubic-bezier(0.4, 0, 0.2, 1) both;
+      }
+
+      @keyframes card-enter {
+        from {
+          opacity: 0;
+          transform: translateY(40px) scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      product-card:nth-child(4n + 1) { animation-delay: 0ms; }
+      product-card:nth-child(4n + 2) { animation-delay: 75ms; }
+      product-card:nth-child(4n + 3) { animation-delay: 150ms; }
+      product-card:nth-child(4n + 4) { animation-delay: 225ms; }
+    `
+  ];
 }
 
 if (!customElements.get('product-slider')) {

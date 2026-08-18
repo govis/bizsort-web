@@ -30,12 +30,88 @@ public class CachedCompanyProfile : BizSrt.Foundation.Cache.PartCache, BizSrt.Fo
 
     public BizSrt.Model.Image<int> Image => new BizSrt.Model.Image<int> { Entity = BizSrt.Model.ImageEntity.Company, ImageId = ImageId, MaxImageSize = ImageSize };
 
-    // Eagerly loaded by cache — no per-company DB hit in ToPreview
-    public CachedCompanyOffice[] Offices { get; set; } = Array.Empty<CachedCompanyOffice>();
-    public long[] Products { get; set; } = Array.Empty<long>();
-    public string MultiProduct { get; set; } = string.Empty;
+    private string? _richText;
+    public string RichText
+    {
+        get
+        {
+            return Get(ref _richText, Id, (id) =>
+            {
+                using var dc = BizSrt.Api.Data.Cache.LegacyCache.GetDbContext();
+                var companyProfile = dc.CompanyProfiles.Where(cp => cp.Id == id).Select(cp => new { cp.RichText }).SingleOrDefault();
+                return companyProfile?.RichText != null && companyProfile.RichText.Length > 0 ? 
+                    System.Text.Encoding.UTF8.GetString(companyProfile.RichText) : string.Empty;
+            }) ?? string.Empty;
+        }
+    }
 
-    public CachedCompanyOffice? HeadOffice => Offices.OrderBy(o => o.Id).FirstOrDefault();
+    private CachedCompanyOffice[]? _offices;
+    public CachedCompanyOffice[] Offices
+    {
+        get
+        {
+            return GetArray(ref _offices, Id, (id) =>
+            {
+                using var dc = BizSrt.Api.Data.Cache.LegacyCache.GetDbContext();
+                return dc.CompanyOffices
+                    .Where(co => co.Company == id)
+                    .Select(co => new
+                    {
+                        co.Id, co.Phone, co.Phone1, co.Fax, co.Name, co.Order, co.GeoLocation,
+                        co.StreetNumber, co.StreetName, co.Address1, co.Location, co.PostalCode
+                    })
+                    .ToArray()
+                    .Select(co => new CachedCompanyOffice
+                    {
+                        Id = co.Id,
+                        Phone = co.Phone ?? string.Empty,
+                        Phone1 = co.Phone1,
+                        Fax = co.Fax,
+                        Name = co.Name,
+                        Order = co.Order,
+                        GeoLocation = co.GeoLocation,
+                        Address = new BizSrt.Model.Location
+                        {
+                            Address = ((co.StreetNumber + " " + co.StreetName).Trim() + " " + co.Address1).Trim() + ", " + (co.Location > 0 ? (BizSrt.Api.Data.Cache.LegacyCache.Locations[co.Location]?.Name + ", " ?? "") : "") + co.PostalCode,
+                        }
+                    }).ToArray();
+            }) ?? Array.Empty<CachedCompanyOffice>();
+        }
+    }
+
+    private long[]? _products;
+    public long[] Products
+    {
+        get
+        {
+            return GetArray(ref _products, Id, (id) =>
+            {
+                using var dc = BizSrt.Api.Data.Cache.LegacyCache.GetDbContext();
+                return dc.CompanyProducts
+                    .Where(cp => cp.Company == id && cp.UnlistedType == 0)
+                    .Select(cp => cp.Product)
+                    .ToArray();
+            }) ?? Array.Empty<long>();
+        }
+    }
+
+    private string? _multiProduct;
+    public string MultiProduct
+    {
+        get
+        {
+            return Get(ref _multiProduct, Id, (id) =>
+            {
+                using var dc = BizSrt.Api.Data.Cache.LegacyCache.GetDbContext();
+                return dc.CompanyProducts
+                    .Where(cp => cp.Company == id && cp.UnlistedType == 0)
+                    .Join(dc.Products, cp => cp.Product, p2 => p2.Id, (cp, p2) => p2.RichText)
+                    .FirstOrDefault(rt => !string.IsNullOrEmpty(rt)) ?? string.Empty;
+            }) ?? string.Empty;
+        }
+    }
+
+    public CachedCompanyOffice? HeadOffice => Offices.OrderBy(o => o.Order).FirstOrDefault();
 
     public Preview ToPreview(int officeId = 0, Action<Preview, CachedCompanyProfile>? populate = null)
     {
@@ -68,64 +144,32 @@ public class CachedCompanyOffice
     public int Id { get; set; }
     public BizSrt.Model.Location Address { get; set; } = new();
     public string Phone { get; set; } = string.Empty;
+    public string? Phone1 { get; set; }
+    public string? Fax { get; set; }
+    public string? Name { get; set; }
+    public short Order { get; set; }
+    public NetTopologySuite.Geometries.Geometry? GeoLocation { get; set; }
 }
 
 public class CompanyProfilesCache : ReadManyExpirationCache<int, CachedCompanyProfile>
 {
-    public CompanyProfilesCache()
+    public CompanyProfilesCache() 
         : base(
             (List<int> accountIds) =>
             {
                 using var dbContext = BizSrt.Api.Data.Cache.LegacyCache.GetDbContext();
+                
+                var query = from c in dbContext.CompanyProfiles
+                            where accountIds.Contains(c.Id)
+                            from biId in dbContext.CompanyMedia
+                                .Where(m => m.Company == c.Id && m.Type == (byte)BizSrt.Model.MediaType.Default_Image)
+                                .Select(m => (int?)m.Id)
+                                .Take(1)
+                                .DefaultIfEmpty()
+                            select new { Profile = c, ImageId = biId ?? 0 };
 
-                // Batch-load all three related collections in 3 queries (not N*3)
-                var profilesQuery = from c in dbContext.CompanyProfiles
-                                    where accountIds.Contains(c.Id)
-                                    from biId in dbContext.CompanyMedia
-                                        .Where(m => m.Company == c.Id && m.Type == (byte)BizSrt.Model.MediaType.Default_Image)
-                                        .Select(m => (int?)m.Id)
-                                        .Take(1)
-                                        .DefaultIfEmpty()
-                                    select new { Profile = c, ImageId = biId ?? 0 };
-
-                var profiles = profilesQuery.AsNoTracking().ToList();
-
-                // Batch-load offices for all companies in one query
-                var allOffices = dbContext.CompanyOffices
-                    .Where(co => accountIds.Contains(co.Company))
-                    .Select(co => new { co.Company, co.Id, co.Phone, co.StreetNumber, co.Address1, co.PostalCode })
-                    .AsNoTracking()
-                    .ToList()
-                    .GroupBy(co => co.Company)
-                    .ToDictionary(g => g.Key, g => g.Select(co => new CachedCompanyOffice
-                    {
-                        Id = co.Id,
-                        Phone = co.Phone ?? string.Empty,
-                        Address = new BizSrt.Model.Location
-                        {
-                            Address = (co.StreetNumber + " " + co.Address1 + ", " + co.PostalCode).Trim().Trim(',')
-                        }
-                    }).ToArray());
-
-                // Batch-load products for all companies in one query
-                var allProducts = dbContext.CompanyProducts
-                    .Where(cp => accountIds.Contains(cp.Company) && cp.UnlistedType == 0)
-                    .Select(cp => new { cp.Company, cp.Product })
-                    .AsNoTracking()
-                    .ToList()
-                    .GroupBy(cp => cp.Company)
-                    .ToDictionary(g => g.Key, g => g.Select(cp => cp.Product).ToArray());
-
-                // Batch-load multiproduct html for all companies in one query
-                var allMultiProducts = dbContext.CompanyProducts
-                    .Where(cp => accountIds.Contains(cp.Company) && cp.UnlistedType == 0)
-                    .Join(dbContext.Products, cp => cp.Product, p => p.Id, (cp, p) => new { cp.Company, p.RichText })
-                    .Where(x => !string.IsNullOrEmpty(x.RichText))
-                    .AsNoTracking()
-                    .ToList()
-                    .GroupBy(x => x.Company)
-                    .ToDictionary(g => g.Key, g => g.First().RichText ?? string.Empty);
-
+                var profiles = query.AsNoTracking().ToArray();
+                
                 return profiles.Select(p => 
                 {
                     return new CachedCompanyProfile
@@ -137,10 +181,7 @@ public class CompanyProfilesCache : ReadManyExpirationCache<int, CachedCompanyPr
                         Text = p.Profile.Text ?? string.Empty,
                         Category = p.Profile.Category,
                         Options = new BizSrt.Model.Company.Option.Set { Value = (BizSrt.Model.Company.Option.Flags)p.Profile.Options },
-                        ImageId = p.ImageId,
-                        Offices = allOffices.GetValueOrDefault(p.Profile.Id, Array.Empty<CachedCompanyOffice>()),
-                        Products = allProducts.GetValueOrDefault(p.Profile.Id, Array.Empty<long>()),
-                        MultiProduct = allMultiProducts.GetValueOrDefault(p.Profile.Id, string.Empty)
+                        ImageId = p.ImageId
                     };
                 }).ToArray();
             },
@@ -161,28 +202,6 @@ public class CompanyProfilesCache : ReadManyExpirationCache<int, CachedCompanyPr
 
                 if (p == null) return null;
 
-                var offices = dbContext.CompanyOffices
-                    .Where(co => co.Company == accountId)
-                    .Select(co => new CachedCompanyOffice
-                    {
-                        Id = co.Id,
-                        Phone = co.Phone ?? string.Empty,
-                        Address = new BizSrt.Model.Location
-                        {
-                            Address = (co.StreetNumber + " " + co.Address1 + ", " + co.PostalCode).Trim().Trim(',')
-                        }
-                    }).AsNoTracking().ToArray();
-
-                var products = dbContext.CompanyProducts
-                    .Where(cp => cp.Company == accountId && cp.UnlistedType == 0)
-                    .Select(cp => cp.Product)
-                    .ToArray();
-
-                var multiProduct = dbContext.CompanyProducts
-                    .Where(cp => cp.Company == accountId && cp.UnlistedType == 0)
-                    .Join(dbContext.Products, cp => cp.Product, p2 => p2.Id, (cp, p2) => p2.RichText)
-                    .FirstOrDefault(rt => !string.IsNullOrEmpty(rt)) ?? string.Empty;
-
                 return new CachedCompanyProfile
                 {
                     Id = p.Profile.Id,
@@ -192,14 +211,10 @@ public class CompanyProfilesCache : ReadManyExpirationCache<int, CachedCompanyPr
                     Text = p.Profile.Text ?? string.Empty,
                     Category = p.Profile.Category,
                     Options = new BizSrt.Model.Company.Option.Set { Value = (BizSrt.Model.Company.Option.Flags)p.Profile.Options },
-                    ImageId = p.ImageId,
-                    Offices = offices,
-                    Products = products,
-                    MultiProduct = multiProduct
+                    ImageId = p.ImageId
                 };
             },
             1000)
     {
     }
 }
-
