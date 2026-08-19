@@ -4,14 +4,14 @@ This document outlines the standardized workflow for porting legacy Polymer/Mate
 
 > **CRITICAL NOTE:** Astro is now the sole active frontend development branch and the official target for porting from the legacy website (`C:\Bizsort\legacy\website`). The previous `frontend-nextjs` and `frontend-nuxt` branches were architectural experiments that are now officially shelved.
 
-👉 **For a complete overview of the architectural paradigm shift (from the legacy SPA router to Next.js App Router), please read [SPA_MODERNIZATION.md](file:///C:/Bizsort/bizsort-web/frontend/SPA_MODERNIZATION.md).**
+> [!NOTE] **For a complete overview of the architectural paradigm shift (from the legacy SPA router to Astro architecture), please read [SPA_MODERNIZATION.md](file:///C:/Bizsort/bizsort-web/frontend-astro/SPA_MODERNIZATION.md).**
 
 ## 1. Architectural Mapping
 
 | Legacy Concept | Modern Implementation | Notes |
 | :--- | :--- | :--- |
 | `PageElement` | `LitElement` | Use `willUpdate` for data fetching on property change. |
-| `connect(store)` | Direct API fetching | Fetch via `NEXT_PUBLIC_API_URL` in component methods. |
+| `connect(store)` | Direct API fetching | Fetch via environment URL in component methods. |
 | Material Web Components (`md-`) | Web Awesome (`wa-`) | Use `@awesome.me/webawesome` package. |
 | `cssLayout` / `cssKeyframes` | Vanilla CSS in `static styles` | **Tailwind CSS is strictly forbidden.** |
 | `company-header-layout` | `<company-header-layout>` | Custom Lit component with slots: `navbar`, `dropdown`, `logo`, `tabs`, default. |

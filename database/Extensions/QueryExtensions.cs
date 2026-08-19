@@ -8,12 +8,12 @@ namespace BizSrt.Data.Extensions;
 
 public static class QueryExtensions
 {
-    public static IQueryable<Product> GetFiltered(this IQueryable<Product> query, AppDbContext dbContext, QueryInput queryInput)
+    public static IQueryable<Offering> GetFiltered(this IQueryable<Offering> query, AppDbContext dbContext, QueryInput queryInput)
     {
         if (queryInput != null && !string.IsNullOrWhiteSpace(queryInput.SearchQuery))
         {
             query = from p in query
-                    join pt in dbContext.ProductTextSearch(queryInput.SearchQuery) on p.Id equals pt.Id
+                    join pt in dbContext.OfferingTextSearch(queryInput.SearchQuery) on p.Id equals pt.Id
                     select p;
         }
 

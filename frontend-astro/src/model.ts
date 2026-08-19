@@ -83,9 +83,9 @@ export enum DictionaryType {
     ServiceType = 2,
     TransactionType = 3,
     Industry = 4,
-    ProductType = 5,
-    ProductPriceType = 6,
-    ProductAttributeType = 7,
+    OfferingType = 5,
+    OfferingPriceType = 6,
+    OfferingAttributeType = 7,
     Currency = 8
 }
 
@@ -150,7 +150,7 @@ export interface ImageCollection {
 
 export enum ImageEntity {
     Company = 1,
-    Product = 2,
+    Offering = 2,
     Service = 3,
     Project = 4,
     Job = 5,
@@ -231,7 +231,7 @@ export enum PendingStatus {
     StaffReview = 4
 }
 
-export class ProductStats {
+export class OfferingStats {
     Total: number;
     TotalQuota: number;
     Active: number;
@@ -282,23 +282,23 @@ export class ProductStats {
     }
 }
 
-export namespace ProductType {
+export namespace OfferingType {
     export const Default = 16387;
     export enum ItemType {
-        Product = 1,
+        Offering = 1,
         Service = 2,
         Job = 4,
         Other = 16384
     }
 }
 
-export interface ProductType extends DictionaryItem {
+export interface OfferingType extends DictionaryItem {
 }
 
-export enum ProductsView {
-    NoProducts = 0,
-    Multiproduct = 1,
-    ProductList = 2,
+export enum OfferingsView {
+    NoOfferings = 0,
+    Multioffering = 1,
+    OfferingList = 2,
     Marketplace = 3,
 }
 
@@ -342,13 +342,13 @@ export interface ISecurityProfile {
     canReview_Staff: boolean;
     canEdit_All: boolean;
     canProduce_Company: boolean;
-    canProduce_Product: boolean;
+    canProduce_Offering: boolean;
     canManage_OffensiveList: boolean;
     canManage_Categories: boolean;
     canManage_Locations: boolean;
     canManage_Users: boolean;
     canManage_CompanyImport: boolean;
-    canManage_ProductImport: boolean;
+    canManage_OfferingImport: boolean;
 }
 
 export class SecurityProfile implements ISecurityProfile {
@@ -359,13 +359,13 @@ export class SecurityProfile implements ISecurityProfile {
     canReview_Staff: boolean;
     canEdit_All: boolean;
     canProduce_Company: boolean;
-    canProduce_Product: boolean;
+    canProduce_Offering: boolean;
     canManage_OffensiveList: boolean;
     canManage_Categories: boolean;
     canManage_Locations: boolean;
     canManage_Users: boolean;
     canManage_CompanyImport: boolean;
-    canManage_ProductImport: boolean;
+    canManage_OfferingImport: boolean;
 
     constructor() {
         this.reset();
@@ -379,13 +379,13 @@ export class SecurityProfile implements ISecurityProfile {
         this.canReview_Staff = securityProfile.canReview_Staff;
         this.canEdit_All = securityProfile.canEdit_All;
         this.canProduce_Company = securityProfile.canProduce_Company;
-        this.canProduce_Product = securityProfile.canProduce_Product;
+        this.canProduce_Offering = securityProfile.canProduce_Offering;
         this.canManage_OffensiveList = securityProfile.canManage_OffensiveList;
         this.canManage_Categories = securityProfile.canManage_Categories;
         this.canManage_Locations = securityProfile.canManage_Locations;
         this.canManage_Users = securityProfile.canManage_Users;
         this.canManage_CompanyImport = securityProfile.canManage_CompanyImport;
-        this.canManage_ProductImport = securityProfile.canManage_ProductImport;
+        this.canManage_OfferingImport = securityProfile.canManage_OfferingImport;
     }
 
     reset() {
@@ -396,13 +396,13 @@ export class SecurityProfile implements ISecurityProfile {
         this.canReview_Staff = false;
         this.canEdit_All = false;
         this.canProduce_Company = false;
-        this.canProduce_Product = false;
+        this.canProduce_Offering = false;
         this.canManage_OffensiveList = false;
         this.canManage_Categories = false;
         this.canManage_Locations = false;
         this.canManage_Users = false;
         this.canManage_CompanyImport = false;
-        this.canManage_ProductImport = false;
+        this.canManage_OfferingImport = false;
     }
 }
 

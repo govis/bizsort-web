@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace BizSrt.Model
 {
-    public enum DictionaryType { SecurityProfile, ProductAttributeType, ServiceType, TransactionType, Industry, ProductType, Currency }
+    public enum DictionaryType { SecurityProfile, OfferingAttributeType, ServiceType, TransactionType, Industry, OfferingType, Currency }
     public class DictionaryItem { public string ItemText { get; set; } = string.Empty; }
     public class DictionaryItem<T> : DictionaryItem { public T ItemKey { get; set; } = default!; }
     public class Dictionary
@@ -120,7 +120,7 @@ namespace BizSrt.Model
     public enum ImageEntity : byte
     {
         Company = 1,
-        Product = 2,
+        Offering = 2,
         Service = 3,
         Project = 4,
         Job = 5,
@@ -160,7 +160,7 @@ namespace BizSrt.Model
     public class Location : LocationRef, BizSrt.Model.Group.IChild<Location>
     {
         [JsonPropertyName("address")]
-        public string Address { get; set; } = string.Empty;
+        public BizSrt.Model.Geocoder.Address Address { get; set; } = new BizSrt.Model.Geocoder.Address();
         [JsonPropertyName("geoLocation")]
         public Geolocation? GeoLocation { get; set; }
         public new Location? Parent { get; set; }
@@ -304,15 +304,15 @@ namespace BizSrt.Model
 
     public class Category : BizSrt.Model.Group.IdName<short>
     {
-        public enum MemberType : byte { Company = 1, Product = 2 }
+        public enum MemberType : byte { Company = 1, Offering = 2 }
         public byte MemberTypeVal { get; set; }
         public long Service { get; set; }
-        public long Product { get; set; }
+        public long Offering { get; set; }
         public long Transaction { get; set; }
         public long Industry { get; set; }
-        public ProductAttribute[]? ProductAttributes { get; set; }
+        public OfferingAttribute[]? OfferingAttributes { get; set; }
         
-        public class ProductAttribute
+        public class OfferingAttribute
         {
             public byte Type { get; set; }
             public string Name { get; set; } = string.Empty;
@@ -320,17 +320,17 @@ namespace BizSrt.Model
             public byte ValueType { get; set; }
             public string DefaultValue { get; set; } = string.Empty;
             public string[]? ValueOptions { get; set; }
-            public BizSrt.Model.Product.Attribute.Requirement Requirement { get; set; }
+            public BizSrt.Model.Offering.Attribute.Requirement Requirement { get; set; }
         }
         public const short Uncategorized = 0;
         public const short AllCategories = -1;
     }
 
-    public enum ProductsView : byte
+    public enum OfferingsView : byte
     {
-        NoProducts = 0,
-        Multiproduct = 1,
-        ProductList = 2,
+        NoOfferings = 0,
+        Multioffering = 1,
+        OfferingList = 2,
         Marketplace = 3
     }
 
@@ -390,16 +390,17 @@ namespace BizSrt.Model
         T Id { get; set; }
     }
 
+    [Flags]
     public enum LocationType : byte
     {
         Unknown = 0,
-        World = 1,
-        Country = 2,
-        State = 3,
+        World = 0, // In DB, 0 is 'Countries'
+        Country = 1,
+        State = 2,
         County = 4,
-        City = 5,
-        Street = 6,
-        Neighborhood = 7
+        City = 8,
+        Street = 16,
+        Neighborhood = 32
     }
 
     public class LocationSettings
@@ -426,7 +427,7 @@ namespace BizSrt.Model
     }
 }
 
-namespace BizSrt.Model.Product
+namespace BizSrt.Model.Offering
 {
     public class Attribute
     {
@@ -440,7 +441,7 @@ namespace BizSrt.Model.Product
             public string[]? ValueOptions { get; set; }
         }
         public enum Requirement : byte { None }
-        public class ProductAttribute { }
+        public class OfferingAttribute { }
     }
 }
 
@@ -491,7 +492,7 @@ namespace BizSrt.Model
         }
     }
 
-    public partial class ProductType : DictionaryItem<short>
+    public partial class OfferingType : DictionaryItem<short>
     {
         public enum ItemType : short { }
     }

@@ -23,7 +23,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // Domain Services
 builder.Services.AddScoped<BizSrt.Api.Data.Company.ICompanyService, BizSrt.Api.Data.Company.CompanyService>();
-builder.Services.AddScoped<BizSrt.Api.Data.Company.ICompanyProductService, BizSrt.Api.Data.Company.CompanyProductService>();
+builder.Services.AddScoped<BizSrt.Api.Data.Company.ICompanyOfferingService, BizSrt.Api.Data.Company.CompanyOfferingService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ILocationService, LocationService>();
 // builder.Services.AddSingleton<BizSrt.Api.Data.Cache.Company.CompanyProfilesCache>();
@@ -59,7 +59,7 @@ app.MapCompanyEndpoints();
 app.MapCategoryEndpoints();
 app.MapLocationEndpoints();
 app.MapImageEndpoints();
-BizSrt.Api.Service.Product.ProductEndpoints.MapProductEndpoints(app);
+BizSrt.Api.Service.Offering.OfferingEndpoints.MapOfferingEndpoints(app);
 BizSrt.Api.Service.Community.CommunityEndpoints.MapCommunityEndpoints(app);
 
 app.MapGrpcService<BizSrt.Api.Grpc.CompanyGrpcService>();

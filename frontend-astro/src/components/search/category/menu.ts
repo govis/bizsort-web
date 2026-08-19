@@ -21,9 +21,8 @@ export class SearchCategoryMenu extends LitElement {
     :host { display: inline-block; }
     .menu-trigger {
       cursor: pointer;
-      font-size: 1.25rem;
+      font-size: 1rem;
       color: var(--wa-color-neutral-600);
-      padding: 4px;
       outline: none;
     }
     .menu-trigger:hover, .menu-trigger:focus {
@@ -48,20 +47,33 @@ export class SearchCategoryMenu extends LitElement {
       // Fallback if data isn't loaded yet
       return html`
         <wa-dropdown placement="bottom-end">
-          <wa-icon slot="trigger" name="ellipsis-vertical" library="system" class="menu-trigger" tabindex="0"></wa-icon>
+          <wa-button slot="trigger" size="small" variant="neutral" is-icon-button pill appearance="plain" class="menu-trigger" tabindex="0">
+            <wa-icon name="caret-down"></wa-icon>
+          </wa-button>
           <wa-dropdown-item>Search Category</wa-dropdown-item>
         </wa-dropdown>
       `;
     }
 
-    const city = this.location.address?.split(',')[0] || 'City'; // Basic extraction from full address string
-    const postalCodeMatch = this.location.address?.match(/[A-Z]\d[A-Z] \d[A-Z]\d/i);
-    const postalCode = postalCodeMatch ? postalCodeMatch[0] : null;
+    let city = 'City';
+    let postalCode = null;
+    
+    if (this.location.address) {
+      if (typeof this.location.address === 'string') {
+        city = this.location.address.split(',')[0];
+        const match = this.location.address.match(/[A-Z]\d[A-Z] \d[A-Z]\d/i);
+        postalCode = match ? match[0] : null;
+      } else {
+        city = (this.location.address as any).city || 'City';
+        postalCode = (this.location.address as any).postalCode || null;
+      }
+    }
 
     return html`
       <wa-dropdown placement="bottom-end">
-        <wa-icon slot="trigger" name="ellipsis-vertical" library="system" class="menu-trigger" tabindex="0"></wa-icon>
-        
+        <wa-button slot="trigger" size="small" variant="neutral" is-icon-button pill appearance="plain" class="menu-trigger" tabindex="0">
+          <wa-icon name="caret-down"></wa-icon>
+        </wa-button>
         <wa-dropdown-item @click="${(e: Event) => this._handleAction(e, 'in')}">
           in ${city}
         </wa-dropdown-item>

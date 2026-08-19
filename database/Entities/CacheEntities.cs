@@ -47,7 +47,7 @@ public class AreaName
     public string Name { get; set; } = string.Empty;
 }
 
-public class CategoryProductAttribute
+public class CategoryOfferingAttribute
 {
     [Key]
     public int Id { get; set; }

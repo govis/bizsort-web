@@ -23,14 +23,14 @@ public class Industry
     public string Type { get; set; } = string.Empty;
 }
 
-public class ProductType
+public class OfferingType
 {
     [Key]
     public short Id { get; set; }
     public string Type { get; set; } = string.Empty;
 }
 
-public class ProductAttributeType
+public class OfferingAttributeType
 {
     [Key]
     public short Id { get; set; }

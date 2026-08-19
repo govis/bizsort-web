@@ -70,48 +70,85 @@ public class CachedCompanyProfile : BizSrt.Foundation.Cache.PartCache, BizSrt.Fo
                         Name = co.Name,
                         Order = co.Order,
                         GeoLocation = co.GeoLocation,
+                        LocationId = co.Location,
+                        StreetNameId = co.StreetName,
+                        StreetNumber = co.StreetNumber,
                         Address = new BizSrt.Model.Location
                         {
-                            Address = ((co.StreetNumber + " " + co.StreetName).Trim() + " " + co.Address1).Trim() + ", " + (co.Location > 0 ? (BizSrt.Api.Data.Cache.LegacyCache.Locations[co.Location]?.Name + ", " ?? "") : "") + co.PostalCode,
+                            Address = GetAddressModel(co.StreetNumber, co.StreetName, co.Address1, co.Location, co.PostalCode),
                         }
                     }).ToArray();
             }) ?? Array.Empty<CachedCompanyOffice>();
         }
     }
 
-    private long[]? _products;
-    public long[] Products
+    private long[]? _offerings;
+    public long[] Offerings
     {
         get
         {
-            return GetArray(ref _products, Id, (id) =>
+            return GetArray(ref _offerings, Id, (id) =>
             {
                 using var dc = BizSrt.Api.Data.Cache.LegacyCache.GetDbContext();
-                return dc.CompanyProducts
+                return dc.CompanyOfferings
                     .Where(cp => cp.Company == id && cp.UnlistedType == 0)
-                    .Select(cp => cp.Product)
+                    .Select(cp => cp.Offering)
                     .ToArray();
             }) ?? Array.Empty<long>();
         }
     }
 
-    private string? _multiProduct;
-    public string MultiProduct
+    private string? _multiOffering;
+    public string MultiOffering
     {
         get
         {
-            return Get(ref _multiProduct, Id, (id) =>
+            return Get(ref _multiOffering, Id, (id) =>
             {
                 using var dc = BizSrt.Api.Data.Cache.LegacyCache.GetDbContext();
-                return dc.CompanyProducts
+                return dc.CompanyOfferings
                     .Where(cp => cp.Company == id && cp.UnlistedType == 0)
-                    .Join(dc.Products, cp => cp.Product, p2 => p2.Id, (cp, p2) => p2.RichText)
+                    .Join(dc.Offerings, cp => cp.Offering, p2 => p2.Id, (cp, p2) => p2.RichText)
                     .FirstOrDefault(rt => !string.IsNullOrEmpty(rt)) ?? string.Empty;
             }) ?? string.Empty;
         }
     }
 
     public CachedCompanyOffice? HeadOffice => Offices.OrderBy(o => o.Order).FirstOrDefault();
+
+    private static BizSrt.Model.Geocoder.Address GetAddressModel(string? streetNumber, int? streetNameId, string? address1, int? locationId, string? postalCode)
+    {
+        var address = new BizSrt.Model.Geocoder.Address();
+        
+        if (streetNameId.HasValue && streetNameId.Value > 0)
+        {
+            var cachedStreet = BizSrt.Api.Data.Cache.LegacyCache.StreetNames[streetNameId.Value];
+            if (cachedStreet != null) address.StreetName = cachedStreet.Name;
+        }
+
+        if (!string.IsNullOrWhiteSpace(streetNumber)) address.StreetNumber = streetNumber;
+        if (!string.IsNullOrWhiteSpace(address1)) address.Address1 = address1;
+        if (!string.IsNullOrWhiteSpace(postalCode)) address.PostalCode = postalCode;
+
+        if (locationId.HasValue && locationId.Value > 0)
+        {
+            var loc = BizSrt.Api.Data.Cache.LegacyCache.Locations[locationId.Value];
+            while (loc != null && loc.Id > 1)
+            {
+                if (loc.Type == BizSrt.Model.LocationType.City) address.City = loc.Name;
+                else if (loc.Type == BizSrt.Model.LocationType.State) address.State = loc.Name;
+                else if (loc.Type == BizSrt.Model.LocationType.County) address.County = loc.Name;
+                else if (loc.Type == BizSrt.Model.LocationType.Country) address.Country = loc.Name;
+                
+                if (loc.ParentKey > 0)
+                    loc = BizSrt.Api.Data.Cache.LegacyCache.Locations[loc.ParentKey] as BizSrt.Api.Data.Cache.Location.CachedLocation;
+                else
+                    loc = null;
+            }
+        }
+        
+        return address;
+    }
 
     public Preview ToPreview(int officeId = 0, Action<Preview, CachedCompanyProfile>? populate = null)
     {
@@ -125,13 +162,13 @@ public class CachedCompanyProfile : BizSrt.Foundation.Cache.PartCache, BizSrt.Fo
             WebSite = WebSite, 
             Phone = office?.Phone, 
             Text = Text,
-            ProductsView = !string.IsNullOrEmpty(MultiProduct) ? BizSrt.Model.ProductsView.Multiproduct : Options.Products_Marketplace ? BizSrt.Model.ProductsView.Marketplace : BizSrt.Model.ProductsView.ProductList,
+            OfferingsView = !string.IsNullOrEmpty(MultiOffering) ? BizSrt.Model.OfferingsView.Multioffering : Options.Offerings_Marketplace ? BizSrt.Model.OfferingsView.Marketplace : BizSrt.Model.OfferingsView.OfferingList,
             Category = Category > 0 ? BizSrt.Api.Data.Cache.LegacyCache.Categories[Category].ToModel(BizSrt.Model.Group.DisplayType.Name) : null,
             Image = Image
         };
         
-        if (prvw.ProductsView != BizSrt.Model.ProductsView.Multiproduct && Products?.Length == 0)
-            prvw.ProductsView = BizSrt.Model.ProductsView.NoProducts;
+        if (prvw.OfferingsView != BizSrt.Model.OfferingsView.Multioffering && Offerings?.Length == 0)
+            prvw.OfferingsView = BizSrt.Model.OfferingsView.NoOfferings;
         
         populate?.Invoke(prvw, this);
 
@@ -149,6 +186,9 @@ public class CachedCompanyOffice
     public string? Name { get; set; }
     public short Order { get; set; }
     public NetTopologySuite.Geometries.Geometry? GeoLocation { get; set; }
+    public int? LocationId { get; set; }
+    public int? StreetNameId { get; set; }
+    public string? StreetNumber { get; set; }
 }
 
 public class CompanyProfilesCache : ReadManyExpirationCache<int, CachedCompanyProfile>

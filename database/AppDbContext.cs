@@ -9,13 +9,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public virtual DbSet<CompanyProfile> CompanyProfiles { get; set; }
     public virtual DbSet<CompanyOffice> CompanyOffices { get; set; }
     public virtual DbSet<Category> Categories { get; set; }
-    public virtual DbSet<Product> Products { get; set; }
-    public virtual DbSet<CompanyProduct> CompanyProducts { get; set; }
+    public virtual DbSet<Offering> Offerings { get; set; }
+    public virtual DbSet<CompanyOffering> CompanyOfferings { get; set; }
     public virtual DbSet<Project> Projects { get; set; }
     public virtual DbSet<CompanyProject> CompanyProjects { get; set; }
     public virtual DbSet<Job> Jobs { get; set; }
     public virtual DbSet<CompanyMedia> CompanyMedia { get; set; }
-    public virtual DbSet<ProductMedia> ProductMedia { get; set; }
+    public virtual DbSet<OfferingMedia> OfferingMedia { get; set; }
     public virtual DbSet<ProjectMedia> ProjectMedia { get; set; }
     public virtual DbSet<CommunityMedia> CommunityMedia { get; set; }
     public virtual DbSet<CompanyAffiliation> CompanyAffiliations { get; set; }
@@ -27,17 +27,17 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public virtual DbSet<Location> Locations { get; set; }
     public virtual DbSet<StreetName> StreetNames { get; set; }
     public virtual DbSet<AreaName> AreaNames { get; set; }
-    public virtual DbSet<CategoryProductAttribute> CategoryProductAttributes { get; set; }
+    public virtual DbSet<CategoryOfferingAttribute> CategoryOfferingAttributes { get; set; }
     public virtual DbSet<BizSrt.Data.Entities.SecurityProfile> SecurityProfiles { get; set; }
     public virtual DbSet<BizSrt.Data.Entities.SecurityProfilePriviledge> SecurityProfilePriviledges { get; set; }
     public virtual DbSet<ServiceType> ServiceTypes { get; set; }
     public virtual DbSet<TransactionType> TransactionTypes { get; set; }
     public virtual DbSet<Industry> Industries { get; set; }
-    public virtual DbSet<ProductType> ProductTypes { get; set; }
-    public virtual DbSet<ProductAttributeType> ProductAttributeTypes { get; set; }
+    public virtual DbSet<OfferingType> OfferingTypes { get; set; }
+    public virtual DbSet<OfferingAttributeType> OfferingAttributeTypes { get; set; }
     public virtual DbSet<Currency> Currencies { get; set; }
     public virtual DbSet<CompanyOfficeId> CompanyOfficeIds { get; set; }
-    public virtual DbSet<ProductIdKeyless> ProductIdsKeyless { get; set; }
+    public virtual DbSet<OfferingIdKeyless> OfferingIdsKeyless { get; set; }
     public virtual DbSet<ProjectIdKeyless> ProjectIdsKeyless { get; set; }
 
     public virtual DbSet<CompanyFacet> CompanyFacets { get; set; }
@@ -48,21 +48,21 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public virtual DbSet<FacetSetCompany> FacetSetCompanies { get; set; }
     public virtual DbSet<CompanyOffice_Audit> CompanyOffices_Audit { get; set; }
 
-    public virtual DbSet<CompanyProductFacet> CompanyProductFacets { get; set; }
-    public virtual DbSet<CompanyProductFacetValue> CompanyProductFacetValues { get; set; }
-    public virtual DbSet<CompanyProductFacetName> CompanyProductFacetNames { get; set; }
-    public virtual DbSet<CompanyProductFacetSet> CompanyProductFacetSets { get; set; }
-    public virtual DbSet<CompanyProductFacetSetDetail> CompanyProductFacetSetDetails { get; set; }
-    public virtual DbSet<FacetSetCompanyProduct> FacetSetCompanyProducts { get; set; }
+    public virtual DbSet<CompanyOfferingFacet> CompanyOfferingFacets { get; set; }
+    public virtual DbSet<CompanyOfferingFacetValue> CompanyOfferingFacetValues { get; set; }
+    public virtual DbSet<CompanyOfferingFacetName> CompanyOfferingFacetNames { get; set; }
+    public virtual DbSet<CompanyOfferingFacetSet> CompanyOfferingFacetSets { get; set; }
+    public virtual DbSet<CompanyOfferingFacetSetDetail> CompanyOfferingFacetSetDetails { get; set; }
+    public virtual DbSet<FacetSetCompanyOffering> FacetSetCompanyOfferings { get; set; }
 
     public IQueryable<CompanyOfficeId> CompanyOfficeLocation(int location)
     {
         return CompanyOfficeIds.FromSqlInterpolated($"SELECT * FROM dbo.CompanyOfficeLocation({location})");
     }
 
-    public IQueryable<ProductIdKeyless> ProductTextSearch(string searchQuery)
+    public IQueryable<OfferingIdKeyless> OfferingTextSearch(string searchQuery)
     {
-        return ProductIdsKeyless.FromSqlInterpolated($"SELECT Id FROM dbo.ProductTextSearch({searchQuery})");
+        return OfferingIdsKeyless.FromSqlInterpolated($"SELECT Id FROM dbo.OfferingTextSearch({searchQuery})");
     }
 
     public IQueryable<ProjectIdKeyless> ProjectTextSearch(string searchQuery)
@@ -73,7 +73,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<CompanyOfficeId>().HasNoKey();
-        modelBuilder.Entity<ProductIdKeyless>().HasNoKey();
+        modelBuilder.Entity<OfferingIdKeyless>().HasNoKey();
         modelBuilder.Entity<ProjectIdKeyless>().HasNoKey();
         modelBuilder.Entity<Category_Unwound>().HasKey(e => new { e.Parent, e.Child });
         modelBuilder.Entity<Location_Unwound>().HasKey(e => new { e.Parent, e.Child });
@@ -119,7 +119,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.Property(e => e.Keywords).HasMaxLength(100);
         });
 
-        modelBuilder.Entity<Product>(entity =>
+        modelBuilder.Entity<Offering>(entity =>
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
@@ -129,12 +129,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.Property(e => e.Updated).HasColumnType("datetime");
         });
 
-        modelBuilder.Entity<CompanyProduct>(entity =>
+        modelBuilder.Entity<CompanyOffering>(entity =>
         {
-            entity.HasKey(e => e.Product);
-            entity.HasOne(d => d.ProductNavigation)
+            entity.HasKey(e => e.Offering);
+            entity.HasOne(d => d.OfferingNavigation)
                 .WithOne()
-                .HasForeignKey<CompanyProduct>(d => d.Product);
+                .HasForeignKey<CompanyOffering>(d => d.Offering);
             entity.Property(e => e.Alias).HasMaxLength(100);
             entity.Property(e => e.Indexed).HasColumnType("datetime");
         });
@@ -162,7 +162,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<Job>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.HasOne(d => d.ProductNavigation)
+            entity.HasOne(d => d.OfferingNavigation)
                 .WithOne()
                 .HasForeignKey<Job>(d => d.Id);
             entity.Property(e => e.PostalCode).HasMaxLength(10);
@@ -188,7 +188,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.Property(e => e.Metadata).IsRequired().HasMaxLength(1000);
         });
 
-        modelBuilder.Entity<ProductMedia>(entity =>
+        modelBuilder.Entity<OfferingMedia>(entity =>
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Content).IsRequired();

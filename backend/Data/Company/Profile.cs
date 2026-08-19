@@ -17,12 +17,12 @@ public interface ICompanyService
     Task<IEnumerable<BizSrt.Model.Company.Preview>> ToPreviewAsync(SearchItem[] companies);
     Task<SliceOutput<EntityId<int>>> GetCommunitiesAsync(int companyId, SliceInput sliceInput);
     Task<SliceOutput<SearchItem>> GetAffiliationsAsync(int companyId, SliceInput sliceInput);
-    Task<QueryOutput<BizSrt.Model.EntityId<long>>> GetProductsAsync(int companyId, QueryInput queryInput);
+    Task<QueryOutput<BizSrt.Model.EntityId<long>>> GetOfferingsAsync(int companyId, QueryInput queryInput);
     Task<QueryOutput<BizSrt.Model.EntityId<long>>> GetProjectsAsync(int companyId, QueryInput queryInput);
     Task<QueryOutput<BizSrt.Model.EntityId<long>>> GetJobsAsync(int companyId, short department, QueryInput queryInput);
     Task<IEnumerable<BizSrt.Model.Promotion.Preview>> GetPromotionsAsync(int companyId);
     Task<BizSrt.Model.Account?> GetInfoAsync(int id);
-    Task<BizSrt.Model.Product.Profile?> GetProductProfileAsync(int companyId, long productId);
+    Task<BizSrt.Model.Offering.Profile?> GetOfferingProfileAsync(int companyId, long offeringId);
     Task<BizSrt.Model.Job.Profile?> GetJobProfileAsync(int companyId, long jobId);
     Task<BizSrt.Model.Project.Profile?> GetProjectProfileAsync(int companyId, long projectId);
 }
@@ -31,13 +31,20 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
 {
     public async Task<Profile?> ViewAsync(int id)
     {
-        var cachedCompany = BizSrt.Api.Data.Cache.LegacyCache.CompanyProfiles[id];
+        var cachedCompany = BizSrt.Api.Data.Cache.LegacyCache.CompanyProfiles[id, BizSrt.Foundation.Cache.ReadOneSuppress.RecordNotFound];
         if (cachedCompany is null) return null;
+
+        var duplicateCities = cachedCompany.Offices
+            .Where(o => o.LocationId.HasValue)
+            .GroupBy(o => o.LocationId!.Value)
+            .Where(g => g.Count() > 1)
+            .Select(g => g.Key)
+            .ToHashSet();
 
         var offices = cachedCompany.Offices.OrderBy(o => o.Order).Select(o => new BizSrt.Model.Company.Office
         {
             Id = o.Id,
-            Name = o.Name ?? "",
+            Name = GetOfficeName(o, duplicateCities),
             Phone = o.Phone ?? "",
             Phone1 = o.Phone1,
             Fax = o.Fax,
@@ -62,12 +69,33 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
             HeadOffice = offices.Length > 0 ? offices[0] : null,
             Offices = offices,
             Image = cachedCompany.Image,
-            Offerings = new Page_Offerings { View = ProductsView.NoProducts, HideOfferings = false },
+            Offerings = new Page_Offerings { View = OfferingsView.NoOfferings, HideOfferings = false },
             HasAffiliations = await dbContext.CompanyAffiliations.AnyAsync(a => a.From == id || (a.To == id && !a.Pending)),
             HasCommunities = await dbContext.CompanyCommunities.AnyAsync(cc => cc.Company == id)
         };
         
         return profile;
+    }
+
+    private static string GetOfficeName(CachedCompanyOffice o, HashSet<int> duplicateCities)
+    {
+        if (!string.IsNullOrEmpty(o.Name)) return o.Name;
+        
+        if (!o.LocationId.HasValue || o.LocationId.Value == 0) return "Office";
+        
+        var location = BizSrt.Api.Data.Cache.LegacyCache.Locations[o.LocationId.Value];
+        if (location == null) return "Office";
+
+        if (o.StreetNameId.HasValue && o.StreetNameId.Value > 0 && duplicateCities.Contains(o.LocationId.Value))
+        {
+            var streetName = BizSrt.Api.Data.Cache.LegacyCache.StreetNames[o.StreetNameId.Value];
+            if (streetName != null)
+            {
+                return $"{location.Name} - {o.StreetNumber} {streetName.Name}";
+            }
+        }
+        
+        return $"{location.Name} Office";
     }
 
     public Task<SliceOutput<SearchItem>> GetFeaturedAsync(DirectorySliceInput<int> sliceInput)
@@ -124,14 +152,14 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
         // OR EXISTS on Categories_Unwound is a compact 2-param subquery SQL Server handles cleanly.
         if (queryInput.Category > 0)
         {
-            var productCategoryMatches = (from cp in dbContext.CompanyProducts
-                                          join p in dbContext.Products on cp.Product equals p.Id
-                                          where (p.Type == 0 || (cp.UnlistedType == (byte)BizSrt.Model.Product.UnlistedType.Listed && p.Status == (byte)BizSrt.Model.Product.Status.Active)) &&
+            var offeringCategoryMatches = (from cp in dbContext.CompanyOfferings
+                                          join p in dbContext.Offerings on cp.Offering equals p.Id
+                                          where (p.Type == 0 || (cp.UnlistedType == (byte)BizSrt.Model.Offering.UnlistedType.Listed && p.Status == (byte)BizSrt.Model.Offering.Status.Active)) &&
                                                 (cp.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == cp.Category))
                                           select cp);
 
             query = query.Where(c => (c.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == c.Category))
-                || productCategoryMatches.Any(cp => cp.Company == c.Id));
+                || offeringCategoryMatches.Any(cp => cp.Company == c.Id));
         }
 
         query = query.ApplyFacets(dbContext, queryInput.InclFacets, queryInput.ExclFacets);
@@ -257,7 +285,7 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
     // =====================================================================================
     // This is the pre-optimization baseline implementation of CompanySearch (matches legacy logic).
     // It is kept purely for historical reference and performance comparison purposes.
-    // DO NOT modify, optimize, or use this method in production code.
+    // DO NOT modify, optimize, or use this method in offeringion code.
     // For the actual implementation, see SearchAsync() above.
     // =====================================================================================
     public async Task<SearchOutput<SearchItem>> Reference_SearchAsync(SearchInput queryInput)
@@ -279,9 +307,9 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
             query = query.Where(c => 
                 (c.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == c.Category))
                 ||
-                (from cp in dbContext.CompanyProducts
-                 join p in dbContext.Products on cp.Product equals p.Id
-                 where (p.Type == 0 || (cp.UnlistedType == (byte)BizSrt.Model.Product.UnlistedType.Listed && p.Status == (byte)BizSrt.Model.Product.Status.Active)) &&
+                (from cp in dbContext.CompanyOfferings
+                 join p in dbContext.Offerings on cp.Offering equals p.Id
+                 where (p.Type == 0 || (cp.UnlistedType == (byte)BizSrt.Model.Offering.UnlistedType.Listed && p.Status == (byte)BizSrt.Model.Offering.Status.Active)) &&
                        (cp.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == cp.Category))
                  select cp).Any(cp => cp.Company == c.Id)
             );
@@ -419,6 +447,14 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
                 });
             }
 
+            // Consume any remaining result sets (like Facets) so SQL Server sends the OUTPUT parameters
+            while (await reader.NextResultAsync()) 
+            {
+                // We can process Facets here in the future if needed
+            }
+            
+            await reader.CloseAsync();
+
             return new SearchOutput<SearchItem>
             {
                 StartIndex = queryInput.StartIndex,
@@ -482,26 +518,26 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
         return new SliceOutput<SearchItem>(affiliations, sliceInput.Index + affiliations.Length < total ? sliceInput.Index + affiliations.Length : -1);
     }
 
-    public async Task<QueryOutput<BizSrt.Model.EntityId<long>>> GetProductsAsync(int companyId, QueryInput queryInput)
+    public async Task<QueryOutput<BizSrt.Model.EntityId<long>>> GetOfferingsAsync(int companyId, QueryInput queryInput)
     {
-        var pq = dbContext.Products.GetFiltered(dbContext, queryInput);
+        var pq = dbContext.Offerings.GetFiltered(dbContext, queryInput);
 
-        var query = dbContext.CompanyProducts
-            .Join(pq, cp => cp.Product, p => p.Id, (cp, p) => new { cp, p })
-            .Where(x => x.cp.Company == companyId && x.cp.UnlistedType == (byte)BizSrt.Model.Product.UnlistedType.Listed && x.p.Status == (byte)BizSrt.Model.Product.Status.Active);
+        var query = dbContext.CompanyOfferings
+            .Join(pq, cp => cp.Offering, p => p.Id, (cp, p) => new { cp, p })
+            .Where(x => x.cp.Company == companyId && x.cp.UnlistedType == (byte)BizSrt.Model.Offering.UnlistedType.Listed && x.p.Status == (byte)BizSrt.Model.Offering.Status.Active);
 
         var total = await query.CountAsync();
-        var products = await query
+        var offerings = await query
             .OrderByDescending(x => x.p.Created)
             .Skip(queryInput.StartIndex)
             .Take(queryInput.Length > 0 ? queryInput.Length : 100)
-            .Select(x => new BizSrt.Model.EntityId<long> { Id = x.cp.Product })
+            .Select(x => new BizSrt.Model.EntityId<long> { Id = x.cp.Offering })
             .ToArrayAsync();
 
         return new QueryOutput<BizSrt.Model.EntityId<long>>
         {
             StartIndex = queryInput.StartIndex,
-            Series = products,
+            Series = offerings,
             TotalCount = total
         };
     }
@@ -512,7 +548,7 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
 
         var query = dbContext.CompanyProjects
             .Join(pq, cp => cp.Project, p => p.Id, (cp, p) => new { cp, p })
-            .Where(x => x.cp.Company == companyId && x.cp.UnlistedType == (byte)BizSrt.Model.Product.UnlistedType.Listed && x.p.Status == (byte)BizSrt.Model.Product.Status.Active);
+            .Where(x => x.cp.Company == companyId && x.cp.UnlistedType == (byte)BizSrt.Model.Offering.UnlistedType.Listed && x.p.Status == (byte)BizSrt.Model.Offering.Status.Active);
 
         var total = await query.CountAsync();
         var projects = await query
@@ -532,11 +568,11 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
 
     public async Task<QueryOutput<BizSrt.Model.EntityId<long>>> GetJobsAsync(int companyId, short department, QueryInput queryInput)
     {
-        var pq = dbContext.Products.GetFiltered(dbContext, queryInput);
+        var pq = dbContext.Offerings.GetFiltered(dbContext, queryInput);
 
         var query = dbContext.Jobs
             .Join(pq, j => j.Id, p => p.Id, (j, p) => new { j, p })
-            .Where(x => x.j.Company == companyId && x.p.Status == (byte)BizSrt.Model.Product.Status.Active);
+            .Where(x => x.j.Company == companyId && x.p.Status == (byte)BizSrt.Model.Offering.Status.Active);
 
         if (department > 0)
         {
@@ -589,28 +625,28 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
         };
     }
 
-    public async Task<BizSrt.Model.Product.Profile?> GetProductProfileAsync(int companyId, long productId)
+    public async Task<BizSrt.Model.Offering.Profile?> GetOfferingProfileAsync(int companyId, long offeringId)
     {
         await Task.CompletedTask;
-        var cachedProduct = BizSrt.Api.Data.Cache.LegacyCache.CompanyProducts[productId];
-        if (cachedProduct is null || cachedProduct.CompanyId != companyId) return null;
+        var cachedOffering = BizSrt.Api.Data.Cache.LegacyCache.CompanyOfferings[offeringId];
+        if (cachedOffering is null || cachedOffering.CompanyId != companyId) return null;
 
-        return new BizSrt.Model.Product.Profile
+        return new BizSrt.Model.Offering.Profile
         {
-            Id = cachedProduct.Id,
-            Title = cachedProduct.Title,
-            RichText = cachedProduct.RichText,
-            Text = cachedProduct.Text,
-            WebUrl = cachedProduct.WebUrl,
-            Status = (BizSrt.Model.Product.Status)cachedProduct.Status,
-            Updated = cachedProduct.Updated
+            Id = cachedOffering.Id,
+            Title = cachedOffering.Title,
+            RichText = cachedOffering.RichText,
+            Text = cachedOffering.Text,
+            WebUrl = cachedOffering.WebUrl,
+            Status = (BizSrt.Model.Offering.Status)cachedOffering.Status,
+            Updated = cachedOffering.Updated
         };
     }
 
     public async Task<BizSrt.Model.Job.Profile?> GetJobProfileAsync(int companyId, long jobId)
     {
         var job = await dbContext.Jobs
-            .Include(x => x.ProductNavigation)
+            .Include(x => x.OfferingNavigation)
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Company == companyId && x.Id == jobId);
 
@@ -619,14 +655,14 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
         return new BizSrt.Model.Job.Profile
         {
             Id = job.Id,
-            Title = job.ProductNavigation.Title ?? "",
-            RichText = job.ProductNavigation.RichText,
-            Text = job.ProductNavigation.Text,
+            Title = job.OfferingNavigation.Title ?? "",
+            RichText = job.OfferingNavigation.RichText,
+            Text = job.OfferingNavigation.Text,
             StartDate = job.StartDate,
             Duration = job.Duration,
-            WebUrl = job.ProductNavigation.WebUrl,
-            Status = (BizSrt.Model.Product.Status)job.ProductNavigation.Status,
-            Updated = job.ProductNavigation.Updated
+            WebUrl = job.OfferingNavigation.WebUrl,
+            Status = (BizSrt.Model.Offering.Status)job.OfferingNavigation.Status,
+            Updated = job.OfferingNavigation.Updated
         };
     }
 
@@ -646,7 +682,7 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
             RichText = cp.ProjectNavigation.RichText ?? "",
             Text = cp.ProjectNavigation.Text ?? "",
             TenderType = cp.ProjectNavigation.TenderType,
-            Status = (BizSrt.Model.Product.Status)cp.ProjectNavigation.Status,
+            Status = (BizSrt.Model.Offering.Status)cp.ProjectNavigation.Status,
             Updated = cp.ProjectNavigation.Updated
         };
     }

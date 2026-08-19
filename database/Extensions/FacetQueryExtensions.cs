@@ -76,8 +76,8 @@ public static class FacetQueryExtensions
         return query;
     }
 
-    public static IQueryable<Product> ApplyFacets(
-        this IQueryable<Product> query, 
+    public static IQueryable<Offering> ApplyFacets(
+        this IQueryable<Offering> query, 
         AppDbContext dc, 
         FacetFilter? include, 
         FacetFilter? exclude)
@@ -85,16 +85,16 @@ public static class FacetQueryExtensions
         if (include != null && include.NoFilters > 0 && exclude != null && exclude.NoFilters > 0)
         {
             return from p in query
-                   join pfi in (from pf in dc.CompanyProductFacets
-                                join pfv in dc.CompanyProductFacetValues on pf.FacetValue equals pfv.Id
+                   join pfi in (from pf in dc.CompanyOfferingFacets
+                                join pfv in dc.CompanyOfferingFacetValues on pf.FacetValue equals pfv.Id
                                 where include.FilterNames.Contains(pfv.Name) && include.FilterValues.Contains(pfv.Id)
-                                group pf by pf.Product into pfg
+                                group pf by pf.Offering into pfg
                                 where pfg.Count() == include.NoFilters
                                 select pfg.Key) on p.Id equals pfi
-                   join pfe in (from pf in dc.CompanyProductFacets
-                                join pfv in dc.CompanyProductFacetValues on pf.FacetValue equals pfv.Id
+                   join pfe in (from pf in dc.CompanyOfferingFacets
+                                join pfv in dc.CompanyOfferingFacetValues on pf.FacetValue equals pfv.Id
                                 where exclude.FilterNames.Contains(pfv.Name) && exclude.FilterValues.Contains(pfv.Id)
-                                group pf by pf.Product into pfg
+                                group pf by pf.Offering into pfg
                                 where pfg.Count() > 0
                                 select (long?)pfg.Key) on p.Id equals pfe into pfet
                    from pfe in pfet.DefaultIfEmpty()
@@ -109,19 +109,19 @@ public static class FacetQueryExtensions
                 var facetName = include.FilterNames[0];
                 var facetValue = include.FilterValues[0];
                 query = from p in query
-                        join pf in (from pf in dc.CompanyProductFacets
-                                    join pfv in dc.CompanyProductFacetValues on pf.FacetValue equals pfv.Id
+                        join pf in (from pf in dc.CompanyOfferingFacets
+                                    join pfv in dc.CompanyOfferingFacetValues on pf.FacetValue equals pfv.Id
                                     where pfv.Name == facetName && pfv.Id == facetValue
-                                    select pf.Product) on p.Id equals pf
+                                    select pf.Offering) on p.Id equals pf
                         select p;
             }
             else
             {
                 query = from p in query
-                        join pf in (from pf in dc.CompanyProductFacets
-                                    join pfv in dc.CompanyProductFacetValues on pf.FacetValue equals pfv.Id
+                        join pf in (from pf in dc.CompanyOfferingFacets
+                                    join pfv in dc.CompanyOfferingFacetValues on pf.FacetValue equals pfv.Id
                                     where include.FilterNames.Contains(pfv.Name) && include.FilterValues.Contains(pfv.Id)
-                                    group pf by pf.Product into pfg
+                                    group pf by pf.Offering into pfg
                                     where pfg.Count() == include.NoFilters
                                     select pfg.Key) on p.Id equals pf
                         select p;
@@ -131,11 +131,11 @@ public static class FacetQueryExtensions
         if (exclude != null && exclude.NoFilters > 0)
         {
             query = from p in query
-                    from pf in (from pf in dc.CompanyProductFacets
-                                join pfv in dc.CompanyProductFacetValues on pf.FacetValue equals pfv.Id
+                    from pf in (from pf in dc.CompanyOfferingFacets
+                                join pfv in dc.CompanyOfferingFacetValues on pf.FacetValue equals pfv.Id
                                 where exclude.FilterNames.Contains(pfv.Name) && exclude.FilterValues.Contains(pfv.Id)
                                 select pf)
-                    .Where(pf => pf.Product == p.Id)
+                    .Where(pf => pf.Offering == p.Id)
                     .Take(1)
                     .DefaultIfEmpty()
                     where pf == null

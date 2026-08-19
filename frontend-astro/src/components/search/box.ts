@@ -24,6 +24,7 @@ export class SearchBox extends LitElement {
       /* Text & Placeholders */
       --wa-form-control-value-color: white;
       --wa-form-control-placeholder-color: rgba(255, 255, 255, 0.6);
+      --wa-color-neutral-on-quiet: white;
       
       /* Flat Underline Borders */
       --wa-form-control-border-color: rgba(255, 255, 255, 0.7);
@@ -55,7 +56,7 @@ export class SearchBox extends LitElement {
   render() {
     return html`
       <div class="search-container">
-        <wa-input placeholder=""></wa-input>
+        <wa-input placeholder="Search..."></wa-input>
         <wa-button variant="neutral" is-icon-button pill>
           <wa-icon name="search"></wa-icon>
         </wa-button>

@@ -25,7 +25,7 @@ The `<search-home>` and `<search-header>` components act as the orchestrators. W
 1. **What:** At least ONE of *Selected Category* or *Search Text* must be present.
 2. **Where:** EXACTLY ONE of *Selected DB Location* or *Google Geocoded Point* must be present.
 
-If valid, `search-home` yields a `Selection` payload to its parent (e.g., `<product-home>`), which dispatches it to `Navigation.go()`. The payload is converted into URL search parameters (e.g. `?categoryId=123&searchQuery=Bob&locationId=456`) and Next.js pushes the new route.
+If valid, `search-home` yields a `Selection` payload to its parent (e.g., `<offering-home>`), which dispatches it to `Navigation.go()`. The payload is converted into URL search parameters (e.g. `?categoryId=123&searchQuery=Bob&locationId=456`) and Next.js pushes the new route.
 
 ## 3. Hydration (`reflectToken`)
 
@@ -55,7 +55,7 @@ The frontend also passes the full `_scope` object. The C# endpoint ignores this 
 
 ## 5. URL Parameter Escaping (Payload Serialization)
 
-When passing search parameters to the backend via the `?queryInput={...}` JSON string (e.g. inside `service/company.ts` and `service/product.ts`), special care must be taken to manually escape certain user-provided free-form strings before JSON serialization:
+When passing search parameters to the backend via the `?queryInput={...}` JSON string (e.g. inside `service/company.ts` and `service/offering.ts`), special care must be taken to manually escape certain user-provided free-form strings before JSON serialization:
 
 - **`searchQuery`**: The primary free-form text input string.
 - **`searchNear.text`**: The city/address string retrieved from Google Maps Geocoding (if `geoMode = on`).
@@ -104,3 +104,24 @@ Because of this caching mechanism, you must **never** manually nullify or clear 
 
 ---
 *Documented on July 21, 2026 for AI Agents and Developers maintaining the legacy parity architecture.*
+
+## 6. URL State Synchronization (Shallow Routing)
+- **Legacy reflectToken parity:** In the legacy architecture, the UI state (e.g., selected categories and locations) was often preserved silently without causing page reloads so that clicking the "Back" button would properly rehydrate the search inputs.
+- **Modern Implementation (replaceState):** Modern Next.js routing uses \searchParams\ on initial load for hydration. To ensure that navigating away and hitting "Back" restores the exact state the user left (even if they hadn't hit "Search" yet), orchestrator components (like \search-home\ and \search-header\) hosting \SearchHome$\ viewmodels MUST silently sync their selection state to the URL.
+- **How to Implement:** Tap into the \modelUpdated(props: string[])\ lifecycle hook. When \props.includes('selection')\, execute a function (\_syncUrlState()\) that constructs a new \URL(window.location.href)\, maps \	his.model.selection\ to \URLSearchParams\ (\categoryId\, \locationId\, \searchQuery\, \searchNear\), and calls \window.history.replaceState(null, '', url.toString())\.
+- **Constraint Enforcement:** It is crucial that the viewmodel correctly zeros out mutually exclusive parameters BEFORE synchronization (e.g., if a geocoded \
+ear\ object is present, the database \location\ ID must be explicitly suppressed to \ \ to enforce the 1-of-2 location rule).
+## 8. EF Core Optimizations & The "Two-Query Split"
+
+When porting massive legacy "God Queries" to modern EF Core (especially CompanySearch and OfferingSearch), you must avoid combining orthogonal hierarchical filters (like Category and Location) into a single LINQ query. In EF Core 10, SQL Server will often suffer catastrophic execution plan degradation, resulting in backward index scans, massive tempdb spills, or timeouts.
+
+**The "Two-Query Split" Pattern:**
+1. **Isolated Execution:** Execute the Category/Facet query and the Location query independently as two distinct IQueryable executions.
+2. **In-Memory Intersection:** Materialize both sets of matching IDs into memory (e.g., using ToArrayAsync()), and instantly intersect them in C# using a HashSet<long> or HashSet<int>. 
+3. **Pagination Pushdown:** Apply pagination (Skip/Take) to the intersected array in memory, and only pass the final page IDs to secondary hydration or OPENJSON facet generation queries.
+
+**Data Nuances (Status vs Type):**
+The modernized C# models strictly mirror the legacy GetActive() filters. 
+- **Company Profiles** rely on the Accounts.Status (where Active = 2) rather than CompanyProfiles.Status.
+- **Offerings (Legacy Products)** explicitly filter on Offerings.Status == 1 (Active) AND Offerings.Type != 0 (Multiproduct). 
+If a database seed or dump contains Status = 0 (Draft) for all offerings, the EF Core query is mathematically correct in returning 0 rows. Do not remove the Status == 1 filter to force data to appear, as this breaks legacy parity; the underlying database rows must be updated to Status = 1 for testing.

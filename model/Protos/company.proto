@@ -6,9 +6,9 @@ package company;
 
 service CompanyService {
   rpc IndexCompany (IndexCompanyRequest) returns (IndexCompanyResponse);
-  rpc IndexProduct (IndexProductRequest) returns (IndexProductResponse);
-  rpc IndexProductFacetSet (IndexProductFacetSetRequest) returns (IndexProductFacetSetResponse);
-  rpc DeleteProductFacetSet (DeleteProductFacetSetRequest) returns (DeleteProductFacetSetResponse);
+  rpc IndexOffering (IndexOfferingRequest) returns (IndexOfferingResponse);
+  rpc IndexOfferingFacetSet (IndexOfferingFacetSetRequest) returns (IndexOfferingFacetSetResponse);
+  rpc DeleteOfferingFacetSet (DeleteOfferingFacetSetRequest) returns (DeleteOfferingFacetSetResponse);
 }
 
 message IndexCompanyRequest {
@@ -19,26 +19,26 @@ message IndexCompanyResponse {
   bool success = 1;
 }
 
-message IndexProductRequest {
-  int64 product_id = 1;
+message IndexOfferingRequest {
+  int64 offering_id = 1;
 }
 
-message IndexProductResponse {
+message IndexOfferingResponse {
   bool success = 1;
 }
 
-message IndexProductFacetSetRequest {
+message IndexOfferingFacetSetRequest {
   int32 set_id = 1;
 }
 
-message IndexProductFacetSetResponse {
+message IndexOfferingFacetSetResponse {
   bool success = 1;
 }
 
-message DeleteProductFacetSetRequest {
+message DeleteOfferingFacetSetRequest {
   int32 set_id = 1;
 }
 
-message DeleteProductFacetSetResponse {
+message DeleteOfferingFacetSetResponse {
   bool success = 1;
 }

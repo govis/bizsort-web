@@ -96,7 +96,7 @@ public class CommunitiesCache : ReadManyExpirationCache<int, CachedCommunity>
                     Name = ct.Community.Name,
                     ImageId = ct.ImageId ?? 0,
                     Text = ct.Community.Text ?? string.Empty,
-                    Address = ct.Community.Location != null && ct.Community.Location.HasValue ? new BizSrt.Model.Location { Address = (ct.Community.StreetNumber + " " + ct.Community.Address1 + ", " + ct.Community.PostalCode).Trim().Trim(',') } : null,
+                    Address = ct.Community.Location != null && ct.Community.Location.HasValue ? new BizSrt.Model.Location { Address = new BizSrt.Model.Geocoder.Address { StreetNumber = ct.Community.StreetNumber, Address1 = ct.Community.Address1, PostalCode = ct.Community.PostalCode } } : null,
                     Options = new Option.Set { Value = (Option.Flags)ct.Community.Options },
                     DefaultCategory = !string.IsNullOrEmpty(ct.Community.DefaultCategory) ? ct.Community.DefaultCategory : null 
                 }).ToArray();
@@ -134,7 +134,7 @@ public class CommunitiesCache : ReadManyExpirationCache<int, CachedCommunity>
                     Name = ct.Community.Name,
                     ImageId = ct.ImageId ?? 0,
                     Text = ct.Community.Text ?? string.Empty,
-                    Address = ct.Community.Location != null && ct.Community.Location.HasValue ? new BizSrt.Model.Location { Address = (ct.Community.StreetNumber + " " + ct.Community.Address1 + ", " + ct.Community.PostalCode).Trim().Trim(',') } : null,
+                    Address = ct.Community.Location != null && ct.Community.Location.HasValue ? new BizSrt.Model.Location { Address = new BizSrt.Model.Geocoder.Address { StreetNumber = ct.Community.StreetNumber, Address1 = ct.Community.Address1, PostalCode = ct.Community.PostalCode } } : null,
                     Options = new Option.Set { Value = (Option.Flags)ct.Community.Options },
                     DefaultCategory = !string.IsNullOrEmpty(ct.Community.DefaultCategory) ? ct.Community.DefaultCategory : null 
                 };

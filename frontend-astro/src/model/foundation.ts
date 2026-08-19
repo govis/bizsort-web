@@ -323,7 +323,7 @@ export class ResolvedLocation implements ILocation {
     }
 
     get county(): LocationRef {
-        return this.get(LocationType.Country);
+        return this.get(LocationType.County);
     }
 
     get city(): LocationRef {

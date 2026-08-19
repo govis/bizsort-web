@@ -13,7 +13,7 @@ import { SearchHome$ } from '../../viewmodel/search/home';
 import type { IViewAdapter } from '../../viewmodel';
 import { SearchCategoryInput } from './category/input';
 import { SearchLocationInput } from './location/input';
-import { Navigation, Company, Product } from '../../navigation';
+import { Navigation, Company, Offering } from '../../navigation';
 
 /**
  * Search widget for the home page.
@@ -143,8 +143,8 @@ export class SearchHome extends LitElement implements IViewAdapter {
         case 'company': 
             Company.home(params); 
             break;
-        case 'product': 
-            Product.home(params); 
+        case 'offering': 
+            Offering.home(params); 
             break;
         case 'project': 
             Navigation.go('/project', params); 
@@ -344,7 +344,7 @@ export class SearchHome extends LitElement implements IViewAdapter {
       <div class="content">
         <wa-tab-group @wa-tab-show="${this._onTabSelect}">
           <wa-tab slot="nav" panel="company" ?active="${this.tab === 'company'}">Companies</wa-tab>
-          <wa-tab slot="nav" panel="product" ?active="${this.tab === 'product'}">Offerings</wa-tab>
+          <wa-tab slot="nav" panel="offering" ?active="${this.tab === 'offering'}">Offerings</wa-tab>
           <wa-tab slot="nav" panel="project" ?active="${this.tab === 'project'}">Projects</wa-tab>
           <wa-tab slot="nav" panel="job" ?active="${this.tab === 'job'}">Jobs</wa-tab>
         </wa-tab-group>

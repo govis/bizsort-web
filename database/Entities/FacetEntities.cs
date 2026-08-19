@@ -63,25 +63,25 @@ public class FacetSetCompany
     public int Company { get; set; }
 }
 
-[Table("CompanyProductFacets")]
-public class CompanyProductFacet
+[Table("CompanyOfferingFacets")]
+public class CompanyOfferingFacet
 {
     public long Id { get; set; }
-    public long Product { get; set; }
+    public long Offering { get; set; }
     public int FacetValue { get; set; }
     public bool UserDefined { get; set; }
 }
 
-[Table("CompanyProductFacetNames")]
-public class CompanyProductFacetName : BizSrt.Foundation.Cache.IKey<short>
+[Table("CompanyOfferingFacetNames")]
+public class CompanyOfferingFacetName : BizSrt.Foundation.Cache.IKey<short>
 {
     public short Id { get; set; }
     [NotMapped] short BizSrt.Foundation.Cache.IKey<short>.Key => Id;
     public string Name { get; set; } = string.Empty;
 }
 
-[Table("CompanyProductFacetValues")]
-public class CompanyProductFacetValue : BizSrt.Foundation.Cache.IKey<int>
+[Table("CompanyOfferingFacetValues")]
+public class CompanyOfferingFacetValue : BizSrt.Foundation.Cache.IKey<int>
 {
     public int Id { get; set; }
     [NotMapped] int BizSrt.Foundation.Cache.IKey<int>.Key => Id;
@@ -91,8 +91,8 @@ public class CompanyProductFacetValue : BizSrt.Foundation.Cache.IKey<int>
     public string Text { get; set; } = string.Empty;
 }
 
-[Table("CompanyProductFacetSets")]
-public class CompanyProductFacetSet : BizSrt.Foundation.Cache.IKey<int>
+[Table("CompanyOfferingFacetSets")]
+public class CompanyOfferingFacetSet : BizSrt.Foundation.Cache.IKey<int>
 {
     public int Id { get; set; }
     [NotMapped] int BizSrt.Foundation.Cache.IKey<int>.Key => Id;
@@ -103,22 +103,22 @@ public class CompanyProductFacetSet : BizSrt.Foundation.Cache.IKey<int>
     public DateTime? Indexed { get; set; }
 }
 
-[Table("CompanyProductFacetSetDetails")]
+[Table("CompanyOfferingFacetSetDetails")]
 [Keyless]
-public class CompanyProductFacetSetDetail
+public class CompanyOfferingFacetSetDetail
 {
     public int Set { get; set; }
     public int Value { get; set; }
     public bool Exclude { get; set; }
 
     [ForeignKey("Set")]
-    public CompanyProductFacetSet CompanyProductFacetSet { get; set; } = null!;
+    public CompanyOfferingFacetSet CompanyOfferingFacetSet { get; set; } = null!;
 }
 
-[Table("FacetSetCompanyProducts")]
-[PrimaryKey(nameof(FacetSet), nameof(Product))]
-public class FacetSetCompanyProduct
+[Table("FacetSetCompanyOfferings")]
+[PrimaryKey(nameof(FacetSet), nameof(Offering))]
+public class FacetSetCompanyOffering
 {
     public int FacetSet { get; set; }
-    public long Product { get; set; }
+    public long Offering { get; set; }
 }

@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
-import { Navigation, Company, Product } from '../../navigation';
+import { Navigation, Company, Offering } from '../../navigation';
 
 import '../search/header';
 import '@awesome.me/webawesome/dist/components/tab-group/tab-group.js';
@@ -66,8 +66,8 @@ export class DirectoryHeaderLayout extends LitElement {
       case 'company':
         Navigation.go(Company.searchPage, params);
         break;
-      case 'product':
-        Navigation.go(Product.searchPage, params);
+      case 'offering':
+        Navigation.go(Offering.searchPage, params);
         break;
       // case 'project':
       //   Navigation.go('/project/search', params);
@@ -148,7 +148,7 @@ export class DirectoryHeaderLayout extends LitElement {
         <div class="navbar">
           <wa-tab-group @wa-tab-show="${this._onTabSelect}">
             <wa-tab slot="nav" panel="company" ?active="${this.entityType === 'company'}">Companies</wa-tab>
-            <wa-tab slot="nav" panel="product" ?active="${this.entityType === 'product'}">Offerings</wa-tab>
+            <wa-tab slot="nav" panel="offering" ?active="${this.entityType === 'offering'}">Offerings</wa-tab>
             <wa-tab slot="nav" panel="project" ?active="${this.entityType === 'project'}">Projects</wa-tab>
             <wa-tab slot="nav" panel="job" ?active="${this.entityType === 'job'}">Jobs</wa-tab>
           </wa-tab-group>

@@ -290,46 +290,46 @@ namespace BizSrt.Api.Process
             }
         }
 
-        public static async Task IndexProductAsync(AppDbContext dc, long productId, CancellationToken cancellationToken = default)
+        public static async Task IndexOfferingAsync(AppDbContext dc, long offeringId, CancellationToken cancellationToken = default)
         {
-            if (productId <= 0)
-                throw new ArgumentOutOfRangeException(nameof(productId));
+            if (offeringId <= 0)
+                throw new ArgumentOutOfRangeException(nameof(offeringId));
 
-            var product = await dc.Products.SingleOrDefaultAsync(p => p.Id == productId, cancellationToken);
-            if (product == null)
+            var offering = await dc.Offerings.SingleOrDefaultAsync(p => p.Id == offeringId, cancellationToken);
+            if (offering == null)
                 return;
 
-            var companyProduct = await dc.CompanyProducts.SingleOrDefaultAsync(cp => cp.Product == productId, cancellationToken);
-            if (companyProduct == null)
+            var companyOffering = await dc.CompanyOfferings.SingleOrDefaultAsync(cp => cp.Offering == offeringId, cancellationToken);
+            if (companyOffering == null)
                 return;
 
-            var cache = await dc.CompanyProductFacets
-                .Where(pf => pf.Product == productId && !pf.UserDefined)
+            var cache = await dc.CompanyOfferingFacets
+                .Where(pf => pf.Offering == offeringId && !pf.UserDefined)
                 .ToArrayAsync(cancellationToken);
 
             var facets = new System.Collections.Generic.List<LocalFacet>();
             var processed = new System.Collections.Generic.List<long>();
 
-            if (!(product.Status == (byte)BizSrt.Model.Product.Status.Pending || product.Status == (byte)BizSrt.Model.Product.Status.Rejected || product.Status == (byte)BizSrt.Model.Product.Status.Deleted))
+            if (!(offering.Status == (byte)BizSrt.Model.Offering.Status.Pending || offering.Status == (byte)BizSrt.Model.Offering.Status.Rejected || offering.Status == (byte)BizSrt.Model.Offering.Status.Deleted))
             {
-                createProductFacet(facets, product, companyProduct);
+                createOfferingFacet(facets, offering, companyOffering);
             }
             else
             {
-                createProductFacet(facets, product, companyProduct, FacetValueType._Status);
+                createOfferingFacet(facets, offering, companyOffering, FacetValueType._Status);
             }
 
             bool refreshFacetSets = false;
             foreach (var facet in facets)
             {
-                var facetName = BizSrt.Api.Data.Cache.LegacyCache.CompanyProductFacetNames[facet.Name, BizSrt.Foundation.Cache.TwoKeySuppress.None, facet.Name];
-                var facetValue = BizSrt.Api.Data.Cache.LegacyCache.CompanyProductFacetValues[new BizSrt.Api.Data.Cache.Product.Facet.CachedValue.Key { Name = facetName, ValueType = (byte)facet.ValueType, Value = facet.ValueData }, BizSrt.Foundation.Cache.TwoKeySuppress.None, facet.ValueText];
+                var facetName = BizSrt.Api.Data.Cache.LegacyCache.CompanyOfferingFacetNames[facet.Name, BizSrt.Foundation.Cache.TwoKeySuppress.None, facet.Name];
+                var facetValue = BizSrt.Api.Data.Cache.LegacyCache.CompanyOfferingFacetValues[new BizSrt.Api.Data.Cache.Offering.Facet.CachedValue.Key { Name = facetName, ValueType = (byte)facet.ValueType, Value = facet.ValueData }, BizSrt.Foundation.Cache.TwoKeySuppress.None, facet.ValueText];
                 
-                var pf = cache.SingleOrDefault(cpf => cpf.Product == productId && cpf.FacetValue == facetValue);
+                var pf = cache.SingleOrDefault(cpf => cpf.Offering == offeringId && cpf.FacetValue == facetValue);
                 if (pf == null)
                 {
-                    pf = new CompanyProductFacet { Product = productId, FacetValue = facetValue, UserDefined = false };
-                    dc.CompanyProductFacets.Add(pf);
+                    pf = new CompanyOfferingFacet { Offering = offeringId, FacetValue = facetValue, UserDefined = false };
+                    dc.CompanyOfferingFacets.Add(pf);
                     refreshFacetSets = true;
                 }
                 else
@@ -341,37 +341,37 @@ namespace BizSrt.Api.Process
             var dpf = cache.Where(cpf => !processed.Contains(cpf.Id)).ToArray();
             if (dpf.Length > 0)
             {
-                dc.CompanyProductFacets.RemoveRange(dpf);
+                dc.CompanyOfferingFacets.RemoveRange(dpf);
                 refreshFacetSets = true;
             }
 
-            companyProduct.Indexed = DateTime.UtcNow;
+            companyOffering.Indexed = DateTime.UtcNow;
 
             await dc.SaveChangesAsync(cancellationToken);
 
             if (refreshFacetSets)
             {
-                await refreshProductFacetSetsAsync(dc, productId, cancellationToken);
+                await refreshOfferingFacetSetsAsync(dc, offeringId, cancellationToken);
             }
         }
 
-        private static async Task refreshProductFacetSetsAsync(AppDbContext dc, long productId, CancellationToken cancellationToken)
+        private static async Task refreshOfferingFacetSetsAsync(AppDbContext dc, long offeringId, CancellationToken cancellationToken)
         {
-            var pfCount = from pf in dc.CompanyProductFacets
-                          join pfsv in dc.CompanyProductFacetValues on pf.FacetValue equals pfsv.Id
-                          join pfsd in dc.CompanyProductFacetSetDetails on pf.FacetValue equals pfsd.Value
-                          where pf.Product == productId
+            var pfCount = from pf in dc.CompanyOfferingFacets
+                          join pfsv in dc.CompanyOfferingFacetValues on pf.FacetValue equals pfsv.Id
+                          join pfsd in dc.CompanyOfferingFacetSetDetails on pf.FacetValue equals pfsd.Value
+                          where pf.Offering == offeringId
                           group pfsd by pfsd.Set into g
                           select new { Set = g.Key, Count = g.Count() };
 
-            var excl = from pf in dc.CompanyProductFacets
-                       join pfsv in dc.CompanyProductFacetValues on pf.FacetValue equals pfsv.Id
-                       join pfsd in dc.CompanyProductFacetSetDetails on pf.FacetValue equals pfsd.Value
-                       where pf.Product == productId && pfsd.Exclude
+            var excl = from pf in dc.CompanyOfferingFacets
+                       join pfsv in dc.CompanyOfferingFacetValues on pf.FacetValue equals pfsv.Id
+                       join pfsd in dc.CompanyOfferingFacetSetDetails on pf.FacetValue equals pfsd.Value
+                       where pf.Offering == offeringId && pfsd.Exclude
                        group pfsd by pfsd.Set into g
                        select (int?)g.Key;
 
-            var q = from pfs in dc.CompanyProductFacetSets
+            var q = from pfs in dc.CompanyOfferingFacetSets
                     join pfc in pfCount on new { Set = pfs.Id, Count = pfs.InclFacets } equals new { pfc.Set, Count = (byte)pfc.Count }
                     join e in excl on pfs.Id equals e into et
                     from e in et.DefaultIfEmpty()
@@ -380,51 +380,51 @@ namespace BizSrt.Api.Process
 
             var sets = await q.ToArrayAsync(cancellationToken);
 
-            var existingSets = await dc.FacetSetCompanyProducts
-                .Where(fsp => fsp.Product == productId)
+            var existingSets = await dc.FacetSetCompanyOfferings
+                .Where(fsp => fsp.Offering == offeringId)
                 .Select(fsp => fsp.FacetSet)
                 .ToListAsync(cancellationToken);
 
-            var toAdd = sets.Except(existingSets).Select(s => new FacetSetCompanyProduct { FacetSet = s, Product = productId }).ToArray();
+            var toAdd = sets.Except(existingSets).Select(s => new FacetSetCompanyOffering { FacetSet = s, Offering = offeringId }).ToArray();
             var toRemoveSets = existingSets.Except(sets).ToArray();
 
             if (toAdd.Length > 0)
-                dc.FacetSetCompanyProducts.AddRange(toAdd);
+                dc.FacetSetCompanyOfferings.AddRange(toAdd);
 
             if (toRemoveSets.Length > 0)
             {
-                var toRemove = await dc.FacetSetCompanyProducts
-                    .Where(fsp => fsp.Product == productId && toRemoveSets.Contains(fsp.FacetSet))
+                var toRemove = await dc.FacetSetCompanyOfferings
+                    .Where(fsp => fsp.Offering == offeringId && toRemoveSets.Contains(fsp.FacetSet))
                     .ToListAsync(cancellationToken);
-                dc.FacetSetCompanyProducts.RemoveRange(toRemove);
+                dc.FacetSetCompanyOfferings.RemoveRange(toRemove);
             }
 
             await dc.SaveChangesAsync(cancellationToken);
         }
 
-        public static async Task IndexProductFacetSetAsync(AppDbContext dc, int setId, CancellationToken cancellationToken = default)
+        public static async Task IndexOfferingFacetSetAsync(AppDbContext dc, int setId, CancellationToken cancellationToken = default)
         {
-            var facets = await (from pfsd in dc.CompanyProductFacetSetDetails
-                                join pfsv in dc.CompanyProductFacetValues on pfsd.Value equals pfsv.Id
+            var facets = await (from pfsd in dc.CompanyOfferingFacetSetDetails
+                                join pfsv in dc.CompanyOfferingFacetValues on pfsd.Value equals pfsv.Id
                                 where pfsd.Set == setId
                                 select new BizSrt.Model.Semantic.Facet { Name = pfsv.Name, Value = pfsv.Id, Exclude = pfsd.Exclude })
                                .ToArrayAsync(cancellationToken);
 
             if (facets.Length > 0)
             {
-                var facetSet = await dc.CompanyProductFacetSets.SingleAsync(bfs => bfs.Id == setId, cancellationToken);
-                var cq = BizSrt.Api.Data.Company.ProductQueryExtensions.Get(dc, new BizSrt.Model.Semantic.FacetFilter(facets, false), new BizSrt.Model.Semantic.FacetFilter(facets, true));
+                var facetSet = await dc.CompanyOfferingFacetSets.SingleAsync(bfs => bfs.Id == setId, cancellationToken);
+                var cq = BizSrt.Api.Data.Company.OfferingQueryExtensions.Get(dc, new BizSrt.Model.Semantic.FacetFilter(facets, false), new BizSrt.Model.Semantic.FacetFilter(facets, true));
 
-                var existingFsp = await dc.FacetSetCompanyProducts.Where(fsp => fsp.FacetSet == setId).ToArrayAsync(cancellationToken);
-                dc.FacetSetCompanyProducts.RemoveRange(existingFsp);
+                var existingFsp = await dc.FacetSetCompanyOfferings.Where(fsp => fsp.FacetSet == setId).ToArrayAsync(cancellationToken);
+                dc.FacetSetCompanyOfferings.RemoveRange(existingFsp);
 
-                var productIds = await cq.Select(p => p.Id).ToArrayAsync(cancellationToken);
-                dc.FacetSetCompanyProducts.AddRange(productIds.Select(pid => new FacetSetCompanyProduct { FacetSet = setId, Product = pid }));
+                var offeringIds = await cq.Select(p => p.Id).ToArrayAsync(cancellationToken);
+                dc.FacetSetCompanyOfferings.AddRange(offeringIds.Select(pid => new FacetSetCompanyOffering { FacetSet = setId, Offering = pid }));
 
                 facetSet.Indexed = DateTime.UtcNow;
                 await dc.SaveChangesAsync(cancellationToken);
 
-                var cachedSet = BizSrt.Api.Data.Cache.LegacyCache.CompanyProductFacetSets?[setId];
+                var cachedSet = BizSrt.Api.Data.Cache.LegacyCache.CompanyOfferingFacetSets?[setId];
                 if (cachedSet != null)
                 {
                     cachedSet.Indexed = true;
@@ -432,35 +432,35 @@ namespace BizSrt.Api.Process
             }
             else
             {
-                throw new InvalidOperationException($"No Company Product Facets found for Set {setId}");
+                throw new InvalidOperationException($"No Company Offering Facets found for Set {setId}");
             }
         }
 
-        private static void createProductFacet(System.Collections.Generic.List<LocalFacet> facets, Product product, CompanyProduct companyProduct)
+        private static void createOfferingFacet(System.Collections.Generic.List<LocalFacet> facets, Offering offering, CompanyOffering companyOffering)
         {
-            if (product.Id > 0)
+            if (offering.Id > 0)
             {
-                if (companyProduct.Category > 0)
+                if (companyOffering.Category > 0)
                 {
-                    var cat = BizSrt.Api.Data.Cache.LegacyCache.Categories?[companyProduct.Category];
+                    var cat = BizSrt.Api.Data.Cache.LegacyCache.Categories?[companyOffering.Category];
                     if (cat != null)
                     {
                         facets.Add(new LocalFacet(FacetValueType._Category, false)
                         {
                             Name = "Category",
-                            ValueData = BitConverter.GetBytes(companyProduct.Category),
+                            ValueData = BitConverter.GetBytes(companyOffering.Category),
                             ValueText = cat.QualifiedName
                         });
                     }
                 }
-                if (product.Type != null)
+                if (offering.Type != null)
                 {
-                    var types = BizSrt.Api.Data.Cache.LegacyCache.Dictionary.Get<global::BizSrt.Model.ProductType>(BizSrt.Model.DictionaryType.ProductType);
+                    var types = BizSrt.Api.Data.Cache.LegacyCache.Dictionary.Get<global::BizSrt.Model.OfferingType>(BizSrt.Model.DictionaryType.OfferingType);
                     if (types != null)
                     {
                         foreach (var t in types)
                         {
-                            if ((t.ItemKey & product.Type) > 0)
+                            if ((t.ItemKey & offering.Type) > 0)
                                 facets.Add(new LocalFacet(FacetValueType._Type, false)
                                 {
                                     Name = "Type",
@@ -470,14 +470,14 @@ namespace BizSrt.Api.Process
                         }
                     }
                 }
-                if (companyProduct.ServiceType != null && companyProduct.ServiceType != 0)
+                if (companyOffering.ServiceType != null && companyOffering.ServiceType != 0)
                 {
                     var serviceTypes = BizSrt.Api.Data.Cache.LegacyCache.Dictionary?.Get<BizSrt.Model.ServiceType>(BizSrt.Model.DictionaryType.ServiceType);
                     if (serviceTypes != null)
                     {
                         foreach (var st in serviceTypes)
                         {
-                            if ((st.ItemKey & companyProduct.ServiceType) > 0)
+                            if ((st.ItemKey & companyOffering.ServiceType) > 0)
                                 facets.Add(new LocalFacet(FacetValueType._Type, false)
                                 {
                                     Name = "Type",
@@ -487,14 +487,14 @@ namespace BizSrt.Api.Process
                         }
                     }
                 }
-                if (companyProduct.Industry != null && companyProduct.Industry != 0)
+                if (companyOffering.Industry != null && companyOffering.Industry != 0)
                 {
                     var industries = BizSrt.Api.Data.Cache.LegacyCache.Dictionary?.Get<BizSrt.Model.Industry>(BizSrt.Model.DictionaryType.Industry);
                     if (industries != null)
                     {
                         foreach (var industry in industries)
                         {
-                            if ((industry.ItemKey & companyProduct.Industry) > 0)
+                            if ((industry.ItemKey & companyOffering.Industry) > 0)
                                 facets.Add(new LocalFacet(FacetValueType._Industry, false)
                                 {
                                     Name = "Industry",
@@ -505,40 +505,40 @@ namespace BizSrt.Api.Process
                     }
                 }
 
-                createProductFacet(facets, product, companyProduct, FacetValueType._Status);
+                createOfferingFacet(facets, offering, companyOffering, FacetValueType._Status);
             }
         }
 
-        private static void createProductFacet(System.Collections.Generic.List<LocalFacet> facets, Product product, CompanyProduct companyProduct, FacetValueType type)
+        private static void createOfferingFacet(System.Collections.Generic.List<LocalFacet> facets, Offering offering, CompanyOffering companyOffering, FacetValueType type)
         {
-            if (product.Id > 0 && type == FacetValueType._Status)
+            if (offering.Id > 0 && type == FacetValueType._Status)
             {
-                var statusEnum = (BizSrt.Model.Product.Status)product.Status;
+                var statusEnum = (BizSrt.Model.Offering.Status)offering.Status;
                 facets.Add(new LocalFacet(FacetValueType._Status, false)
                 {
                     Name = "Status",
-                    ValueData = new byte[] { (byte)product.Status },
+                    ValueData = new byte[] { (byte)offering.Status },
                     ValueText = BizSrt.Foundation.StringEnum.Extensions.GetStringValue(statusEnum)
                 });
             }
         }
 
-        public static async Task DeleteProductFacetSetAsync(AppDbContext dc, int setId, CancellationToken cancellationToken = default)
+        public static async Task DeleteOfferingFacetSetAsync(AppDbContext dc, int setId, CancellationToken cancellationToken = default)
         {
-            var facetSet = await dc.CompanyProductFacetSets.SingleOrDefaultAsync(pfs => pfs.Id == setId, cancellationToken);
+            var facetSet = await dc.CompanyOfferingFacetSets.SingleOrDefaultAsync(pfs => pfs.Id == setId, cancellationToken);
             if (facetSet != null)
             {
-                var existingFsp = await dc.FacetSetCompanyProducts.Where(fsp => fsp.FacetSet == setId).ToArrayAsync(cancellationToken);
-                dc.FacetSetCompanyProducts.RemoveRange(existingFsp);
+                var existingFsp = await dc.FacetSetCompanyOfferings.Where(fsp => fsp.FacetSet == setId).ToArrayAsync(cancellationToken);
+                dc.FacetSetCompanyOfferings.RemoveRange(existingFsp);
 
-                var existingPfsd = await dc.CompanyProductFacetSetDetails.Where(pfsd => pfsd.Set == setId).ToArrayAsync(cancellationToken);
-                dc.CompanyProductFacetSetDetails.RemoveRange(existingPfsd);
+                var existingPfsd = await dc.CompanyOfferingFacetSetDetails.Where(pfsd => pfsd.Set == setId).ToArrayAsync(cancellationToken);
+                dc.CompanyOfferingFacetSetDetails.RemoveRange(existingPfsd);
 
-                dc.CompanyProductFacetSets.Remove(facetSet);
+                dc.CompanyOfferingFacetSets.Remove(facetSet);
 
                 await dc.SaveChangesAsync(cancellationToken);
 
-                var cachedSet = BizSrt.Api.Data.Cache.LegacyCache.CompanyProductFacetSets?[setId];
+                var cachedSet = BizSrt.Api.Data.Cache.LegacyCache.CompanyOfferingFacetSets?[setId];
                 if (cachedSet != null)
                 {
                     cachedSet.Indexed = false;

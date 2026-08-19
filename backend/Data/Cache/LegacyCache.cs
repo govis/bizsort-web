@@ -28,11 +28,11 @@ namespace BizSrt.Api.Data.Cache
             CompanyFacetValues = new BizSrt.Api.Data.Cache.Company.Facet.ValuesCache();
             CompanyFacetSets = new BizSrt.Api.Data.Cache.Company.Facet.SetsCache();
             FeaturedCompanies = new BizSrt.Api.Data.Cache.Featured.FeaturedCompaniesCache();
-            CompanyProducts = new BizSrt.Api.Data.Cache.Company.CompanyProductCache();
-            CompanyProductFacetNames = new BizSrt.Api.Data.Cache.Product.Facet.NamesCache();
-            CompanyProductFacetValues = new BizSrt.Api.Data.Cache.Product.Facet.ValuesCache();
-            CompanyProductFacetSets = new BizSrt.Api.Data.Cache.Product.Facet.SetsCache();
-            FeaturedProducts = new BizSrt.Api.Data.Cache.Featured.FeaturedProductsCache();
+            CompanyOfferings = new BizSrt.Api.Data.Cache.Company.CompanyOfferingCache();
+            CompanyOfferingFacetNames = new BizSrt.Api.Data.Cache.Offering.Facet.NamesCache();
+            CompanyOfferingFacetValues = new BizSrt.Api.Data.Cache.Offering.Facet.ValuesCache();
+            CompanyOfferingFacetSets = new BizSrt.Api.Data.Cache.Offering.Facet.SetsCache();
+            FeaturedOfferings = new BizSrt.Api.Data.Cache.Featured.FeaturedOfferingsCache();
             Images = new BizSrt.Api.Data.Cache.ImagesCache();
             Communities = new BizSrt.Api.Data.Cache.Community.CommunitiesCache();
         }
@@ -54,11 +54,11 @@ namespace BizSrt.Api.Data.Cache
         internal static BizSrt.Api.Data.Cache.Company.Facet.ValuesCache CompanyFacetValues { get; private set; }
         internal static BizSrt.Api.Data.Cache.Company.Facet.SetsCache CompanyFacetSets { get; private set; }
         internal static BizSrt.Api.Data.Cache.Featured.FeaturedCompaniesCache FeaturedCompanies { get; private set; }
-        internal static BizSrt.Api.Data.Cache.Company.CompanyProductCache CompanyProducts { get; private set; }
-        internal static BizSrt.Api.Data.Cache.Product.Facet.NamesCache CompanyProductFacetNames { get; private set; }
-        internal static BizSrt.Api.Data.Cache.Product.Facet.ValuesCache CompanyProductFacetValues { get; private set; }
-        internal static BizSrt.Api.Data.Cache.Product.Facet.SetsCache CompanyProductFacetSets { get; private set; }
-        internal static BizSrt.Api.Data.Cache.Featured.FeaturedProductsCache FeaturedProducts { get; private set; }
+        internal static BizSrt.Api.Data.Cache.Company.CompanyOfferingCache CompanyOfferings { get; private set; }
+        internal static BizSrt.Api.Data.Cache.Offering.Facet.NamesCache CompanyOfferingFacetNames { get; private set; }
+        internal static BizSrt.Api.Data.Cache.Offering.Facet.ValuesCache CompanyOfferingFacetValues { get; private set; }
+        internal static BizSrt.Api.Data.Cache.Offering.Facet.SetsCache CompanyOfferingFacetSets { get; private set; }
+        internal static BizSrt.Api.Data.Cache.Featured.FeaturedOfferingsCache FeaturedOfferings { get; private set; }
         internal static BizSrt.Api.Data.Cache.ImagesCache Images { get; private set; }
         
         internal static BizSrt.Api.Data.Cache.Location.LocationSettingsCache LocationSettings { get; private set; }

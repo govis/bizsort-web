@@ -1,6 +1,6 @@
 using System.Linq;
 using BizSrt.Model;
-using BizSrt.Model.Product;
+using BizSrt.Model.Offering;
 using BizSrt.Data.Entities;
 
 namespace BizSrt.Api.Data.Cache
@@ -27,12 +27,12 @@ namespace BizSrt.Api.Data.Cache
                         case BizSrt.Model.DictionaryType.Industry:
                             return (from i in dc.Industries.OrderBy(i => i.Id).AsEnumerable()
                                     select new BizSrt.Model.Industry { ItemKey = i.Id, ItemText = i.Type }).ToArray();
-                        case BizSrt.Model.DictionaryType.ProductType:
-                            return (from pt in dc.ProductTypes.Where(pt => pt.Id > 0).OrderBy(pt => pt.Id).AsEnumerable()
-                                    select new BizSrt.Model.ProductType { ItemKey = pt.Id, ItemText = pt.Type }).ToArray();
-                        case BizSrt.Model.DictionaryType.ProductAttributeType:
-                            return (from pat in dc.ProductAttributeTypes.OrderBy(pat => pat.Id).AsEnumerable()
-                                    select new BizSrt.Model.Product.Attribute.Type { ItemKey = (byte)pat.Id, Primitive = pat.Primitive, Name = pat.Name, EditorType = pat.EditorType, ValueType = pat.ValueType, DefaultValue = pat.DefaultValue, ValueOptions = (string.IsNullOrWhiteSpace(pat.ValueOptions) ? null : pat.ValueOptions.Split(';')) }).ToArray();
+                        case BizSrt.Model.DictionaryType.OfferingType:
+                            return (from pt in dc.OfferingTypes.Where(pt => pt.Id > 0).OrderBy(pt => pt.Id).AsEnumerable()
+                                    select new BizSrt.Model.OfferingType { ItemKey = pt.Id, ItemText = pt.Type }).ToArray();
+                        case BizSrt.Model.DictionaryType.OfferingAttributeType:
+                            return (from pat in dc.OfferingAttributeTypes.OrderBy(pat => pat.Id).AsEnumerable()
+                                    select new BizSrt.Model.Offering.Attribute.Type { ItemKey = (byte)pat.Id, Primitive = pat.Primitive, Name = pat.Name, EditorType = pat.EditorType, ValueType = pat.ValueType, DefaultValue = pat.DefaultValue, ValueOptions = (string.IsNullOrWhiteSpace(pat.ValueOptions) ? null : pat.ValueOptions.Split(';')) }).ToArray();
                         case BizSrt.Model.DictionaryType.Currency:
                             return (from c in dc.Currencies.OrderBy(c => c.Id).AsEnumerable()
                                     select new BizSrt.Model.Currency { ItemKey = c.Id, ItemText = c.ISOCode, CountryPriceFormat = c.CountryPriceFormat, PriceFormat = c.PriceFormat }).ToArray();

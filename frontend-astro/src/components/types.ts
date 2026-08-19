@@ -22,7 +22,7 @@ export interface Office {
 
 export interface Offerings {
   view: number;
-  multiProduct?: string;
+  multiOffering?: string;
   label?: string;
   hideOfferings: boolean;
 }
@@ -89,19 +89,19 @@ export interface CompanyPreview {
   webSite?: string;
   phone?: string;
   text?: string;
-  productsView?: number;
+  offeringsView?: number;
   category?: Category;
 }
 
-export interface ProductType {
+export interface OfferingType {
   itemKey: number;
   itemText: string;
 }
 
-export interface ProductPreview {
+export interface OfferingPreview {
   id: number;
   name: string;
-  type?: ProductType;
+  type?: OfferingType;
   category?: Category;
   image?: ImageRef;
   text?: string;

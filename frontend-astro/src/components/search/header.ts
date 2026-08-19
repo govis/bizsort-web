@@ -2,7 +2,7 @@ import { LitElement, html, css } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { SearchHome$ } from '../../viewmodel/search/home';
 import type { IViewAdapter } from '../../viewmodel';
-import { Navigation, Company, Product } from '../../navigation';
+import { Navigation, Company, Offering } from '../../navigation';
 
 import './category/input';
 import './location/input';
@@ -199,8 +199,8 @@ export class SearchHeader extends LitElement implements IViewAdapter {
   }
 
   private _handleHome() {
-    if (this.entityType.toLowerCase() === 'product') {
-      Product.home();
+    if (this.entityType.toLowerCase() === 'offering') {
+      Offering.home();
     } else {
       Company.home();
     }
@@ -231,8 +231,8 @@ export class SearchHeader extends LitElement implements IViewAdapter {
           params.locationId = selection.location;
       }
 
-      if (this.entityType.toLowerCase() === 'product') {
-         Navigation.go(Product.searchPage, params);
+      if (this.entityType.toLowerCase() === 'offering') {
+         Navigation.go(Offering.searchPage, params);
       } else {
          Navigation.go(Company.searchPage, params);
       }

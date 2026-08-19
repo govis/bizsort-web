@@ -1,11 +1,11 @@
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using BizSrt.Data;
-using BizSrt.Model.Company;
-using BizSrt.Model.List;
-using BizSrt.SearchTest;
+using BizSrt.Model.Offering;
+using BizSrt.Data.Extensions;
 
 class Program
 {
@@ -13,117 +13,129 @@ class Program
     {
         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
         optionsBuilder.UseSqlServer("Server=.;Database=BizSort;Trusted_Connection=True;MultipleActiveResultSets=True;TrustServerCertificate=True", x => x.UseNetTopologySuite())
-            .EnableSensitiveDataLogging()
-            .LogTo(Console.WriteLine, Microsoft.Extensions.Logging.LogLevel.Warning);
+            .LogTo(Console.WriteLine, Microsoft.Extensions.Logging.LogLevel.Information);
 
-        var input = new SearchInput
+        var queryInput = new SearchInput
         {
-            Category = 163,
+            Category = 81,
             Location = 1,
-            TransactionType = 3,
+            OfferingType = 0,
             InclFacets = new BizSrt.Model.Semantic.FacetFilter { NoFilters = 0 },
             ExclFacets = new BizSrt.Model.Semantic.FacetFilter { NoFilters = 0 },
             StartIndex = 0,
-            Length = 0
+            Length = 500
         };
 
-        Console.WriteLine("╔══════════════════════════════════════════════════════════════╗");
-        Console.WriteLine("║        Company Search Performance Benchmark Suite           ║");
-        Console.WriteLine("║        Category=163  Location=1  TransactionType=3          ║");
-        Console.WriteLine("╚══════════════════════════════════════════════════════════════╝");
-        Console.WriteLine();
+        using var dbContext = new AppDbContext(optionsBuilder.Options);
 
-        // ── Warm the SQL connection ──
-        using (var warmCtx = new AppDbContext(optionsBuilder.Options))
+        Console.WriteLine("\n[OFFERING SEARCH DEBUG]\n");
+
+        var activeOfferings = dbContext.Offerings.Where(p => p.Status == (byte)BizSrt.Model.Offering.Status.Active);
+        IQueryable<BizSrt.Data.Entities.Offering> query = activeOfferings;
+
+        var targetCat = (short)queryInput.Category;
+        var categoryIdsQuery = dbContext.Categories_Unwound
+            .Where(cu => cu.Parent == targetCat)
+            .Select(cu => cu.Child);
+
+        query = from p in query
+                join cp in dbContext.CompanyOfferings on p.Id equals cp.Offering
+                where cp.UnlistedType == (byte)BizSrt.Model.Offering.UnlistedType.Listed &&
+                      (cp.Category == targetCat || categoryIdsQuery.Contains(cp.Category)) &&
+                      (queryInput.OfferingType == 0 || (p.Type & queryInput.OfferingType) > 0)
+                select p;
+
+        query = query.ApplyFacets(dbContext, queryInput.InclFacets, queryInput.ExclFacets);
+
+        IQueryable<long>? locationOfferingIds = null;
+        var childLocations = dbContext.Locations_Unwound
+            .Where(lu => lu.Parent == queryInput.Location)
+            .Select(lu => lu.Child);
+
+        locationOfferingIds = dbContext.CompanyOfferings
+            .Where(cp => dbContext.CompanyOffices
+                .Where(co => co.Location == queryInput.Location || childLocations.Contains(co.Location))
+                .Any(co => co.Company == cp.Company))
+            .Select(cp => cp.Offering)
+            .Distinct();
+
+        var sw = Stopwatch.StartNew();
+
+        Console.WriteLine("\n--- EXECUTING CATEGORY MATCHES ---");
+        var categoryMatches = await query.Select(p => new { p.Id, p.Created }).ToArrayAsync();
+        Console.WriteLine($"Found {categoryMatches.Length} category matches in {sw.ElapsedMilliseconds}ms");
+
+        sw.Restart();
+        Console.WriteLine("\n--- EXECUTING LOCATION MATCHES ---");
+        var locationMatches = await locationOfferingIds.ToArrayAsync();
+        Console.WriteLine($"Found {locationMatches.Length} location matches in {sw.ElapsedMilliseconds}ms");
+
+        var locationSet = new System.Collections.Generic.HashSet<long>(locationMatches);
+        var allMatchingIds = categoryMatches
+            .Where(p => locationSet.Contains(p.Id))
+            .OrderByDescending(p => p.Created)
+            .Select(p => p.Id)
+            .ToArray();
+
+        Console.WriteLine($"\nFinal Intersect Count: {allMatchingIds.Length}");
+
+        var total = allMatchingIds.Length;
+        var pageIds = allMatchingIds
+            .Skip(queryInput.StartIndex)
+            .Take(queryInput.Length > 0 ? queryInput.Length : 20)
+            .ToArray();
+
+        Console.WriteLine($"Returned Page Count: {pageIds.Length}");
+
+        if (total == 0) 
         {
-            Console.WriteLine("[WARMUP] Establishing connection and warming EF Core...");
-            await warmCtx.Database.ExecuteSqlRawAsync("SELECT 1");
-            Console.WriteLine("[WARMUP] Done.\n");
+            Console.WriteLine("No records found! Checking raw table data...");
+            
+            var activeOfferingCount = await dbContext.Offerings.CountAsync(o => o.Status == 1);
+            Console.WriteLine($"Offerings with Status == 1 (Active): {activeOfferingCount}");
+
+            var draftOfferingCount = await dbContext.Offerings.CountAsync(o => o.Status == 0);
+            Console.WriteLine($"Offerings with Status == 0 (Draft): {draftOfferingCount}");
+
+            var unlistedCount = await dbContext.CompanyOfferings.CountAsync(co => co.UnlistedType == 1);
+            Console.WriteLine($"CompanyOfferings with UnlistedType == 1 (Unlisted): {unlistedCount}");
+
+            var listedCount = await dbContext.CompanyOfferings.CountAsync(co => co.UnlistedType == 0);
+            Console.WriteLine($"CompanyOfferings with UnlistedType == 0 (Listed): {listedCount}");
+
+            var validMatchesCount = await dbContext.Database.SqlQueryRaw<int>(@"
+                SELECT COUNT(*) AS Value
+                FROM [Offerings] AS [o]
+                INNER JOIN [CompanyOfferings] AS [c] ON [o].[Id] = [c].[Offering]
+                WHERE [c].[Category] = 81 OR EXISTS (
+                    SELECT 1
+                    FROM [Categories_Unwound] AS [c0]
+                    WHERE [c0].[Parent] = 81 AND [c0].[Child] = [c].[Category])").ToArrayAsync();
+            Console.WriteLine($"Total Matches (raw SQL): {validMatchesCount.FirstOrDefault()}");
+
+            var nullStatus = await dbContext.Database.SqlQueryRaw<int>(@"
+                SELECT COUNT(*) AS Value
+                FROM [Offerings] AS [o]
+                WHERE [o].[Status] IS NULL").ToArrayAsync();
+            Console.WriteLine($"Offerings with NULL Status: {nullStatus.FirstOrDefault()}");
+
+            var nullUnlisted = await dbContext.Database.SqlQueryRaw<int>(@"
+                SELECT COUNT(*) AS Value
+                FROM [CompanyOfferings] AS [c]
+                WHERE [c].[UnlistedType] IS NULL").ToArrayAsync();
+            Console.WriteLine($"CompanyOfferings with NULL UnlistedType: {nullUnlisted.FirstOrDefault()}");
+
+            var activeUnlisted = await dbContext.Database.SqlQueryRaw<int>(@"
+                SELECT COUNT(*) AS Value
+                FROM [Offerings] AS [o]
+                INNER JOIN [CompanyOfferings] AS [c] ON [o].[Id] = [c].[Offering]
+                WHERE ([c].[Category] = 81 OR EXISTS (
+                    SELECT 1
+                    FROM [Categories_Unwound] AS [c0]
+                    WHERE [c0].[Parent] = 81 AND [c0].[Child] = [c].[Category]))
+                AND [o].[Status] = 1 AND [c].[UnlistedType] = 0").ToArrayAsync();
+            Console.WriteLine($"Matches with Status=1 and UnlistedType=0: {activeUnlisted.FirstOrDefault()}");
+
         }
-
-        // ── Test 1: Current LINQNew (the winner from previous round) ──
-        await RunBenchmark("LINQNew (Current Best)", optionsBuilder, input, 3,
-            (db, inp) => SearchParityTest.CompanySearchLINQNew(db, inp));
-
-        // ── Test 2: LINQNew Variant A — Combined SQL (single query, no split) ──
-        await RunBenchmark("LINQNew Variant A: Combined SQL (No Split)", optionsBuilder, input, 3,
-            (db, inp) => SearchParityTest.CompanySearchLINQCombined(db, inp));
-
-        // ── Test 3: LINQNew Variant B — OPENJSON for Location ──
-        await RunBenchmark("LINQNew Variant B: OPENJSON Location", optionsBuilder, input, 3,
-            (db, inp) => SearchParityTest.CompanySearchLINQOpenJsonLocation(db, inp));
-
-        // ── Test 4: LINQNew Variant C — EXISTS-based Location (no Distinct) ──
-        await RunBenchmark("LINQNew Variant C: EXISTS Location", optionsBuilder, input, 3,
-            (db, inp) => SearchParityTest.CompanySearchLINQExistsLocation(db, inp));
-
-        // ── Test 5: LINQNew Variant D — SQL-side ORDER BY (backward scan re-test) ──
-        await RunBenchmark("Variant D: SQL-side ORDER BY (backward scan)", optionsBuilder, input, 3,
-            (db, inp) => SearchParityTest.CompanySearchLINQSqlOrderBy(db, inp));
-
-        // ── Test 6: LINQNew Variant E — GroupBy+First Office Map ──
-        await RunBenchmark("Variant E: GroupBy+First Office Map", optionsBuilder, input, 3,
-            (db, inp) => SearchParityTest.CompanySearchLINQGroupByOffice(db, inp));
-
-        // ── Test 7: LINQNew Variant F — ROW_NUMBER() Office Map ──
-        await RunBenchmark("Variant F: ROW_NUMBER() Office Map", optionsBuilder, input, 3,
-            (db, inp) => SearchParityTest.CompanySearchLINQRowNumberOffice(db, inp));
-
-        // ── Test 8: LINQOld (TVF + triple query penalty) ──
-        await RunBenchmark("LINQOld (TVF + Triple Query)", optionsBuilder, input, 3,
-            (db, inp) => SearchParityTest.CompanySearchLINQOld(db, inp));
-
-        // ── Test 9: SP Baseline ──
-        await RunBenchmark("LINQSQL (SP Baseline)", optionsBuilder, input, 3,
-            (db, inp) => SearchParityTest.CompanySearchSQL(db, inp));
-
-        Console.WriteLine("\n[DONE] All benchmarks complete.");
-    }
-
-    static async Task RunBenchmark(
-        string name,
-        DbContextOptionsBuilder<AppDbContext> optionsBuilder,
-        SearchInput input,
-        int iterations,
-        Func<AppDbContext, SearchInput, Task<SearchOutput<SearchItem>>> testFunc)
-    {
-        Console.WriteLine($"┌─────────────────────────────────────────────────────────────┐");
-        Console.WriteLine($"│ {name,-58}│");
-        Console.WriteLine($"└─────────────────────────────────────────────────────────────┘");
-
-        for (int i = 0; i < iterations; i++)
-        {
-            var label = i == 0 ? "cold" : $"warm-{i}";
-            using var dbContext = new AppDbContext(optionsBuilder.Options);
-
-            // Warm connection for this context
-            await dbContext.Database.ExecuteSqlRawAsync("SELECT 1");
-
-            // Flush plan cache before cold run
-            if (i == 0)
-            {
-                try
-                {
-                    await dbContext.Database.ExecuteSqlRawAsync("DBCC FREEPROCCACHE");
-                    Console.WriteLine($"  [plan cache flushed]");
-                }
-                catch { /* ignore if no permission */ }
-            }
-
-            try
-            {
-                var sw = Stopwatch.StartNew();
-                var result = await testFunc(dbContext, input);
-                sw.Stop();
-                Console.WriteLine($"  Run {i + 1} ({label}): TotalCount={result.TotalCount}, Page={result.Series?.Length ?? 0}, Facets={result.Facets?.Length ?? 0}, Time={sw.ElapsedMilliseconds}ms");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"  Run {i + 1} ({label}): ERROR — {ex.Message}");
-                if (ex.InnerException != null)
-                    Console.WriteLine($"    Inner: {ex.InnerException.Message}");
-            }
-        }
-        Console.WriteLine();
     }
 }

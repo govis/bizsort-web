@@ -1,6 +1,6 @@
 namespace BizSrt.Data.Entities;
 
-public class ProductIdKeyless
+public class OfferingIdKeyless
 {
     public long Id { get; set; }
 }

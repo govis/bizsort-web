@@ -7,7 +7,7 @@ This document tracks the evolving domain terminology and architectural concepts 
 | Modern Term | Legacy Term | Description / Rationale |
 | :--- | :--- | :--- |
 | **Company** | *Business* | The core entity of the platform. Represents an organization. Renamed from "Business" (e.g., `Businesses` -> `CompanyProfiles`, `biz` -> `cm`) to provide a clearer, more standard B2B domain terminology and avoid variable naming confusion. |
-| **Offering** | *Product* | A generic term representing anything a Company sells or provides. Can be either a physical/digital **Product** or a **Service**. Every offering is strictly associated with a parent Company. *(Note: Codebase refactoring from Product -> Offering is ongoing).* |
+| **Offering** | *Product* | A generic term representing anything a Company sells or provides. Can be either a physical/digital **Product** or a **Service**. Every offering is strictly associated with a parent Company. *(Note: Codebase refactoring from Product -> Offering is complete).* |
 | **Group** | *Group* | A shared foundational namespace (`BizSrt.Model.Group`) used to represent hierarchical or categorizational tree structures. Currently powers both the `Category` hierarchy and the `Location` hierarchy, as they share the same underlying tree traversal and caching logic. |
 
 ## Application Contexts

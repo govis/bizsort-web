@@ -1,0 +1,24 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const searchParams = Astro.url.searchParams;
+const categoryId = searchParams.get('categoryId') ? parseInt(searchParams.get('categoryId')!) : undefined;
+const locationId = searchParams.get('locationId') ? parseInt(searchParams.get('locationId')!) : undefined;
+const searchQuery = searchParams.get('searchQuery') || undefined;
+const searchNear = searchParams.get('searchNear') || undefined;
+const transactionType = searchParams.get('transactionType') ? parseInt(searchParams.get('transactionType')!) : undefined;
+---
+
+<Layout title="Search Offerings | BizSort">
+  <offering-search
+    category-id={categoryId}
+    location-id={locationId}
+    search-query={searchQuery}
+    search-near={searchNear}
+    transaction-type={transactionType}
+  ></offering-search>
+
+  <script>
+    import '../../offering/search.ts';
+  </script>
+</Layout>

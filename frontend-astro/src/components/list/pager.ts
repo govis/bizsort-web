@@ -178,7 +178,7 @@ export class ListPageSelect extends LitElement {
         super.connectedCallback();
         if (this.pager && this.pager.observeProperty) {
             this._unobserve = this.pager.observeProperty((sender: any, prop: string) => {
-                if (prop === 'pageSize' || prop === 'pageSizes') {
+                if (prop === 'pageSize' || prop === 'pageSizes' || prop === 'pageCount') {
                     this.requestUpdate();
                 }
             });
@@ -215,6 +215,7 @@ export class ListPageSelect extends LitElement {
 
     render() {
         if (!this.pager || !this.pager.pageSizes || this.pager.pageSizes.length === 0) return html``;
+        if (this.pager.pageCount <= 1) return html``;
         
         return html`
             <wa-select size="m" .value=${this.pager.pageSize.toString()} @change=${(e: any) => { 

@@ -19,8 +19,8 @@ namespace BizSrt.Data
                     var cq = (from c in dc.Categories
                               where c.Parent == categoryId //c.Parent != null && c.Parent.Value == categoryId
                               orderby c.SortOrder, c.Name
-                              select new { c.Id, c.Name, c.ServiceType, c.ProductType, c.TransactionType, c.Industry, c.QualifyingParent, NAICSCode = c.NAICSCode != null ? c.NAICSCode.Value : 0, c.SortOrder }).AsEnumerable();
-                    return cq.Select(ct => new CachedCategory(ct.Id, ct.Name, ct.ServiceType, ct.Industry, ct.ProductType, ct.TransactionType, categoryId, (ct.QualifyingParent != null && ct.QualifyingParent.HasValue ? ct.QualifyingParent.Value : (short)0)) { NAICSCode = ct.NAICSCode, SortOrder = ct.SortOrder }).ToArray();
+                              select new { c.Id, c.Name, c.ServiceType, c.OfferingType, c.TransactionType, c.Industry, c.QualifyingParent, NAICSCode = c.NAICSCode != null ? c.NAICSCode.Value : 0, c.SortOrder }).AsEnumerable();
+                    return cq.Select(ct => new CachedCategory(ct.Id, ct.Name, ct.ServiceType, ct.Industry, ct.OfferingType, ct.TransactionType, categoryId, (ct.QualifyingParent != null && ct.QualifyingParent.HasValue ? ct.QualifyingParent.Value : (short)0)) { NAICSCode = ct.NAICSCode, SortOrder = ct.SortOrder }).ToArray();
                 }
             }, (short categoryId) =>
             {
@@ -28,8 +28,8 @@ namespace BizSrt.Data
                 {
                     var ct = (from c in dc.Categories
                               where c.Id == categoryId
-                              select new { c.Id, c.Name, c.ServiceType, c.ProductType, c.TransactionType, c.Industry, c.Parent, c.QualifyingParent, NAICSCode = c.NAICSCode != null ? c.NAICSCode.Value : 0, c.SortOrder }).SingleOrDefault();
-                    return ct != null ? new CachedCategory(ct.Id, ct.Name, ct.ServiceType, ct.Industry, ct.ProductType, ct.TransactionType, (ct.Parent != null && ct.Parent.HasValue ? ct.Parent.Value : (short)-1), (ct.QualifyingParent != null && ct.QualifyingParent.HasValue ? ct.QualifyingParent.Value : (short)0)) { NAICSCode = ct.NAICSCode, SortOrder = ct.SortOrder } : null;
+                              select new { c.Id, c.Name, c.ServiceType, c.OfferingType, c.TransactionType, c.Industry, c.Parent, c.QualifyingParent, NAICSCode = c.NAICSCode != null ? c.NAICSCode.Value : 0, c.SortOrder }).SingleOrDefault();
+                    return ct != null ? new CachedCategory(ct.Id, ct.Name, ct.ServiceType, ct.Industry, ct.OfferingType, ct.TransactionType, (ct.Parent != null && ct.Parent.HasValue ? ct.Parent.Value : (short)-1), (ct.QualifyingParent != null && ct.QualifyingParent.HasValue ? ct.QualifyingParent.Value : (short)0)) { NAICSCode = ct.NAICSCode, SortOrder = ct.SortOrder } : null;
                 }
             }, null, null, null) {}
 
@@ -100,8 +100,8 @@ namespace BizSrt.Data
         }
 
         #region Cache
-        CachedCategoryProductAttribute[] attributes;
-        internal CachedCategoryProductAttribute[] getAttributes(int category, Func<int, CachedCategoryProductAttribute[]> fetchMethod)
+        CachedCategoryOfferingAttribute[] attributes;
+        internal CachedCategoryOfferingAttribute[] getAttributes(int category, Func<int, CachedCategoryOfferingAttribute[]> fetchMethod)
         {
             return GetArray(ref attributes, category, fetchMethod);
         }
@@ -114,18 +114,18 @@ namespace BizSrt.Data
                 {
                     using (var dc = BizSrt.Api.Data.Cache.LegacyCache.GetDbContext())
                     {
-                        return (from cpa in dc.CategoryProductAttributes.Where(categoryProductAttribute => categoryProductAttribute.Category == category).AsEnumerable()
+                        return (from cpa in dc.CategoryOfferingAttributes.Where(categoryOfferingAttribute => categoryOfferingAttribute.Category == category).AsEnumerable()
                                     //where cpa.Category == category
-                                select new CachedCategoryProductAttribute { Name = cpa.Name, Type = cpa.Type, Requirement = cpa.Requirement, Group = cpa.Group, DefaultValue = cpa.DefaultValue, ValueOptions = (string.IsNullOrWhiteSpace(cpa.ValueOptions) ? null : cpa.ValueOptions.Split(';')) }).ToArray();
+                                select new CachedCategoryOfferingAttribute { Name = cpa.Name, Type = cpa.Type, Requirement = cpa.Requirement, Group = cpa.Group, DefaultValue = cpa.DefaultValue, ValueOptions = (string.IsNullOrWhiteSpace(cpa.ValueOptions) ? null : cpa.ValueOptions.Split(';')) }).ToArray();
                     }
                 });
 
                 var q = from ca in categoryAttributes
-                        join at in BizSrt.Api.Data.Cache.LegacyCache.Dictionary.Get<Model.Product.Attribute.Type>(BizSrt.Model.DictionaryType.ProductAttributeType) on ca.Type equals at.ItemKey
-                        select new BizSrt.Model.Category.ProductAttribute { Type = at.ItemKey, Name = ca.Name, EditorType = at.EditorType, ValueType = at.ValueType, DefaultValue = ca.DefaultValue ?? at.DefaultValue, ValueOptions = ca.ValueOptions ?? at.ValueOptions, Requirement = (Model.Product.Attribute.Requirement)ca.Requirement };
+                        join at in BizSrt.Api.Data.Cache.LegacyCache.Dictionary.Get<Model.Offering.Attribute.Type>(BizSrt.Model.DictionaryType.OfferingAttributeType) on ca.Type equals at.ItemKey
+                        select new BizSrt.Model.Category.OfferingAttribute { Type = at.ItemKey, Name = ca.Name, EditorType = at.EditorType, ValueType = at.ValueType, DefaultValue = ca.DefaultValue ?? at.DefaultValue, ValueOptions = ca.ValueOptions ?? at.ValueOptions, Requirement = (Model.Offering.Attribute.Requirement)ca.Requirement };
 
-                var productAttributes = q.ToArray();
-                return new BizSrt.Model.Category { Service = ServiceType, Product = ProductType, Transaction = TransactionType, Industry = Industry, ProductAttributes = productAttributes.Length > 0 ? productAttributes : null };
+                var offeringAttributes = q.ToArray();
+                return new BizSrt.Model.Category { Service = ServiceType, Offering = OfferingType, Transaction = TransactionType, Industry = Industry, OfferingAttributes = offeringAttributes.Length > 0 ? offeringAttributes : null };
             }
         }
         #endregion
@@ -136,10 +136,10 @@ namespace BizSrt.Data
             get { return _serviceType; }
         }
 
-        short _productType;
-        public short ProductType
+        short _offeringType;
+        public short OfferingType
         {
-            get { return _productType; }
+            get { return _offeringType; }
         }
 
         long _industry;
@@ -154,17 +154,17 @@ namespace BizSrt.Data
             get { return _transactionType; }
         }
 
-        protected internal CachedCategory(short id, string name, long serviceType, long industry, short productType, short transactionType, short parent, short qualifyingParent)
+        protected internal CachedCategory(short id, string name, long serviceType, long industry, short offeringType, short transactionType, short parent, short qualifyingParent)
         {
             _id = id;
             _name = name;
             if (serviceType > 0)
                 _type |= 1;
-            if (_productType > 0)
+            if (_offeringType > 0)
                 _type |= 2;
             _serviceType = serviceType;
             _industry = industry;
-            _productType = productType;
+            _offeringType = offeringType;
             _transactionType = transactionType;
             _parentKey = parent;
             _qualifyingParent = qualifyingParent;
@@ -278,7 +278,7 @@ namespace BizSrt.Data
             //if (type == 0)
                 return true;
             /*else if (((type & (byte)global::Model.Category.MemberType.Company) > 0 && _companyType > 0) ||
-                    ((type & (byte)global::Model.Category.MemberType.Product) > 0 && _productType > 0))
+                    ((type & (byte)global::Model.Category.MemberType.Offering) > 0 && _offeringType > 0))
                 return true;
             else
                 return false;*/
@@ -288,9 +288,9 @@ namespace BizSrt.Data
         {
             var isClass = false;
             if (type == 0)
-                isClass = _serviceType > 0 || _productType > 0;
+                isClass = _serviceType > 0 || _offeringType > 0;
             else if (((type & (byte)BizSrt.Model.Category.MemberType.Company) > 0 && _serviceType > 0) ||
-                    ((type & (byte)BizSrt.Model.Category.MemberType.Product) > 0 && _productType > 0))
+                    ((type & (byte)BizSrt.Model.Category.MemberType.Offering) > 0 && _offeringType > 0))
                 isClass = true;
 
             return isClass ? BizSrt.Model.Group.NodeType.Class : BizSrt.Model.Group.NodeType.Super;
@@ -302,7 +302,7 @@ namespace BizSrt.Data
         }
     }
 
-    internal class CachedCategoryProductAttribute
+    internal class CachedCategoryOfferingAttribute
     {
         public string Name
         {

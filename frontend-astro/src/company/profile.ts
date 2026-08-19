@@ -12,19 +12,23 @@ import '@awesome.me/webawesome/dist/components/spinner/spinner.js';
 import '@awesome.me/webawesome/dist/components/tab-group/tab-group.js';
 import '@awesome.me/webawesome/dist/components/tab/tab.js';
 import '@awesome.me/webawesome/dist/components/tab-panel/tab-panel.js';
+import '@awesome.me/webawesome/dist/components/icon/icon.js';
+import '@awesome.me/webawesome/dist/components/dropdown/dropdown.js';
 import '@awesome.me/webawesome/dist/components/dropdown-item/dropdown-item.js';
+import { getLogoUrl, analyzeImage } from '../service/image.js';
 
 // Building block components
 import '../components/search/box';
-import '../components/product/slider';
+import '../components/offering/slider';
 import './header-layout';
 import '../components/layout/card';
 import '../components/menu/page';
 import '../components/search/category/menu';
 import '../components/map/view';
-import '../components/product/slider';
+import '../components/offering/slider';
 import '../components/company/slider';
 import '../components/community/slider';
+import { stringify } from '../service/geocoder';
 
 export class CompanyProfile extends LitElement {
   static get properties() {
@@ -46,6 +50,26 @@ export class CompanyProfile extends LitElement {
     this.activeTab = 'about';
   }
 
+  private _imageLoaded(e: Event) {
+    const img = e.target as HTMLImageElement;
+    if (img) {
+      try {
+        const headerLayout = this.shadowRoot?.querySelector('company-header-layout') as HTMLElement;
+        if (headerLayout) {
+          // 1. Mirror Legacy UI margin adjustments based on image height
+          if (img.clientHeight && img.clientHeight < 84) {
+            headerLayout.style.setProperty('--name-margin-left', `-${img.clientWidth}px`);
+          } else {
+            headerLayout.style.setProperty('--name-margin-left', '0px');
+          }
+          headerLayout.style.setProperty('--content-header-margin-left', `${img.clientWidth + 30}px`);
+        }
+      } catch (err) {
+        console.warn('Failed to adjust header layout', err);
+      }
+    }
+  }
+
   willUpdate(changedProperties: Map<string | number | symbol, unknown>) {
     if (changedProperties.has('company') && this.company) {
       this._selectedOffice = this.company.headOffice || this.company.offices[0];
@@ -62,50 +86,12 @@ export class CompanyProfile extends LitElement {
     return office.name || "Office";
   }
 
-  private _formatAddress(address: any): string {
-    if (!address) return '';
-    if (typeof address === 'string') return address;
-    const props = address.Properties || address;
-    const parts = [];
-    if (props.StreetNumber && props.StreetName) {
-      if (props.Address1) {
-        if (props.Address1.length <= 10) parts.push(`${props.StreetNumber} ${props.StreetName} ${props.Address1}`);
-        else parts.push(`${props.Address1} ${props.StreetNumber} ${props.StreetName}`);
-      } else {
-        parts.push(`${props.StreetNumber} ${props.StreetName}`);
-      }
-    } else if (props.StreetName) {
-      parts.push(props.Address1 ? `${props.Address1} ${props.StreetName}` : props.StreetName);
-    } else if (props.Address1) {
-      parts.push(props.Address1);
-    }
-    
-    if (props.City) parts.push(props.City);
-    
-    let stateZip = '';
-    if (props.State) {
-      stateZip = props.State;
-      if (props.PostalCode) stateZip += ` ${props.PostalCode}`;
-    } else if (props.PostalCode) {
-      stateZip = props.PostalCode;
-    }
-    if (stateZip) parts.push(stateZip);
-    
-    return parts.join(', ');
-  }
-
   private _getOsmMapUrl(office?: Office) {
     if (!office?.location?.geoLocation) return '';
     const { lat, lng } = office.location.geoLocation;
     const offset = 0.01;
     const bbox = `${lng - offset},${lat - offset},${lng + offset},${lat + offset}`;
     return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat},${lng}`;
-  }
-
-  private _getLogoUrl(): string {
-    if (!this.company?.image?.imageId) return '';
-    const backendUrl = (typeof process !== 'undefined' && process.env?.NEXT_PUBLIC_API_URL) || 'https://localhost:5001';
-    return `${backendUrl}/api/image/get?entity=${this.company.image.entity}&id=${this.company.image.imageId}&width=200`;
   }
 
   static styles = css`
@@ -191,9 +177,22 @@ export class CompanyProfile extends LitElement {
       flex-grow: 1;
     }
 
-    .office-select {
-      width: 100%;
+    wa-select.office-select {
+      width: calc(100% - 22px);
       margin-bottom: 0.5rem;
+      margin-left: 22px; /* 36px total minus ~14px internal wa-select padding */
+      
+      /* Make it look like an underlined text field */
+      border-bottom: 1px solid #78909c; /* Legacy dark-grey color to ensure it's visible */
+      
+      /* Hide all WebAwesome internal borders and focus rings */
+      --wa-form-control-border-color: transparent;
+      --wa-input-focus-ring-color: transparent;
+      --wa-input-border-color-focus: transparent;
+      
+      /* Background transparent for both form-control and neutral palette */
+      --wa-form-control-background-color: transparent;
+      --wa-color-neutral-fill-quiet: transparent;
     }
 
     /* Info Items */
@@ -224,18 +223,17 @@ export class CompanyProfile extends LitElement {
       margin-top: 2px;
     }
 
-    .category-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: 100%;
-    }
-
-    .category-item-left {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
+      .category-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+      }
+      .category-item-left {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+      }
 
     .rich-text p {
       margin-top: 0;
@@ -270,7 +268,8 @@ export class CompanyProfile extends LitElement {
     if (!this.company) return html`<div style="max-width:1000px; margin: 2rem auto;">Company not found.</div>`;
 
     const hasMultipleOffices = this.company.offices && this.company.offices.length > 1;
-    const logoUrl = this._getLogoUrl();
+    // Legacy ViewHead requested 290x145 image sizing for the main profile layout
+    const logoUrl = getLogoUrl(this.company.image?.entity || 1, this.company.image?.imageId, 290, 145);
 
     // Map activeTab from URL query params (default to about)
     const url = new URL(window.location.href);
@@ -298,9 +297,7 @@ export class CompanyProfile extends LitElement {
       </style>
       <company-header-layout title-text="${this.company.name}" ?no-image="${!logoUrl}">
         ${logoUrl ? html`
-          <div slot="logo" style="width: 100%; height: 100%;">
-            <img src="${logoUrl}" alt="${this.company.name} logo" style="width: 100%; height: 100%; object-fit: contain; background-color: white; display: block;" />
-          </div>
+          <img slot="logo" src="${logoUrl}" alt="${this.company.name} logo" crossOrigin="anonymous" @load="${this._imageLoaded}" />
         ` : ''}
 
         <search-box slot="navbar"></search-box>
@@ -323,14 +320,14 @@ export class CompanyProfile extends LitElement {
         <div slot="tabs">
           <wa-tab-group style="--indicator-color: white; --track-color: transparent;" @wa-tab-show="${(e: any) => this._handleTabChange(e)}">
             <wa-tab slot="nav" panel="about" ?active="${this.activeTab === 'about'}">About</wa-tab>
-            ${this.company.offerings?.view ? html`<wa-tab slot="nav" panel="products" ?active="${this.activeTab === 'products'}">${this.company.offerings.label || 'What we Do'}</wa-tab>` : ''}
+            ${this.company.offerings?.view ? html`<wa-tab slot="nav" panel="offerings" ?active="${this.activeTab === 'offerings'}">${this.company.offerings.label || 'What we Do'}</wa-tab>` : ''}
             ${this.company.projects != null ? html`<wa-tab slot="nav" panel="projects" ?active="${this.activeTab === 'projects'}">${this.company.projects.label || 'Projects'}</wa-tab>` : ''}
             ${this.company.jobs != null ? html`<wa-tab slot="nav" panel="jobs" ?active="${this.activeTab === 'jobs'}">${this.company.jobs.label || 'Jobs'}</wa-tab>` : ''}
             ${this.company.news != null ? html`<wa-tab slot="nav" panel="news" ?active="${this.activeTab === 'news'}">${this.company.news.label || 'News'}</wa-tab>` : ''}
             ${this.company.articles != null ? html`<wa-tab slot="nav" panel="articles" ?active="${this.activeTab === 'articles'}">${this.company.articles.label || 'Articles'}</wa-tab>` : ''}
             
             <wa-tab-panel name="about"></wa-tab-panel>
-            <wa-tab-panel name="products"></wa-tab-panel>
+            <wa-tab-panel name="offerings"></wa-tab-panel>
             <wa-tab-panel name="projects"></wa-tab-panel>
             <wa-tab-panel name="jobs"></wa-tab-panel>
             <wa-tab-panel name="news"></wa-tab-panel>
@@ -340,7 +337,7 @@ export class CompanyProfile extends LitElement {
 
         <div class="company-profile-content">
           ${this.activeTab === 'about' ? this._renderAboutTab(hasMultipleOffices) : ''}
-          ${this.activeTab === 'products' ? this._renderProductsTab() : ''}
+          ${this.activeTab === 'offerings' ? this._renderOfferingsTab() : ''}
           ${this.activeTab === 'projects' ? this._renderStubTab('projects', this.company.projects?.label || 'Projects') : ''}
           ${this.activeTab === 'jobs' ? this._renderStubTab('jobs', this.company.jobs?.label || 'Jobs') : ''}
           ${this.activeTab === 'marketplace' ? this._renderStubTab('marketplace', this.company.marketplace?.label || 'Marketplace') : ''}
@@ -374,7 +371,7 @@ export class CompanyProfile extends LitElement {
               <wa-select
                 class="office-select"
                 value="${this._selectedOffice?.id.toString()}"
-                @wa-change="${this._handleOfficeChange}"
+                @change="${this._handleOfficeChange}"
               >
                 ${repeat(this.company!.offices, (o) => o.id, (o, index) => html`
                   <wa-option value="${o.id.toString()}">${this._officeName(o, index)}</wa-option>
@@ -387,7 +384,7 @@ export class CompanyProfile extends LitElement {
                 <div class="info-item" @click="${() => window.open(`https://www.google.com/maps/search/?api=1&query=${this._selectedOffice?.location?.geoLocation?.lat},${this._selectedOffice?.location?.geoLocation?.lng}`)}">
                   <wa-icon name="location-dot"></wa-icon>
                   <span>
-                    ${this._formatAddress(this._selectedOffice.location?.address)}
+                    ${stringify(this._selectedOffice.location?.address)}
                   </span>
                 </div>
 
@@ -475,8 +472,8 @@ export class CompanyProfile extends LitElement {
 
       ${(this.company!.offerings as any)?.items?.length > 0 ? html`
         <div class="slider-container" style="margin-top: 2rem;">
-          <h2 style="font-size: 1.25rem; margin-bottom: 1rem; color: #333; text-align: center;">Featured Products and Services</h2>
-          <product-slider .companyId="${this.companyId}" .productRefs="${(this.company!.offerings as any)?.items}"></product-slider>
+          <h2 style="font-size: 1.25rem; margin-bottom: 1rem; color: #333; text-align: center;">Featured Offerings and Services</h2>
+          <offering-slider .companyId="${this.companyId}" .offeringRefs="${(this.company!.offerings as any)?.items}"></offering-slider>
         </div>
       ` : ''}
 
@@ -496,15 +493,15 @@ export class CompanyProfile extends LitElement {
     `;
   }
 
-  private _renderProductsTab() {
-    const productRefs = (this.company!.offerings as any)?.items || []; // Assume items has product refs
+  private _renderOfferingsTab() {
+    const offeringRefs = (this.company!.offerings as any)?.items || []; // Assume items has offering refs
     return html`
       <layout-card class="tab-section" heading="${this.company!.offerings?.label || 'What We Do'}">
         <div class="rich-text">
-          ${this.company!.offerings?.multiProduct ? unsafeHTML(this.company!.offerings.multiProduct) : ''}
+          ${this.company!.offerings?.multiOffering ? unsafeHTML(this.company!.offerings.multiOffering) : ''}
         </div>
-        ${productRefs.length > 0 ? html`
-          <product-slider .companyId="${this.companyId}" .productRefs="${productRefs}"></product-slider>
+        ${offeringRefs.length > 0 ? html`
+          <offering-slider .companyId="${this.companyId}" .offeringRefs="${offeringRefs}"></offering-slider>
         ` : ''}
       </layout-card>
     `;

@@ -14,9 +14,9 @@ namespace BizSrt.Data
             {
                 if (type > 0)
                 {
-                    if (type == DictionaryType.ProductAttributeType)
+                    if (type == DictionaryType.OfferingAttributeType)
                     {
-                        var attributeTypes = LegacyCache.Dictionary.Get<BizSrt.Model.Product.Attribute.Type>(type);
+                        var attributeTypes = LegacyCache.Dictionary.Get<BizSrt.Model.Offering.Attribute.Type>(type);
                         return new BizSrt.Model.Dictionary { Items = attributeTypes.Where(at => at.Primitive).ToArray() };
                     }
                     else

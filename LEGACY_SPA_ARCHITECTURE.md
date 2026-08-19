@@ -1,6 +1,6 @@
 # Legacy SPA Architecture Deep Dive
 
-This document provides a deep dive into the legacy SPA (Single Page Application) switching mechanism, its components, their roles, and how they translate to the modernized Next.js App Router architecture. It serves as a periodic reference while refining the modern implementation.
+This document provides a deep dive into the legacy SPA (Single Page Application) switching mechanism, its components, their roles, and how they translate to the modernized Astro architecture. It serves as a periodic reference while refining the modern implementation.
 
 ## 1. Legacy Architecture Components
 

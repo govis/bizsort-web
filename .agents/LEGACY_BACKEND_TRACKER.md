@@ -3197,7 +3197,7 @@
 | | **Namespace: `Model.Finance.Points`** | | |
 | [ ] | â†³ `class TransactionType` | - | - |
 | | **Namespace: `Model.Geocoder`** | | |
-| [ ] | â†³ `class Address` | - | - |
+| [x] | â†³ `class Address` | `BizSrt.Model.Geocoder.Address` | Ported rich dictionary for Address mapping. |
 | [ ] | â†³ `class City` | - | - |
 | [ ] | â†³ `class Geolocation` | - | - |
 | [ ] | â†³ `class IGeolocation` | - | - |

@@ -100,7 +100,7 @@ public partial class Category
     public short? Parent { get; set; }
     public short? QualifyingParent { get; set; }
     public long ServiceType { get; set; }
-    public short ProductType { get; set; }
+    public short OfferingType { get; set; }
     public short TransactionType { get; set; }
     public long Industry { get; set; }
     public byte SortOrder { get; set; }
@@ -108,7 +108,7 @@ public partial class Category
     public string? Keywords { get; set; }
 }
 
-public partial class Product
+public partial class Offering
 {
     public long Id { get; set; }
     public short Type { get; set; }
@@ -125,10 +125,10 @@ public partial class Product
     public DateTime Updated { get; set; }
 }
 
-public partial class CompanyProduct
+public partial class CompanyOffering
 {
     public int Company { get; set; }
-    public long Product { get; set; }
+    public long Offering { get; set; }
     public short Category { get; set; }
     public byte UnlistedType { get; set; }
     public short TransactionType { get; set; }
@@ -139,7 +139,7 @@ public partial class CompanyProduct
     public DateTime? Indexed { get; set; }
     public byte ImportStatus { get; set; }
 
-    public virtual Product ProductNavigation { get; set; } = null!;
+    public virtual Offering OfferingNavigation { get; set; } = null!;
 }
 
 public partial class Project
@@ -186,7 +186,7 @@ public partial class Job
     public string? StreetNumber { get; set; }
     public int? StreetName { get; set; }
 
-    public virtual Product ProductNavigation { get; set; } = null!;
+    public virtual Offering OfferingNavigation { get; set; } = null!;
 }
 
 public interface IMedia
@@ -205,10 +205,10 @@ public partial class CompanyMedia : IMedia
     public byte Order { get; set; }
 }
 
-public partial class ProductMedia : IMedia
+public partial class OfferingMedia : IMedia
 {
     public long Id { get; set; }
-    public long Product { get; set; }
+    public long Offering { get; set; }
     public byte Type { get; set; }
     public byte[] Content { get; set; } = null!;
     public byte[] Metadata { get; set; } = null!;

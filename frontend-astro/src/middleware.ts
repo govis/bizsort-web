@@ -22,12 +22,12 @@ export const onRequest = defineMiddleware(async (context, next) => {
                 if (action === 2 || action === 11) { 
                     // Action.View (2) or CompaniesView (11)
                     const accountId = token["4"]; // ACCOUNT_ID
-                    const productId = token["5"]; // PRODUCT_ID
+                    const offeringId = token["5"]; // PRODUCT_ID
                     
-                    if (accountId && productId) {
-                        newUrl = new URL(`/company/${accountId}/product/${productId}`, url.origin);
-                    } else if (productId) {
-                        newUrl = new URL(`/product/${productId}`, url.origin);
+                    if (accountId && offeringId) {
+                        newUrl = new URL(`/company/${accountId}/offering/${offeringId}`, url.origin);
+                    } else if (offeringId) {
+                        newUrl = new URL(`/offering/${offeringId}`, url.origin);
                     } else if (accountId) {
                         newUrl = new URL(`/company/${accountId}`, url.origin);
                     }

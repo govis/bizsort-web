@@ -67,10 +67,10 @@ public static class CompanyEndpoints
             return Results.Ok(result);
         });
 
-        group.MapGet("/profile/getProducts", async ([FromQuery] int company, [FromQuery] string queryInput, ICompanyService companyService) =>
+        group.MapGet("/profile/getOfferings", async ([FromQuery] int company, [FromQuery] string queryInput, ICompanyService companyService) =>
         {
             var input = JsonSerializer.Deserialize<QueryInput>(queryInput) ?? new QueryInput();
-            var result = await companyService.GetProductsAsync(company, input);
+            var result = await companyService.GetOfferingsAsync(company, input);
             return Results.Ok(result);
         });
 
@@ -130,16 +130,16 @@ public static class CompanyEndpoints
             return Results.Ok(result);
         });
 
-        group.MapGet("/product/getFeatured", async ([FromQuery] int company, [FromQuery] string sliceInput, ICompanyService companyService) =>
+        group.MapGet("/offering/getFeatured", async ([FromQuery] int company, [FromQuery] string sliceInput, ICompanyService companyService) =>
         {
              var input = JsonSerializer.Deserialize<SliceInput>(sliceInput) ?? new SliceInput();
-             var result = await companyService.GetProductsAsync(company, new QueryInput { StartIndex = input.Index, Length = input.Length });
+             var result = await companyService.GetOfferingsAsync(company, new QueryInput { StartIndex = input.Index, Length = input.Length });
              return Results.Ok(new SliceOutput<BizSrt.Model.EntityId<long>>(result.Series, result.StartIndex + result.Series.Length < result.TotalCount ? result.StartIndex + result.Series.Length : -1));
         });
 
-        group.MapGet("/product/view", async ([FromQuery] int company, [FromQuery] long product, [FromQuery] string? options, ICompanyService companyService) =>
+        group.MapGet("/offering/view", async ([FromQuery] int company, [FromQuery] long offering, [FromQuery] string? options, ICompanyService companyService) =>
         {
-             var profile = await companyService.GetProductProfileAsync(company, product);
+             var profile = await companyService.GetOfferingProfileAsync(company, offering);
              return profile is not null ? Results.Ok(profile) : Results.NotFound();
         });
 

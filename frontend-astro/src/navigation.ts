@@ -26,7 +26,7 @@ export class Navigation {
 }
 
 export namespace Company {
-    export const homePage = "/";
+    export const homePage = "/companies";
 
     export function home(params?: Record<string, any>, options: INavigationOptions = {}) {
         if (!options.transition) options.transition = "Back";
@@ -34,7 +34,7 @@ export namespace Company {
         return Navigation.go(homePage, params, options);
     }
 
-    export const searchPage = "/company/search";
+    export const searchPage = "/companies/search";
 
     export function search(transactionType: number, category: number, query: string, location: number, near?: any, options?: INavigationOptions) {
         if (category > 0 || (query && query.trim() !== '')) {
@@ -57,8 +57,8 @@ export namespace Company {
     }
 }
 
-export namespace Product {
-    export const homePage = "/product";
+export namespace Offering {
+    export const homePage = "/offerings";
 
     export function home(params?: Record<string, any>, options: INavigationOptions = {}) {
         if (!options.transition) options.transition = "Back";
@@ -66,12 +66,12 @@ export namespace Product {
         return Navigation.go(homePage, params, options);
     }
 
-    export const searchPage = "/product/search";
+    export const searchPage = "/offerings/search";
 
     export function search(type: number, category: number, query: string, location: number, near?: any, options?: INavigationOptions) {
         if (category > 0 || (query && query.trim() !== '')) {
             const params: any = {};
-            if (type) params.productType = type;
+            if (type) params.offeringType = type;
             if (category > 0) params.categoryId = category;
             if (query) params.searchQuery = query;
             if (near && near.text) params.searchNear = near;
@@ -82,14 +82,14 @@ export namespace Product {
         }
     }
 
-    export function profileView(productId: number, options: INavigationOptions = {}) {
-        const path = `/product/${productId}`;
+    export function profileView(offeringId: number, options: INavigationOptions = {}) {
+        const path = `/offering/${offeringId}`;
         if (options.suppressNavigate) return { path, params: {} };
         return Navigation.go(path, {}, options);
     }
 
-    export function view(accountId: number, productId: number, options: INavigationOptions = {}) {
-        const path = `/company/${accountId}/product/${productId}`;
+    export function view(accountId: number, offeringId: number, options: INavigationOptions = {}) {
+        const path = `/company/${accountId}/offering/${offeringId}`;
         if (options.suppressNavigate) return { path, params: {} };
         return Navigation.go(path, {}, options);
     }

@@ -1,5 +1,6 @@
 import type { IdName, Autocomplete, Node, SubType } from '../model/foundation';
-import { ResolvedLocation } from '../model/foundation';
+import { ResolvedLocation, Geocoder } from '../model/foundation';
+import { hydrateProxy } from './proxy';
 
 const API_BASE = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_URL) 
   || (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.PUBLIC_API_URL)
@@ -26,7 +27,12 @@ export async function get(location: number, type?: number): Promise<any> {
         throw new Error(`Failed to fetch location: ${response.statusText}`);
     }
     
-    return await response.json();
+    const json = await response.json();
+    
+    // Apply Hybrid Proxy to dynamically bind ResolvedLocation and Address prototype methods
+    return hydrateProxy(json, ResolvedLocation, {
+        address: Geocoder.Address
+    });
 }
 
 export async function populateChildren(parent: number, type: SubType, memberType: number): Promise<Node> {

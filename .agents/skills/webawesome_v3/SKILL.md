@@ -102,3 +102,14 @@ registerIconLibrary('my-icons', {
     mutator: svg => svg.setAttribute('fill', 'currentColor')
 });
 ```
+## 13. Dropdowns and Menus (No `<wa-menu>` Wrapper)
+
+- In legacy Shoelace v2, dropdown items were typically wrapped inside an `<sl-menu>` element (e.g. `<sl-dropdown><sl-menu><sl-menu-item>...`).
+- **CRITICAL:** WebAwesome v3 completely dropped the standalone menu component (`@awesome.me/webawesome/dist/components/menu/menu.js` does not exist!).
+- You **MUST** place `<wa-dropdown-item>` elements directly as children of `<wa-dropdown>`. The dropdown component manages its items directly. Attempting to wrap them in a hallucinated `<wa-menu>` tag will cause Vite/Rolldown build failures.
+## 14. `<wa-button>` Appearances and "Text" variants
+
+- Shoelace v2 featured a `variant="text"` option to render buttons without backgrounds (useful for flat icon buttons).
+- WebAwesome v3 moved this to the `appearance` attribute, but **renamed it**.
+- **CRITICAL:** Do NOT use `appearance="text"`. The valid appearances are `'accent' | 'filled' | 'outlined' | 'filled-outlined' | 'plain'`.
+- If you want a flat, background-less button (like an ellipsis menu trigger), you must use **`appearance="plain"`** (e.g., `<wa-button is-icon-button appearance="plain">`).

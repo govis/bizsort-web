@@ -6,10 +6,10 @@ namespace BizSrt.Model.Company;
 public class Page_Offerings
 {
     [JsonPropertyName("view")]
-    public ProductsView View { get; set; }
+    public OfferingsView View { get; set; }
     
-    [JsonPropertyName("multiProduct")]
-    public string? MultiProduct { get; set; }
+    [JsonPropertyName("multiOffering")]
+    public string? MultiOffering { get; set; }
 
     [JsonPropertyName("label")]
     public string? Label { get; set; }
@@ -178,8 +178,8 @@ public class Preview : IdName<int>
     public string? Phone { get; set; }
     [JsonPropertyName("text")]
     public string? Text { get; set; }
-    [JsonPropertyName("productsView")]
-    public ProductsView ProductsView { get; set; }
+    [JsonPropertyName("offeringsView")]
+    public OfferingsView OfferingsView { get; set; }
     [JsonPropertyName("category")]
     public Category? Category { get; set; }
 
@@ -215,7 +215,7 @@ public class Option
     {
         Default = 0,
         Publish_Email = 1,
-        Products_Marketplace = 2
+        Offerings_Marketplace = 2
     }
 
     public class Set 
@@ -229,10 +229,10 @@ public class Option
             set { if (value) Value |= Flags.Publish_Email; else Value &= ~Flags.Publish_Email; }
         }
 
-        public bool Products_Marketplace
+        public bool Offerings_Marketplace
         {
-            get { return (Value & Flags.Products_Marketplace) > 0; }
-            set { if (value) Value |= Flags.Products_Marketplace; else Value &= ~Flags.Products_Marketplace; }
+            get { return (Value & Flags.Offerings_Marketplace) > 0; }
+            set { if (value) Value |= Flags.Offerings_Marketplace; else Value &= ~Flags.Offerings_Marketplace; }
         }
     }
 }

@@ -223,7 +223,7 @@ export const Personal = {
     }
 };
 
-export const Product = {
+export const Offering = {
     quota: {
         personal: {
             Total: 101,

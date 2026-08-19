@@ -591,7 +591,7 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ImageSize` | | |
 | [ ] | ↳ `src/model/addon.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class NAIC` | | |
-| [ ] | ↳ `src/model/address1.ts` | - | - |
+| [x] | ↳ `src/model/address1.ts` | `src/model/address1.ts` | Ported to support geocoder |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IStartEndIdx` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IAddress` | | |
 | [ ] | ↳ `src/model/admin.ts` | - | - |
@@ -932,7 +932,7 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Communities` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Affiliations` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class companyCache` | | |
-| [ ] | ↳ `src/service/geocoder.ts` | - | - |
+| [x] | ↳ `src/service/geocoder.ts` | `src/service/geocoder.ts` | Ported to handle client-side rich address formatting and maps |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class AddressOptions` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Window` | | |
 | [ ] | ↳ `src/service/googleplaces.ts` | - | - |

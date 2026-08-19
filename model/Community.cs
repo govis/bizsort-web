@@ -12,7 +12,7 @@ public class Option
         Allow_Unlisted = 2,
         Require_Moderation = 4,
         Exclusive = 8,
-        Auto_Publish_Products = 16,
+        Auto_Publish_Offerings = 16,
         Auto_Publish_Jobs = 32,
         Auto_Publish_Projects = 64
     }
@@ -26,7 +26,7 @@ public class Option
         public bool Allow_Unlisted => (Value & Flags.Allow_Unlisted) > 0;
         public bool Require_Moderation => (Value & Flags.Require_Moderation) > 0;
         public bool Exclusive => (Value & Flags.Exclusive) > 0;
-        public bool Auto_Publish_Products => (Value & Flags.Auto_Publish_Products) > 0;
+        public bool Auto_Publish_Offerings => (Value & Flags.Auto_Publish_Offerings) > 0;
         public bool Auto_Publish_Jobs => (Value & Flags.Auto_Publish_Jobs) > 0;
         public bool Auto_Publish_Projects => (Value & Flags.Auto_Publish_Projects) > 0;
     }

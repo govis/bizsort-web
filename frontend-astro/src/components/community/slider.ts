@@ -2,7 +2,7 @@ import { html, css, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { getCommunities } from '../../service/company.js';
 import { toPreview } from '../../service/community.js';
-import '../layout/list-slider.js';
+import '../list/slider.js';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
 
 @customElement('community-slider')

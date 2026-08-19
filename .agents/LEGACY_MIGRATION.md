@@ -51,7 +51,7 @@ The legacy codebase is split into two primary areas:
 
 - [x] **Project Structure & Libraries:** Refactored the monolith into BizSrt.Model, BizSrt.Foundation, BizSrt.Data, BizSrt.Worker, and BizSrt.Api. Handled circular dependencies and enforced InternalsVisibleTo.
 - [x] **Background Worker (Indexer):** Scaffolded BizSrt.Worker project. Mapped legacy google.protobuf and gRPC implementation plan to rebuild the IndexCompany polling logic. Configured `NetTopologySuite` for spatial data.
-- [x] **Facet Indexing Logic:** Rebuilt the highly complex two-way synchronization loop for `FacetSetCompanies`. Ported `IndexCompanyFacetSetAsync` (for dynamically created Sets Cache queries) and `refreshCompanyFacetSetsAsync` (for recalculating set satisfiability when a company updates its generic facets). Additionally ported `Product` FacetSets caching and indexing logic, including the out-of-process gRPC endpoints (`IndexProduct`, `IndexProductFacetSet`, `DeleteProductFacetSet`) and the `background/Workers/Company/Product/FacetSet.cs` background worker.
+- [x] **Facet Indexing Logic:** Rebuilt the highly complex two-way synchronization loop for `FacetSetCompanies`. Ported `IndexCompanyFacetSetAsync` (for dynamically created Sets Cache queries) and `refreshCompanyFacetSetsAsync` (for recalculating set satisfiability when a company updates its generic facets). Additionally ported `Product` FacetSets caching and indexing logic, including the out-of-process gRPC endpoints (`IndexProduct`, `IndexProductFacetSet`, `DeleteProductFacetSet`) and the `background/Workers/Company/Offering/FacetSet.cs` background worker.
 - [x] **Dictionary Caches:** Ported DictionaryItem, DictionaryType, DictionaryCache, and integrated into LegacyCache.
 
 - [x] **Location Infrastructure:** Ported `LocationRef`, `IdName`, `LocationSettings`, `LocationType` enum, and the static `BizSrt.Api.Data.Master.Location` facade.
@@ -89,18 +89,28 @@ The legacy codebase is split into two primary areas:
 - [x] **`components/search/home.ts`:** Updated to track numeric `_categoryId` / `_locationId` instead of strings; dispatches numeric IDs on `search-submit`.
 - [x] **`src/service/company.ts`:** `getFeatured(index, length, category=0, location=1)` sends category+location in JSON payload. `toPreview(ids)` sends array of IDs. Matches legacy `src/service/company.ts` method signatures.
 
-### 5. Product Infrastructure & Components
+### 5. Offering Infrastructure & Components (Formerly Product)
 
-- [x] **`product-home` & `company-product`:** Ported the main product browsing pages, utilizing the modern reactive framework.
-- [x] **`product-slider` & `product-featured`:** Ported the product carousel components used within company profiles and product home pages.
+- [x] **`product-home` & `company-product`:** Ported the main offering browsing pages, utilizing the modern reactive framework.
+- [x] **`product-slider` & `product-featured`:** Ported the offering carousel components used within company profiles and product home pages.
 - [x] **Global Building Blocks (`image-view`, `richtext-view`):** Ported legacy global UI blocks replacing `unsafeHTML` fallbacks with properly reactive custom elements.
-- [x] **Product Endpoints:** Verified `CompanyProductService` (`SearchAsync`, `GetFeaturedAsync`, `ToPreviewAsync`) is fully implemented in the .NET 10 backend and mapped in `ProductEndpoints.cs`.
+- [x] **Offering Endpoints:** Verified `CompanyOfferingService` (`SearchAsync`, `GetFeaturedAsync`, `ToPreviewAsync`) is fully implemented in the .NET 10 backend and mapped in `OfferingEndpoints.cs`.
 
 ### 6. Foundation & Base Caches
+
+- [x] **Location Cache Hydration:** Ported the legacy WCF architecture that resolves flattened `LocationId` properties into rich JSON objects using `LegacyCache.Locations` and `LegacyCache.StreetNames`. Ensure C# bitwise `LocationType` enum corresponds correctly to SQL (flags, not sequential), and the client-side `stringify` formatter parses the JSON instead of relying on flattened backend string manipulation.
 
 - [x] **`FeaturedCache<TItems>` Restructuring**: Created a modern base class (`backend/Data/Cache/Featured/Featured.cs`) for all "featured" caches to eliminate code duplication across companies and products, managing dirty invalidation across hierarchical folders using a concurrent dictionary of timestamps.
 - [x] **Text Normalization (`TextConverter` & `WordBreaker`)**: Fully ported legacy `TextConverter` and `WordBreaker` to `backend/Foundation/`. Restored `CheckHtml` (along with `IRichText`), `Normalize`, and `VarcharMax` (decoupled from `Settings`).
 - [x] **Dynamic Property Bags (`Preview` Models)**: Replaced legacy string-based `Newtonsoft.Json` dictionary property mappings with robust `System.Text.Json.Serialization.JsonExtensionData` property bags (`Dictionary<string, object> Properties`). Added strongly typed fallback properties (`Distance`, `UnlistedType`, `Status`) without explicit indexers.
+
+### 7. Database Migration & Schema Modernization
+
+- [x] **Product to Offering Renaming**: Safely renamed legacy tables (\Products\ -> \Offerings\, \CompanyProducts\ -> \CompanyOfferings\, etc.), columns, and primary keys using a customized EF Core 10 migration with \RenameTable\ and \sp_rename\, fully preserving local database records. Cleaned up orphaned \Business\ indexes.
+
+### 8. Community Infrastructure
+
+- [x] **\CommunitiesCache\**: Ported \C:\\Bizsort\\legacy\\server\\Data\\Cache\\Community\\Community.cs\ to \ackend/Data/Cache/Community/Community.cs\ (with its \CachedCommunity\ model). Ensures \GetOfferingProfileAsync\ (formerly \GetProductProfileAsync\) implements lazy-loading of the \RichText\ property without pulling massive payloads during high-traffic caching.
 
 ### Pending Tasks
 

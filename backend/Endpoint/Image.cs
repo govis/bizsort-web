@@ -10,9 +10,9 @@ public static class ImageEndpoints
     {
         var group = routes.MapGroup("/api/image").WithTags("Image");
 
-        group.MapGet("/get", async ([FromQuery] ImageEntity entity, [FromQuery] long id, [FromQuery] int width, [FromQuery] int height, IImageService imageService) =>
+        group.MapGet("/get", async ([FromQuery] ImageEntity entity, [FromQuery] long id, [FromQuery] int width, [FromQuery] int? height, IImageService imageService) =>
         {
-            var result = await imageService.GetImageAsync(entity, id, width, height);
+            var result = await imageService.GetImageAsync(entity, id, width, height ?? 0);
             return result.Content is not null ? Results.File(result.Content, result.ContentType) : Results.NotFound();
         })
         .WithName("GetImage")

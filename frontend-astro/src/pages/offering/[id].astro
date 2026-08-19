@@ -1,0 +1,17 @@
+---
+// src/pages/offering/[id].astro
+import Layout from '../../layouts/Layout.astro';
+
+const { id } = Astro.params;
+const offeringId = parseInt(id as string, 10);
+const title = `Offering | BizSort`;
+---
+
+<Layout title={title}>
+  <!-- SSR data fetching for offering profile can be added here if needed -->
+  <offering-profile offering-id={offeringId}></offering-profile>
+
+  <script>
+    import '../../components/offering-profile.ts'; // Add correct import once component is migrated
+  </script>
+</Layout>

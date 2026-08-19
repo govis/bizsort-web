@@ -24,34 +24,34 @@ namespace BizSrt.Api.Grpc
             return new IndexCompanyResponse { Success = true };
         }
 
-        public override async Task<IndexProductResponse> IndexProduct(IndexProductRequest request, ServerCallContext context)
+        public override async Task<IndexOfferingResponse> IndexOffering(IndexOfferingRequest request, ServerCallContext context)
         {
             using var scope = _scopeFactory.CreateScope();
             var dc = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-            await Process.Company.IndexProductAsync(dc, request.ProductId, context.CancellationToken);
+            await Process.Company.IndexOfferingAsync(dc, request.OfferingId, context.CancellationToken);
 
-            return new IndexProductResponse { Success = true };
+            return new IndexOfferingResponse { Success = true };
         }
 
-        public override async Task<IndexProductFacetSetResponse> IndexProductFacetSet(IndexProductFacetSetRequest request, ServerCallContext context)
+        public override async Task<IndexOfferingFacetSetResponse> IndexOfferingFacetSet(IndexOfferingFacetSetRequest request, ServerCallContext context)
         {
             using var scope = _scopeFactory.CreateScope();
             var dc = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-            await Process.Company.IndexProductFacetSetAsync(dc, request.SetId, context.CancellationToken);
+            await Process.Company.IndexOfferingFacetSetAsync(dc, request.SetId, context.CancellationToken);
 
-            return new IndexProductFacetSetResponse { Success = true };
+            return new IndexOfferingFacetSetResponse { Success = true };
         }
 
-        public override async Task<DeleteProductFacetSetResponse> DeleteProductFacetSet(DeleteProductFacetSetRequest request, ServerCallContext context)
+        public override async Task<DeleteOfferingFacetSetResponse> DeleteOfferingFacetSet(DeleteOfferingFacetSetRequest request, ServerCallContext context)
         {
             using var scope = _scopeFactory.CreateScope();
             var dc = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-            await Process.Company.DeleteProductFacetSetAsync(dc, request.SetId, context.CancellationToken);
+            await Process.Company.DeleteOfferingFacetSetAsync(dc, request.SetId, context.CancellationToken);
 
-            return new DeleteProductFacetSetResponse { Success = true };
+            return new DeleteOfferingFacetSetResponse { Success = true };
         }
     }
 }

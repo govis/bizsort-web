@@ -108,6 +108,12 @@ export class CompanyListView extends LitElement implements IViewAdapter {
         company-card:nth-child(10n + 10) { animation-delay: 540ms; }
     `;
 
+    private _handleCompanySelect(e: CustomEvent<{ id: number; name: string }>) {
+        import('../../navigation').then(({ Company }) => {
+            Company.profileView(e.detail.id);
+        });
+    }
+
     render() {
         if (!this._items || this._items.length === 0) {
             return html``;
@@ -120,6 +126,7 @@ export class CompanyListView extends LitElement implements IViewAdapter {
                         <company-card 
                             .model=${item} 
                             .itemOptions=${this._displayOptions}
+                            @company-select=${this._handleCompanySelect}
                         ></company-card>
                     `)}
                 </div>
@@ -131,6 +138,7 @@ export class CompanyListView extends LitElement implements IViewAdapter {
                             .model=${item} 
                             .itemOptions=${this._displayOptions}
                             layout="horizontal"
+                            @company-select=${this._handleCompanySelect}
                         ></company-card>
                     `)}
                 </div>
