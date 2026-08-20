@@ -158,14 +158,14 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<company-enrichment-action>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyEnrichmentAction` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyEnrichment` | | |
-| [x] | ↳ `component/company/featured.ts` | `frontend/src/components/company/featured.ts` | Ported with native CSS stagger animation (4n+x). |
+| [x] | ↳ `component/company/featured.ts` | `frontend-astro/src/components/company/featured.ts` | Ported with native CSS stagger animation (4n+x). |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyFeatured` | | |
 | [ ] | ↳ `component/company/industry/edit.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Edit` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyIndustryEdit` | | |
 | [ ] | ↳ `component/company/listitem.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyListItem` | | |
-| [x] | ↳ `component/company/listview.ts` | `frontend/src/components/company/listview.ts` | Ported with native CSS stagger animation cascade (10n+x). |
+| [x] | ↳ `component/company/listview.ts` | `frontend-astro/src/components/company/listview.ts` | Ported with native CSS stagger animation cascade (10n+x). |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyListView` | | |
 | [ ] | ↳ `component/company/member/confirm.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyMemberConfirm` | | |
@@ -323,7 +323,7 @@
 | [ ] | ↳ `component/location/search/box.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class LocationSearchBox` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchLocationSelect` | | |
-| [x] | ↳ `component/map/view.ts` | `frontend/src/components/map/view.ts` | Ported to use WebAwesome wa-dialog with lazy-loading iframe. |
+| [x] | ↳ `component/map/view.ts` | `frontend-astro/src/components/map/view.ts` | Ported to use WebAwesome wa-dialog with lazy-loading iframe. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MapView` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class MapViewOverlay` | | |
 | [ ] | ↳ `component/marketplace/card.ts` | - | - |
@@ -442,7 +442,7 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<product-card>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProductCardMenu` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProductCard` | | |
-| [x] | ↳ `component/product/featured.ts` | `frontend/src/components/product/featured.ts` | Ported with native CSS stagger animation (4n+x). |
+| [x] | ↳ `component/product/featured.ts` | `frontend-astro/src/components/product/featured.ts` | Ported with native CSS stagger animation (4n+x). |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProductFeatured` | | |
 | [ ] | ↳ `component/product/listitem.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProductListItem` | | |
@@ -503,7 +503,7 @@
 | [ ] | ↳ `component/search/box/option.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<searchbox-option>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchboxOption` | | |
-| [x] | ↳ `component/search/category/input.ts` | `frontend/src/components/search/category/input.ts` | Ported category input lit component. Converted to WebAwesome. |
+| [x] | ↳ `component/search/category/input.ts` | `frontend-astro/src/components/search/category/input.ts` | Ported category input lit component. Converted to WebAwesome. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<search-category-input>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchCategoryInput` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Input` | | |
@@ -520,13 +520,13 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SeoMetadata` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class InitOptions` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class DirectoryBreadcrumb` | | |
-| [x] | ↳ `component/search/home.ts` | `frontend/src/components/search/home.ts` | Ported search home UI logic. |
+| [x] | ↳ `component/search/home.ts` | `frontend-astro/src/components/search/home.ts` | Ported search home UI logic. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<search-home>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchHome` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Selection` | | |
 | [ ] | ↳ `component/search/input.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchInput` | | |
-| [x] | ↳ `component/search/location/input.ts` | `frontend/src/components/search/location/input.ts` | Ported location input lit component. Converted to WebAwesome. |
+| [x] | ↳ `component/search/location/input.ts` | `frontend-astro/src/components/search/location/input.ts` | Ported location input lit component. Converted to WebAwesome. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<search-location-input>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchLocationInput` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Input` | | |
@@ -569,7 +569,7 @@
 | [ ] | ↳ `component/website/listview.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class WebsiteListView` | | |
 | | **Models & ViewModels** | | |
-| [x] | ↳ `src/model.ts` | `frontend/src/model.ts` | Ported core models. |
+| [x] | ↳ `src/model.ts` | `frontend-astro/src/model.ts` | Ported core models. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class DictionaryItem` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SecurityProfile` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Account` | | |
@@ -699,7 +699,7 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class SearchOutput` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Preview` | | |
 | [ ] | ↳ `src/model/finance.ts` | - | - |
-| [x] | ↳ `src/model/foundation.ts` | `frontend/src/model/foundation.ts` | Ported foundational models. |
+| [x] | ↳ `src/model/foundation.ts` | `frontend-astro/src/model/foundation.ts` | Ported foundational models. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Location` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class LocationRef` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Facet` | | |
@@ -796,7 +796,7 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Profile` | | |
 | [ ] | ↳ `src/model/website.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Preview` | | |
-| [x] | ↳ `src/viewmodel.ts` | `frontend/src/viewmodel.ts` | Ported base viewmodels without jQuery. |
+| [x] | ↳ `src/viewmodel.ts` | `frontend-astro/src/viewmodel.ts` | Ported base viewmodels without jQuery. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ErrorInfo` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IHTMLElements` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IElements` | | |
@@ -870,7 +870,7 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class notifyPageOptions` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Data` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IHeader` | | |
-| [x] | ↳ `src/viewmodel/location/input.ts` | `frontend/src/viewmodel/location/input.ts` | Ported search location viewmodel. |
+| [x] | ↳ `src/viewmodel/location/input.ts` | `frontend-astro/src/viewmodel/location/input.ts` | Ported search location viewmodel. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Input` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IInput` | | |
 | [ ] | ↳ `src/viewmodel/naics/view.ts` | - | - |
@@ -924,10 +924,10 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class cache` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CachedPromotion` | | |
 | [ ] | ↳ `src/service/admin/website.ts` | - | - |
-| [x] | ↳ `src/service/category.ts` | `frontend/src/service/category.ts` | Ported category service helpers. |
+| [x] | ↳ `src/service/category.ts` | `frontend-astro/src/service/category.ts` | Ported category service helpers. |
 | [ ] | ↳ `src/service/community.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class communityCache` | | |
-| [x] | ↳ `src/service/company.ts` | `frontend/src/service/company.ts` | Ported company service helpers. |
+| [x] | ↳ `src/service/company.ts` | `frontend-astro/src/service/company.ts` | Ported company service helpers. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Featured` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Communities` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Affiliations` | | |
@@ -938,7 +938,7 @@
 | [ ] | ↳ `src/service/googleplaces.ts` | - | - |
 | [ ] | ↳ `src/service/image.ts` | - | - |
 | [ ] | ↳ `src/service/job.ts` | - | - |
-| [x] | ↳ `src/service/location.ts` | `frontend/src/service/location.ts` | Ported location service helpers. |
+| [x] | ↳ `src/service/location.ts` | `frontend-astro/src/service/location.ts` | Ported location service helpers. |
 | [ ] | ↳ `src/service/marketplace.ts` | - | - |
 | [ ] | ↳ `src/service/master.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class cache` | | |
@@ -1175,7 +1175,7 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyArticles` | | |
 | [ ] | ↳ `company/feed.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyFeed` | | |
-| [x] | ↳ `company/header-layout.ts` | `frontend/src/company/header-layout.ts` | Ported header layout component. |
+| [x] | ↳ `company/header-layout.ts` | `frontend-astro/src/company/header-layout.ts` | Ported header layout component. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<company-header-layout>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyHeaderLayout` | | |
 | [ ] | ↳ `company/home.ts` | - | - |
@@ -1192,12 +1192,12 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyMarketplace` | | |
 | [ ] | ↳ `company/news.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyNews` | | |
-| [ ] | ↳ `company/product.ts` | - | - |
+| [x] | ↳ `company/product.ts` | `frontend-astro/src/company/offering.ts` | Ported to standalone SSR single offering view. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<company-product>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyProduct` | | |
 | [x] | ↳ `company/products.ts` | `frontend-astro/src/company/offerings.ts` | Ported to standalone SSR offerings page with reactive ListView architecture. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyProducts` | | |
-| [x] | ↳ `company/profile.ts` | `frontend/src/company/profile.ts` | Ported company profile component. |
+| [x] | ↳ `company/profile.ts` | `frontend-astro/src/company/profile.ts` | Ported company profile component. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<company-offce-select>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<company-profile>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyProfile` | | |
@@ -1209,7 +1209,7 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyProjects` | | |
 | [ ] | ↳ `company/promotions.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyPromotions` | | |
-| [x] | ↳ `company/search.ts` | `frontend/src/company/search.ts` | Ported company search layout. |
+| [x] | ↳ `company/search.ts` | `frontend-astro/src/company/search.ts` | Ported company search layout. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<company-search>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanySearch` | | |
 | [ ] | ↳ `crawler-main.ts` | - | - |
@@ -1264,7 +1264,7 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<project-search>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ProjectSearch` | | |
 | [ ] | ↳ `src/application.ts` | - | - |
-| [x] | ↳ `src/exception.ts` | `frontend/src/exception.ts` | Ported exception models. |
+| [x] | ↳ `src/exception.ts` | `frontend-astro/src/exception.ts` | Ported exception models. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class ArgumentException` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class OperationException` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class DataException` | | |
@@ -1326,7 +1326,7 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class PageModel` | | |
 | [ ] | ↳ `src/seo/title.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class IDirectoryEntity` | | |
-| [x] | ↳ `src/settings.ts` | `frontend/src/settings.ts` | Ported settings. |
+| [x] | ↳ `src/settings.ts` | `frontend-astro/src/settings.ts` | Ported settings. |
 | [ ] | ↳ `src/settings/validation.ts` | - | - |
 | [ ] | ↳ `src/view/webComponent.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Elements` | | |
