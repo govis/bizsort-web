@@ -1,6 +1,6 @@
 import { showToast } from '../components/utility/message-toast.js';
 
-export const API_BASE = import.meta.env.SSR ? 'http://localhost:5000' : '';
+export const API_BASE = import.meta.env.SSR ? 'https://localhost:5001' : '';
 
 /**
  * A wrapper around native fetch that mimics the legacy notifyErrorAjax mechanism.
