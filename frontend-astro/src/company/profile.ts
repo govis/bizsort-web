@@ -28,7 +28,6 @@ import '../components/map/view';
 import '../components/offering/slider';
 import '../components/company/slider';
 import '../components/community/slider';
-import './offerings';
 import { stringify } from '../service/geocoder';
 
 export class CompanyProfile extends LitElement {
@@ -51,6 +50,21 @@ export class CompanyProfile extends LitElement {
     this.activeTab = 'about';
   }
 
+  private _imageLoaded(e: Event) {
+    const img = e.target as HTMLImageElement;
+    if (img) {
+      try {
+        const headerLayout = this.shadowRoot?.querySelector('company-header-layout') as HTMLElement;
+        if (headerLayout) {
+          // 1. Mirror Legacy UI margin adjustments based on image height
+          if (img.clientHeight && img.clientHeight < 84) {
+            headerLayout.style.setProperty('--name-margin-left', `-${img.clientWidth}px`);
+          } else {
+            headerLayout.style.setProperty('--name-margin-left', '0px');
+          }
+          headerLayout.style.setProperty('--content-header-margin-left', `${img.clientWidth + 30}px`);
+        }
+      } catch (err) {
         console.warn('Failed to adjust header layout', err);
       }
     }
@@ -254,6 +268,15 @@ export class CompanyProfile extends LitElement {
     if (!this.company) return html`<div style="max-width:1000px; margin: 2rem auto;">Company not found.</div>`;
 
     const hasMultipleOffices = this.company.offices && this.company.offices.length > 1;
+    // Legacy ViewHead requested 290x145 image sizing for the main profile layout
+    const logoUrl = getLogoUrl(this.company.image?.entity || 1, this.company.image?.imageId, 290, 145);
+
+    // Map activeTab from URL query params (default to about)
+    const url = new URL(window.location.href);
+    const tabFromUrl = url.searchParams.get('tab');
+    if (tabFromUrl && tabFromUrl !== this.activeTab) {
+      this.activeTab = tabFromUrl;
+    }
 
     return html`
       <style>
@@ -272,8 +295,11 @@ export class CompanyProfile extends LitElement {
           display: none;
         }
       </style>
-      <company-header-layout active-tab="${this.activeTab}" @tab-change="${this._handleTabChange}">
-        
+      <company-header-layout title-text="${this.company.name}" ?no-image="${!logoUrl}">
+        ${logoUrl ? html`
+          <img slot="logo" src="${logoUrl}" alt="${this.company.name} logo" crossOrigin="anonymous" @load="${this._imageLoaded}" />
+        ` : ''}
+
         <search-box slot="navbar"></search-box>
 
         <page-menu slot="dropdown" theme="dark">
@@ -291,9 +317,27 @@ export class CompanyProfile extends LitElement {
           </wa-dropdown-item>
         </page-menu>
 
+        <div slot="tabs">
+          <wa-tab-group style="--indicator-color: white; --track-color: transparent;" @wa-tab-show="${(e: any) => this._handleTabChange(e)}">
+            <wa-tab slot="nav" panel="about" ?active="${this.activeTab === 'about'}">About</wa-tab>
+            ${this.company.offerings?.view ? html`<wa-tab slot="nav" panel="offerings" ?active="${this.activeTab === 'offerings'}">${this.company.offerings.label || 'What we Do'}</wa-tab>` : ''}
+            ${this.company.projects != null ? html`<wa-tab slot="nav" panel="projects" ?active="${this.activeTab === 'projects'}">${this.company.projects.label || 'Projects'}</wa-tab>` : ''}
+            ${this.company.jobs != null ? html`<wa-tab slot="nav" panel="jobs" ?active="${this.activeTab === 'jobs'}">${this.company.jobs.label || 'Jobs'}</wa-tab>` : ''}
+            ${this.company.news != null ? html`<wa-tab slot="nav" panel="news" ?active="${this.activeTab === 'news'}">${this.company.news.label || 'News'}</wa-tab>` : ''}
+            ${this.company.articles != null ? html`<wa-tab slot="nav" panel="articles" ?active="${this.activeTab === 'articles'}">${this.company.articles.label || 'Articles'}</wa-tab>` : ''}
+            
+            <wa-tab-panel name="about"></wa-tab-panel>
+            <wa-tab-panel name="offerings"></wa-tab-panel>
+            <wa-tab-panel name="projects"></wa-tab-panel>
+            <wa-tab-panel name="jobs"></wa-tab-panel>
+            <wa-tab-panel name="news"></wa-tab-panel>
+            <wa-tab-panel name="articles"></wa-tab-panel>
+          </wa-tab-group>
+        </div>
+
         <div class="company-profile-content">
           ${this.activeTab === 'about' ? this._renderAboutTab(hasMultipleOffices) : ''}
-          ${this.activeTab === 'offerings' ? this._renderMultiOfferingTab() : ''}
+          ${this.activeTab === 'offerings' ? this._renderOfferingsTab() : ''}
           ${this.activeTab === 'projects' ? this._renderStubTab('projects', this.company.projects?.label || 'Projects') : ''}
           ${this.activeTab === 'jobs' ? this._renderStubTab('jobs', this.company.jobs?.label || 'Jobs') : ''}
           ${this.activeTab === 'marketplace' ? this._renderStubTab('marketplace', this.company.marketplace?.label || 'Marketplace') : ''}
@@ -306,19 +350,16 @@ export class CompanyProfile extends LitElement {
     `;
   }
 
-  private _handleTabChange(e: CustomEvent) {
-    const tabName = e.detail.value;
-    if (tabName && tabName !== this.activeTab) {
-      this.activeTab = tabName;
+  private _handleTabChange(e: any) {
+    const tabName = e.detail.name;
+    this.activeTab = tabName;
+    const url = new URL(window.location.href);
+    if (tabName === 'about') {
+      url.searchParams.delete('tab');
+    } else {
+      url.searchParams.set('tab', tabName);
     }
-  }
-
-  private _renderMultiOfferingTab() {
-    return html`
-      <layout-card class="tab-section" heading="${this.company!.offerings?.label || 'What We Do'}">
-        <article-view class="card-content" .richText=${this.company!.offerings?.multiOffering || this.company!.offerings?.multiProduct}></article-view>
-      </layout-card>
-    `;
+    window.history.replaceState(null, '', url.toString());
   }
 
   private _renderAboutTab(hasMultipleOffices: boolean) {
@@ -429,10 +470,10 @@ export class CompanyProfile extends LitElement {
         </layout-card>
       ` : ''}
 
-      ${this.company!.offerings?.view ? html`
+      ${(this.company!.offerings as any)?.items?.length > 0 ? html`
         <div class="slider-container" style="margin-top: 2rem;">
           <h2 style="font-size: 1.25rem; margin-bottom: 1rem; color: #333; text-align: center;">Featured Offerings and Services</h2>
-          <offering-slider .companyId="${this.companyId}"></offering-slider>
+          <offering-slider .companyId="${this.companyId}" .offeringRefs="${(this.company!.offerings as any)?.items}"></offering-slider>
         </div>
       ` : ''}
 
@@ -452,7 +493,19 @@ export class CompanyProfile extends LitElement {
     `;
   }
 
-  // The offerings tab is now handled by the standalone pages/company/[id]/offerings.astro route
+  private _renderOfferingsTab() {
+    const offeringRefs = (this.company!.offerings as any)?.items || []; // Assume items has offering refs
+    return html`
+      <layout-card class="tab-section" heading="${this.company!.offerings?.label || 'What We Do'}">
+        <div class="rich-text">
+          ${this.company!.offerings?.multiOffering ? unsafeHTML(this.company!.offerings.multiOffering) : ''}
+        </div>
+        ${offeringRefs.length > 0 ? html`
+          <offering-slider .companyId="${this.companyId}" .offeringRefs="${offeringRefs}"></offering-slider>
+        ` : ''}
+      </layout-card>
+    `;
+  }
 
   private _renderArticlesTab() {
     return html`

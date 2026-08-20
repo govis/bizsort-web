@@ -41,6 +41,10 @@ export class CompanyOfferings extends LitElement implements IViewAdapter {
   declare initialItems: any[];
 
   viewModel: CompanyOfferingsViewModel;
+  
+  modelUpdated(props: string[]) {
+    this.requestUpdate();
+  }
 
   constructor() {
     super();

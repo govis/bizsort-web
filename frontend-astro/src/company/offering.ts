@@ -9,9 +9,6 @@ import '../components/image/view';
 import '../components/richtext/view';
 import './header-layout';
 import '../components/layout/card';
-import { consume } from '@lit/context';
-import { companyContext } from './context.js';
-import { getLogoUrl, analyzeImage } from '../service/image.js';
 
 /**
  * Company Offering View.
@@ -20,35 +17,56 @@ import { getLogoUrl, analyzeImage } from '../service/image.js';
 export class CompanyOffering extends LitElement {
   static get properties() {
     return {
-      offering: { type: Object },
-      company: { type: Object },
-      _headerBackground: { state: true },
-      _logoLoaded: { state: true }
+      companyId: { type: Number, attribute: 'company-id' },
+      offeringId: { type: Number, attribute: 'offering-id' },
+      _company: { state: true },
+      _offering: { state: true },
+      _loading: { state: true },
+      _error: { state: true }
     };
   }
 
-  declare offering?: any;
-  
-  @consume({ context: companyContext, subscribe: true })
-  declare company?: any;
-  
-  declare private _headerBackground?: string;
-  declare private _logoLoaded: boolean;
+  declare companyId?: number;
+  declare offeringId?: number;
+  declare private _company?: any;
+  declare private _offering?: any;
+  declare private _loading: boolean;
+  declare private _error?: string;
 
   constructor() {
     super();
-    this._logoLoaded = false;
+    this._loading = false;
   }
 
-          }
-        }
-      } catch (err) {
-        console.error("Error analyzing image color", err);
-      }
+  willUpdate(changedProperties: Map<string | number | symbol, unknown>) {
+    if ((changedProperties.has('companyId') || changedProperties.has('offeringId')) && this.companyId && this.offeringId) {
+      this._fetchData();
     }
   }
 
-  // No need for willUpdate or _fetchData anymore, data is passed directly via SSR!
+  private async _fetchData() {
+    this._loading = true;
+    this._error = undefined;
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || '';
+      
+      // Fetch both company and offering
+      const [companyRes, offeringRes] = await Promise.all([
+        fetch(`${backendUrl}/api/company/profile/view?company=${this.companyId}`),
+        fetch(`${backendUrl}/api/offering/profile/view?offering=${this.offeringId}`)
+      ]);
+      
+      if (!companyRes.ok) throw new Error('Failed to fetch company');
+      if (!offeringRes.ok) throw new Error('Failed to fetch offering');
+      
+      this._company = await companyRes.json();
+      this._offering = await offeringRes.json();
+    } catch (e: unknown) {
+      this._error = e instanceof Error ? e.message : 'An unknown error occurred';
+    } finally {
+      this._loading = false;
+    }
+  }
 
   // Image logic moved to image-view component
 
@@ -182,47 +200,60 @@ export class CompanyOffering extends LitElement {
   `;
 
   render() {
-    if (!this.offering) {
+    if (this._loading) {
       return html`
-        <company-header-layout>
+        <company-header-layout tab="offering">
+          <div class="loading-container">
+            <wa-spinner style="font-size: 3rem;"></wa-spinner>
+          </div>
+        </company-header-layout>
+      `;
+    }
+
+    if (this._error) {
+      return html`
+        <company-header-layout tab="offering">
+          <div style="max-width:1000px; margin: 2rem auto; color: red;">Error: ${this._error}</div>
+        </company-header-layout>
+      `;
+    }
+
+    if (!this._company || !this._offering) {
+      return html`
+        <company-header-layout tab="offering">
           <div style="max-width:1000px; margin: 2rem auto;">Data not found.</div>
         </company-header-layout>
       `;
     }
 
-    const images = this.offering.images || [];
-    // Prefer the full company object passed from Astro, fallback to the flattened account in offering
-    const companyModel = this.company || this.offering.company;
+    const images = this._offering?.images || [];
 
     return html`
-      <company-header-layout active-tab="offerings">
-        
+      <company-header-layout tab="offering">
         <div id="contentWidth" class="content content-center">
           
           <div id="mainCard">
             <div class="content-responsive">
               <div class="image-section">
-                ${images.length > 0 ? html`<image-view .images="${images}" alt="${this.offering.title}"></image-view>` : html`
-                  <div style="display: flex; align-items: center; justify-content: center; height: 100%; background: #e0e0e0; border-radius: 8px;">
-                    <wa-icon name="image" style="font-size: 4rem; color: #999;"></wa-icon>
-                  </div>
+                ${images.length > 0 ? html`<image-view .images="${images}" alt="${this._offering.title}"></image-view>` : html`
+                  <wa-icon name="image" style="font-size: 4rem; color: #999;"></wa-icon>
                 `}
               </div>
               <div class="name-section">
-                <h1 class="offering-name">${this.offering.title}</h1>
+                <h1 class="offering-name">${this._offering.title}</h1>
                 
                 <div class="link-list">
-                  ${this.offering.webUrl ? html`
-                    <a class="link-item" href="${this.offering.webUrl}" target="_blank" rel="noopener">
+                  ${this._offering.webUrl ? html`
+                    <a class="link-item" href="${this._offering.webUrl}" target="_blank" rel="noopener">
                       <wa-icon name="box-arrow-up-right"></wa-icon>
                       <span>Web page</span>
                     </a>
                   ` : ''}
                   
-                  ${this.offering.category ? html`
-                    <a class="link-item" href="/search?categoryId=${this.offering.category.id}">
+                  ${this._offering.category ? html`
+                    <a class="link-item" href="/search?categoryId=${this._offering.category.id}">
                       <wa-icon name="folder"></wa-icon>
-                      <span>${this.offering.category.name}</span>
+                      <span>${this._offering.category.name}</span>
                     </a>
                   ` : ''}
                 </div>
@@ -230,9 +261,9 @@ export class CompanyOffering extends LitElement {
             </div>
           </div>
 
-          <layout-card id="aboutCard" heading="${this.offering.type?.itemText || 'Offering'} Description">
+          <layout-card id="aboutCard" heading="${this._offering.type?.itemText || 'Offering'} Description">
             <div class="rich-text">
-              ${this.offering.richText ? html`<richtext-view .html="${this.offering.richText}"></richtext-view>` : this.offering.text || 'No description available.'}
+              ${this._offering.richText ? html`<richtext-view .html="${this._offering.richText}"></richtext-view>` : this._offering.text || 'No description available.'}
             </div>
           </layout-card>
 
