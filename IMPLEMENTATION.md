@@ -16,11 +16,17 @@ The application is structured as a distributed system orchestrated by **.NET Asp
 
 ## 2. Backend (C#)
 
-The backend was ported from the `Service`, `Model`, `Data`, and `Dev` folders in the `..\legacy\server\` directory. This legacy code was migrated to a modern **Minimal API** structure. It is required to verify endpoint and data format consistency when making changes to models or services to ensure compatibility with the ported UI components.
+The backend was ported from the `Service`, `Model`, `Data`, and `Dev` folders in the `..\legacy\server\` directory. This legacy code was migrated to a modern multi-project structure to cleanly separate concerns.
+
+### Multi-Project Structure:
+- **`model/BizSrt.Model.csproj`**: Contains all pure POCO DTOs, ViewModels, and Enums mapped directly from the legacy `Model` layer (Zero dependencies).
+- **`foundation/BizSrt.Foundation.csproj`**: Abstract caching base classes (`ReadManyExpirationCache`), hashing utilities, and foundation logic.
+- **`database/BizSrt.Data.csproj`**: The EF Core 10 `AppDbContext`, Entities, and `IQueryable` extensions. 
+- **`backend/BizSrt.Api.csproj`**: The frontend-facing Minimal API. It handles business logic (`Process/`), memory caching (`Data/Cache`), and maps routes to endpoints (`Endpoint/`).
 
 ### Key Porting Strategies:
-- **Legacy Model Retention**: Models from the legacy `Model` and `Data` directories were re-implemented in `backend/Models/` to ensure the JSON payloads remain identical to the legacy system. This prevents breaking changes for the ported UI components.
-- **Minimal API Mapping**: Legacy `ApiController` routes (e.g., `svc/company/profile/view`) were mapped to `app.MapGet` in `backend/Endpoints/CompanyEndpoints.cs`.
+- **Legacy Model Retention**: Models from the legacy system were strictly re-implemented in the `BizSrt.Model` project to ensure the JSON payloads remain identical to the legacy system. This prevents breaking changes for the ported UI components.
+- **Minimal API Mapping**: Legacy `ApiController` routes (e.g., `svc/company/profile/view`) were mapped to `app.MapGet` in `backend/Endpoint/Company.cs` (or similar endpoint files).
 - **Entity Framework Core**: The `AppDbContext` supports 16 entity types with complex relationships (CompanyProfile, Offices, Products, Projects, Jobs, Communities, Affiliations, Promotions, Media).
 - **Service Layer**: `CompanyService` (14 methods) handles complex DTO mapping while utilizing modern C# features. `ImageService` handles on-the-fly image resizing via ImageSharp.
 
