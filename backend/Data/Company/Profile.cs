@@ -22,7 +22,6 @@ public interface ICompanyService
     Task<QueryOutput<BizSrt.Model.EntityId<long>>> GetJobsAsync(int companyId, short department, QueryInput queryInput);
     Task<IEnumerable<BizSrt.Model.Promotion.Preview>> GetPromotionsAsync(int companyId);
     Task<BizSrt.Model.Account?> GetInfoAsync(int id);
-    Task<BizSrt.Model.Offering.Profile?> GetOfferingProfileAsync(int companyId, long offeringId);
     Task<BizSrt.Model.Job.Profile?> GetJobProfileAsync(int companyId, long jobId);
     Task<BizSrt.Model.Project.Profile?> GetProjectProfileAsync(int companyId, long projectId);
 }
@@ -69,11 +68,27 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
             HeadOffice = offices.Length > 0 ? offices[0] : null,
             Offices = offices,
             Image = cachedCompany.Image,
-            Offerings = new Page_Offerings { View = OfferingsView.NoOfferings, HideOfferings = false },
             HasAffiliations = await dbContext.CompanyAffiliations.AnyAsync(a => a.From == id || (a.To == id && !a.Pending)),
             HasCommunities = await dbContext.CompanyCommunities.AnyAsync(cc => cc.Company == id)
         };
-        
+
+        var offeringsView = !string.IsNullOrEmpty(cachedCompany.MultiOffering) ? BizSrt.Model.OfferingsView.Multioffering : cachedCompany.Options.Offerings_Marketplace ? BizSrt.Model.OfferingsView.Marketplace : BizSrt.Model.OfferingsView.OfferingList;
+        if (offeringsView != BizSrt.Model.OfferingsView.Multioffering && (cachedCompany.Offerings == null || cachedCompany.Offerings.Length == 0))
+            offeringsView = BizSrt.Model.OfferingsView.NoOfferings;
+
+        var pageOfferings = new Page_Offerings { View = offeringsView };
+        if (offeringsView == BizSrt.Model.OfferingsView.Multioffering)
+        {
+            pageOfferings.MultiOffering = cachedCompany.MultiOffering;
+            if (string.IsNullOrEmpty(pageOfferings.MultiOffering)) pageOfferings = null;
+        }
+        else if (offeringsView > 0 && (cachedCompany.Offerings == null || cachedCompany.Offerings.Length == 0))
+        {
+            pageOfferings = null;
+        }
+
+        profile.Offerings = pageOfferings;
+
         return profile;
     }
 
@@ -625,24 +640,6 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
         };
     }
 
-    public async Task<BizSrt.Model.Offering.Profile?> GetOfferingProfileAsync(int companyId, long offeringId)
-    {
-        await Task.CompletedTask;
-        var cachedOffering = BizSrt.Api.Data.Cache.LegacyCache.CompanyOfferings[offeringId];
-        if (cachedOffering is null || cachedOffering.CompanyId != companyId) return null;
-
-        return new BizSrt.Model.Offering.Profile
-        {
-            Id = cachedOffering.Id,
-            Title = cachedOffering.Title,
-            RichText = cachedOffering.RichText,
-            Text = cachedOffering.Text,
-            WebUrl = cachedOffering.WebUrl,
-            Status = (BizSrt.Model.Offering.Status)cachedOffering.Status,
-            Updated = cachedOffering.Updated
-        };
-    }
-
     public async Task<BizSrt.Model.Job.Profile?> GetJobProfileAsync(int companyId, long jobId)
     {
         var job = await dbContext.Jobs
@@ -778,3 +775,4 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
         return string.Join(", ", parts).Trim();
     }
 }
+

@@ -1195,7 +1195,7 @@
 | [ ] | ↳ `company/product.ts` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<company-product>` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyProduct` | | |
-| [ ] | ↳ `company/products.ts` | - | - |
+| [x] | ↳ `company/products.ts` | `frontend-astro/src/company/offerings.ts` | Ported to standalone SSR offerings page with reactive ListView architecture. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class CompanyProducts` | | |
 | [x] | ↳ `company/profile.ts` | `frontend/src/company/profile.ts` | Ported company profile component. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `<company-offce-select>` | | |

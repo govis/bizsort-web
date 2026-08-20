@@ -16,6 +16,7 @@ public interface ICompanyOfferingService
     Task<SliceOutput<SearchItem>> GetFeaturedAsync(DirectorySliceInput<long> sliceInput);
     Task<SliceOutput<SearchItem>> GetFeaturedAsync(int company, SliceInput sliceInput);
     Task<Preview[]> ToPreviewAsync(SearchItem[] offerings, Dictionary<string, object> options);
+    Task<BizSrt.Model.Offering.Profile?> ViewAsync(int companyId, long offeringId, Dictionary<string, object>? options = null);
 }
 
 public class CompanyOfferingService : ICompanyOfferingService
@@ -27,6 +28,59 @@ public class CompanyOfferingService : ICompanyOfferingService
         this.dbContext = dbContext;
     }
 
+    public async Task<BizSrt.Model.Offering.Profile?> ViewAsync(int companyId, long offeringId, Dictionary<string, object>? options = null)
+    {
+        await Task.CompletedTask;
+        var cachedOffering = BizSrt.Api.Data.Cache.LegacyCache.CompanyOfferings[offeringId];
+        if (cachedOffering == null) return null;
+
+        // If companyId is 0 (missing in URL), discover it from the cached offering itself!
+        if (companyId == 0)
+        {
+            companyId = cachedOffering.CompanyId;
+        }
+        else if (companyId != cachedOffering.CompanyId)
+        {
+            return null; // Mismatch
+        }
+
+        var typeDictItem = BizSrt.Api.Data.Cache.LegacyCache.Dictionary.GetItem<BizSrt.Model.DictionaryItem<short>, short>(BizSrt.Model.DictionaryType.OfferingType, cachedOffering.Type);
+
+        var profile = new BizSrt.Model.Offering.Profile
+        {
+            Id = cachedOffering.Id,
+            Type = typeDictItem != null ? new BizSrt.Model.Offering.OfferingType { ItemKey = typeDictItem.ItemKey, ItemText = typeDictItem.ItemText } : null,
+            Category = BizSrt.Api.Data.Cache.LegacyCache.Categories[cachedOffering.Category].ToModel(BizSrt.Model.Group.DisplayType.Name),
+            Title = cachedOffering.Title,
+            RichText = cachedOffering.RichText,
+            Text = cachedOffering.Text,
+            WebUrl = cachedOffering.WebUrl,
+            Status = (BizSrt.Model.Offering.Status)cachedOffering.Status,
+            Updated = cachedOffering.Updated
+        };
+
+        if (cachedOffering.ImageId > 0)
+        {
+            profile.Images = new[] { new Image<long> { Entity = cachedOffering.ImageEntity, ImageId = cachedOffering.ImageId } };
+        }
+
+        if (options != null && options.ContainsKey("company"))
+        {
+            var cachedCompany = BizSrt.Api.Data.Cache.LegacyCache.CompanyProfiles[companyId];
+            if (cachedCompany != null)
+            {
+                profile.Company = new BizSrt.Model.Account
+                {
+                    Id = cachedCompany.Id,
+                    Name = cachedCompany.Name,
+                    AccountType = BizSrt.Model.AccountType.Company,
+                    Image = new Image<int> { Entity = ImageEntity.Company, ImageId = cachedCompany.ImageId, MaxImageSize = cachedCompany.ImageSize }
+                };
+            }
+        }
+
+        return profile;
+    }
     public Task<SliceOutput<SearchItem>> GetFeaturedAsync(DirectorySliceInput<long> sliceInput)
     {
         var offerings = new List<long>();

@@ -1,0 +1,32 @@
+---
+interface Props {
+	title: string;
+	description?: string;
+}
+
+const { title, description = 'BizSort - Business Directory Crawler' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content={description} />
+		<meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0" />
+		<meta name="robots" content="noindex, follow" />
+		<link rel="icon" type="image/x-icon" href="/favicon.ico" />
+		<title>{title}</title>
+		
+		<style is:global>
+			body {
+				margin: 0;
+				font-family: 'Roboto', 'Noto', sans-serif;
+			}
+		</style>
+	</head>
+	<body unresolved>
+		<main>
+			<slot />
+		</main>
+	</body>
+</html>

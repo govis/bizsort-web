@@ -1,10 +1,9 @@
+import { apiFetch } from './api.js';
 import type { CompanyPreview, SliceOutput, SearchItem } from '../components/types.js';
 import { FetchOneCache, Cache, SessionCacheType } from '../session/cache';
 import { Semantic } from '../model/foundation';
 
-const API_BASE = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_URL) 
-  || (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.PUBLIC_API_URL)
-  || 'https://localhost:5001';
+
 
 /**
  * Fetches a list of featured company entity IDs.
@@ -19,8 +18,8 @@ export async function search(queryInput: any): Promise<any> {
   if (queryCopy.searchNear && queryCopy.searchNear.text) {
     queryCopy.searchNear.text = encodeURIComponent(queryCopy.searchNear.text);
   }
-  const payload = JSON.stringify(queryCopy);
-  const response = await fetch(`${API_BASE}/api/company/profile/search?queryInput=${payload}`);
+  const payload = encodeURIComponent(JSON.stringify(queryCopy));
+  const response = await apiFetch(`/api/company/profile/search?queryInput=${payload}`);
   
   if (!response.ok) {
     throw new Error(`Failed to perform search: ${response.statusText}`);
@@ -40,10 +39,44 @@ export async function search(queryInput: any): Promise<any> {
  */
 export async function getFeatured(index: number, length: number, category: number = 0, location: number = 1): Promise<SliceOutput<SearchItem>> {
   const sliceInput = JSON.stringify({ index, length, category, location });
-  const response = await fetch(`${API_BASE}/api/company/profile/getFeatured?sliceInput=${sliceInput}`);
+  const response = await apiFetch(`/api/company/profile/getFeatured?sliceInput=${sliceInput}`);
   
   if (!response.ok) {
     throw new Error(`Failed to fetch featured companies: ${response.statusText}`);
+  }
+  
+  return await response.json();
+}
+
+/**
+ * Fetches the list of offerings for a specific company.
+ * Matches legacy: /api/company/profile/getProducts -> /api/company/profile/getOfferings
+ */
+export async function getOfferings(companyId: number, queryInput: any): Promise<any> {
+  const payload = encodeURIComponent(JSON.stringify(queryInput));
+  const response = await apiFetch(`/api/company/profile/getOfferings?company=${companyId}&queryInput=${payload}`);
+  
+  if (!response.ok) {
+    throw new Error(`Failed to fetch company offerings: ${response.statusText}`);
+  }
+  
+  const data = await response.json();
+  if (data.facets) {
+    Semantic.Facet.deserialize(data.facets);
+  }
+  return data;
+}
+
+/**
+ * Fetches featured offerings for a specific company.
+ * Matches legacy: /company/product/getFeatured
+ */
+export async function getCompanyFeaturedOfferings(companyId: number, index: number, length: number): Promise<SliceOutput<any>> {
+  const sliceInput = JSON.stringify({ index, length });
+  const response = await apiFetch(`/api/company/offering/getFeatured?company=${companyId}&sliceInput=${sliceInput}`);
+  
+  if (!response.ok) {
+    throw new Error(`Failed to fetch company featured offerings: ${response.statusText}`);
   }
   
   return await response.json();
@@ -55,7 +88,7 @@ export async function getFeatured(index: number, length: number, category: numbe
  */
 export async function getAffiliations(companyId: number, index: number = 0, length: number = 10): Promise<SliceOutput<SearchItem>> {
   const sliceInput = JSON.stringify({ index, length });
-  const response = await fetch(`${API_BASE}/api/company/profile/getAffiliations?company=${companyId}&sliceInput=${sliceInput}`);
+  const response = await apiFetch(`/api/company/profile/getAffiliations?company=${companyId}&sliceInput=${sliceInput}`);
   
   if (!response.ok) {
     throw new Error(`Failed to fetch affiliations: ${response.statusText}`);
@@ -70,7 +103,7 @@ export async function getAffiliations(companyId: number, index: number = 0, leng
  */
 export async function getCommunities(companyId: number, index: number = 0, length: number = 10): Promise<any> {
   const sliceInput = JSON.stringify({ index, length });
-  const response = await fetch(`${API_BASE}/api/company/profile/getCommunities?company=${companyId}&sliceInput=${sliceInput}`);
+  const response = await apiFetch(`/api/company/profile/getCommunities?company=${companyId}&sliceInput=${sliceInput}`);
   
   if (!response.ok) {
     throw new Error(`Failed to fetch communities: ${response.statusText}`);
@@ -89,7 +122,7 @@ export async function toPreview(companies: SearchItem[]): Promise<CompanyPreview
   if (!companies || companies.length === 0) return [];
   
   const payload = JSON.stringify(companies);
-  const response = await fetch(`${API_BASE}/api/company/profile/toPreview?companies=${payload}`);
+  const response = await apiFetch(`/api/company/profile/toPreview?companies=${payload}`);
   
   if (!response.ok) {
     throw new Error(`Failed to fetch company previews: ${response.statusText}`);
@@ -106,11 +139,12 @@ class CompanyProfileCache extends FetchOneCache<any> {
   constructor() {
     super(SessionCacheType.CompanyProfile);
     this.isUserSpecific = false;
+    this.enabled = false; // Phasing out frontend cache for models already cached in backend
     this.itemKey = 'id';
   }
 
   async fetch(key: number | string): Promise<any> {
-    const response = await fetch(`${API_BASE}/api/company/profile/view?company=${key}`);
+    const response = await apiFetch(`/api/company/profile/view?company=${key}`);
     if (!response.ok) {
       throw new Error(`Failed to fetch company profile: ${response.statusText}`);
     }

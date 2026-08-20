@@ -2,8 +2,8 @@
 // src/pages/company/[id].astro
 // ALL CODE IN THIS FENCE RUNS EXCLUSIVELY ON THE SERVER (NODE.JS)
 
-import Layout from '../../layouts/Layout.astro';
-import { view } from '../../service/company';
+import Layout from '../../../layouts/main.astro';
+import { view } from '../../../service/company';
 
 const { id } = Astro.params;
 const companyId = parseInt(id as string, 10);
@@ -35,10 +35,10 @@ const companyJson = JSON.stringify(company || {});
     🚀 Rendered with Astro (Zero React Wrappers)
   </div>
 
-  <company-profile company={companyJson}></company-profile>
+  <company-profile company-id={companyId} company={companyJson} active-tab="about"></company-profile>
 
   <script>
     // Import the real component!
-    import '../../company/profile.ts';
+    import '../../../company/profile.ts';
   </script>
 </Layout>

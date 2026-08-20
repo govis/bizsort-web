@@ -110,11 +110,14 @@ The legacy codebase is split into two primary areas:
 
 ### 8. Community Infrastructure
 
-- [x] **\CommunitiesCache\**: Ported \C:\\Bizsort\\legacy\\server\\Data\\Cache\\Community\\Community.cs\ to \ackend/Data/Cache/Community/Community.cs\ (with its \CachedCommunity\ model). Ensures \GetOfferingProfileAsync\ (formerly \GetProductProfileAsync\) implements lazy-loading of the \RichText\ property without pulling massive payloads during high-traffic caching.
+- [x] **\CommunitiesCache\**: Ported \C:\\Bizsort\\legacy\\server\\Data\\Cache\\Community\\Community.cs\ to \ ackend/Data/Cache/Community/Community.cs\ (with its \CachedCommunity\ model). Ensures \GetOfferingProfileAsync\ (formerly \GetProductProfileAsync\) implements lazy-loading of the \RichText\ property without pulling massive payloads during high-traffic caching.
 
 ### Pending Tasks
 
 - [x] Port remaining company pages: `company/search.ts`, `company/profile.ts`, `company/header-layout.ts`.
 - [x] Fix Google Maps API Loader version incompatibility in `components/search/location/input.ts` (uses deprecated `Loader` class — must switch to functional `setOptions()`/`importLibrary()` API).
+- [x] Port `company/products.ts` to `company/offerings.ts` as a standalone SEO-friendly SSR Astro page.
+- [x] Rebuild `PageModel(ListView)` architectural orchestration via `CompanyOfferingsViewModel` and `ListViewModel`.
+- [x] Resolve `Lit` property inheritance wipeout bugs for `ListSlider` state decorators.
+- [x] Ensure sliders mapping to `/api/company/offering/getFeatured` correctly fetch `SliceOutput` and hydrate models.
 - [ ] Further migration of remaining legacy frontend modules (see `LEGACY_FRONTEND_TRACKER.md`).
-

@@ -1,9 +1,8 @@
+import { apiFetch } from './api.js';
 import type { SearchItem, SliceOutput } from '../components/types.js';
 import { FetchOneCache, Cache, SessionCacheType } from '../session/cache';
 
-const API_BASE = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_URL) 
-  || (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.PUBLIC_API_URL)
-  || 'https://localhost:5001';
+
 
 /**
  * Ported legacy toPreview method.
@@ -15,7 +14,7 @@ export async function toPreview(communities: SearchItem[]): Promise<any[]> {
   if (!communities || communities.length === 0) return [];
   
   const payload = JSON.stringify(communities);
-  const response = await fetch(`${API_BASE}/api/community/profile/toPreview?communities=${payload}`);
+  const response = await apiFetch(`/api/community/profile/toPreview?communities=${payload}`);
   
   if (!response.ok) {
     throw new Error(`Failed to fetch community previews: ${response.statusText}`);
@@ -32,11 +31,12 @@ class CommunityProfileCache extends FetchOneCache<any> {
   constructor() {
     super(SessionCacheType.CommunityProfile);
     this.isUserSpecific = false;
+    this.enabled = false; // Phasing out frontend cache for models already cached in backend
     this.itemKey = 'id';
   }
 
   async fetch(key: number | string): Promise<any> {
-    const response = await fetch(`${API_BASE}/api/community/profile/view?community=${key}`);
+    const response = await apiFetch(`/api/community/profile/view?community=${key}`);
     if (!response.ok) {
       throw new Error(`Failed to fetch community profile: ${response.statusText}`);
     }

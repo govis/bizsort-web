@@ -106,10 +106,16 @@ public class CachedCompanyProfile : BizSrt.Foundation.Cache.PartCache, BizSrt.Fo
             return Get(ref _multiOffering, Id, (id) =>
             {
                 using var dc = BizSrt.Api.Data.Cache.LegacyCache.GetDbContext();
-                return dc.CompanyOfferings
+                var offerings = dc.CompanyOfferings
                     .Where(cp => cp.Company == id && cp.UnlistedType == 0)
-                    .Join(dc.Offerings, cp => cp.Offering, p2 => p2.Id, (cp, p2) => p2.RichText)
-                    .FirstOrDefault(rt => !string.IsNullOrEmpty(rt)) ?? string.Empty;
+                    .Join(dc.Offerings, cp => cp.Offering, p2 => p2.Id, (cp, p2) => p2)
+                    .Take(2)
+                    .ToArray();
+
+                if (offerings.Length == 1 && offerings[0].Type == 0)
+                    return !string.IsNullOrEmpty(offerings[0].RichText) ? offerings[0].RichText : string.Empty;
+
+                return string.Empty;
             }) ?? string.Empty;
         }
     }

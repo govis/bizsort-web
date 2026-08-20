@@ -92,6 +92,17 @@ namespace BizSrt.Api.Data.Cache
                             }
                         }
                         break;
+                    case ImageEntity.Offering:
+                    case ImageEntity.Service: // legacy enum compatibility
+                        if (key.Id > 0)
+                        {
+                            var om = dbContext.OfferingMedia.AsNoTracking().FirstOrDefault(m => m.Id == key.Id);
+                            if (om != null && om.Content != null)
+                            {
+                                image = new CachedImage(om.Content, ImageType.Jpeg, 0, 0);
+                            }
+                        }
+                        break;
                 }
 
                 return image!; // ReadOneCache expects the value, if null it might throw if not configured properly, but legacy handle it

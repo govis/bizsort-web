@@ -70,6 +70,15 @@ public class Profile
     [JsonPropertyName("type")]
     public OfferingType? Type { get; set; }
 
+    [JsonPropertyName("category")]
+    public Category? Category { get; set; }
+
+    [JsonPropertyName("images")]
+    public Image<long>[]? Images { get; set; }
+
+    [JsonPropertyName("company")]
+    public Account? Company { get; set; }
+
     [JsonPropertyName("status")]
     public Status Status { get; set; }
 

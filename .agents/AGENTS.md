@@ -24,13 +24,14 @@ This file contains structural and naming conventions that all agents must follow
 
 ### 3. Namespace Conventions (Backend)
 - Backend namespaces strictly follow the singular naming convention:
-  - \BizSrt.Api.Model\
-  - \BizSrt.Api.Service\
-  - \BizSrt.Api.Endpoint\
-  - \BizSrt.Api.Data\
+  - `BizSrt.Api.Model`
+  - `BizSrt.Api.Service`
+  - `BizSrt.Api.Endpoint`
+  - `BizSrt.Api.Data`
+- **Admin UI DTOs:** All models used for backend Admin UI endpoints must be placed in the `BizSrt.Model.Admin.*` namespace (e.g. `BizSrt.Model.Admin.Offering.SaveRequest`). Do NOT reuse the public-facing ViewModels (e.g., `BizSrt.Model.Offering.Profile`) for data entry forms, as they have been flattened to include complex UI navigation properties.
 
 ### 4. Database Schema Remapping
-- **Business -> Company:** The legacy database heavily used the \Business\ domain terminology (e.g. \Businesses\ table, \BusinessOffices\). This has been completely modernized to \Company\. When porting queries, remap legacy table names to \CompanyProfiles\, \CompanyMedia\, \CompanyOffices\, etc., and ensure LINQ aliases use updated abbreviations (\i\ becomes \cm\, \o\ becomes \co\).
+- **Business -> Company:** The legacy database heavily used the \Business\ domain terminology (e.g. \Businesses\ table, \BusinessOffices\). This has been completely modernized to \Company\. When porting queries, remap legacy table names to \CompanyProfiles\, \CompanyMedia\, \CompanyOffices\, etc., and ensure LINQ aliases use updated abbreviations (\ i\ becomes \cm\, \ o\ becomes \co\).
 
 ### 5. Subagent Concurrency (Claude API Limits)
 - **NEVER** launch more than one subagent in parallel.
@@ -60,9 +61,10 @@ This file contains structural and naming conventions that all agents must follow
 ## Frontend Modernization Rules
 
 ### 1. API Helper Abstractions
-- **Port Legacy Service Helpers:** For EVERY API call required by the frontend, you MUST check the legacy codebase in \..\legacy\website\wwwroot\src\service\\ (e.g. \company.ts\, \offering.ts\, etc.).
-- **No Raw Fetch Calls:** Do NOT improvise or write new inline \etch()\ calls directly inside React components or Lit elements. 
-- **Maintain Method Names:** Find the exact legacy helper method, port it to the modern \rontend/src/service/\ directory, and use that abstracted function. Maintain the legacy method name (e.g., \iew()\, \getFeatured()\, \	oPreview()\) and logic to ensure complete parity with the legacy UI data flow.
+- **Port Legacy Service Helpers:** For EVERY API call required by the frontend, you MUST check the legacy codebase in `..\legacy\website\wwwroot\src\service\` (e.g. `company.ts`, `offering.ts`, etc.).
+- **No Raw Fetch Calls:** Do NOT improvise or write new inline `fetch()` calls directly inside React components or Lit elements. 
+- **Maintain Method Names:** Find the exact legacy helper method, port it to the modern `frontend/src/service/` directory, and use that abstracted function. Maintain the legacy method name (e.g., `view()`, `getFeatured()`, `toPreview()`) and logic to ensure complete parity with the legacy UI data flow.
+- **Strip Frontend Caching:** Note that the legacy `..\legacy\website\wwwroot\src\service\` files contained complex internal caching mechanisms (e.g., storing responses in dictionaries or local variables). These mechanisms are being simplified and **stripped out** during modernization. The modern service layer should be stateless pure functions that just `fetch()` and return the response.
 
 ### 2. WebAwesome (Shoelace v3.0) Nuances & Gotchas
 - **CRITICAL RULE:** Do not invent your own UI patterns. You MUST read the **WebAwesome v3 Guidelines** skill (located at \C:\Bizsort\bizsort-web\.agents\skills\webawesome_v3\SKILL.md\) whenever interacting with or styling WebAwesome components.
@@ -79,3 +81,13 @@ This file contains structural and naming conventions that all agents must follow
 **CRITICAL:** For detailed frontend architectural guidelines including MVVM separation, CSS animations, URL state syncing, and Header layouts, refer to [FRONTEND_ARCHITECTURE.md](file:///C:/Bizsort/bizsort-web/.agents/docs/FRONTEND_ARCHITECTURE.md).
 
 **CRITICAL:** For guidelines regarding the transition from legacy rich OOP models to modern plain interfaces (and the resulting stripped getters/methods), refer to [DATA_MODEL_ARCHITECTURE.md](file:///C:/Bizsort/bizsort-web/.agents/docs/DATA_MODEL_ARCHITECTURE.md).
+### 6. "Featured" Methods Dual-Context (Global vs Company-Scoped)
+- **CRITICAL:** Be aware that there are two entirely separate contexts for getFeatured (and similarly for Search or View):
+  1. **Global/Master Context:** Ported from C:\Bizsort\legacy\server\Service\Product\Profile.cs (e.g., offering/featured). This is used for global pages like offering-home sliders.
+  2. **Company-Scoped Context:** Ported from C:\Bizsort\legacy\server\Service\Company\Product.cs (e.g., company/offering/featured). This is scoped to a specific company and used on the company-profile page to list a company's specific featured offerings.
+- The same dual-context pattern will apply to Projects and Jobs when they are ported. Always verify which context you are working in to map to the correct backend service and frontend component.
+
+### 7. "toPreview" Global Context (Hydration)
+- **CRITICAL:** The 	oPreview API is inherently a **global** operation because it takes an array of globally-unique Entity IDs (e.g. [ {id: 123}, {id: 456} ]) and hydrates them into rich Preview models for cards.
+- Therefore, 	oPreview MUST be ported from the **Master/Global** legacy service (C:\Bizsort\legacy\server\Service\Product\Profile.cs for backend, and C:\Bizsort\legacy\website\wwwroot\src\service\product.ts for frontend).
+- Do NOT port 	oPreview from the Company-scoped services. This global 	oPreview pattern applies equally to Offerings, Projects, and Jobs.

@@ -1,3 +1,4 @@
+import { apiFetch } from './api.js';
 import type { Geocoder } from '../model/foundation';
 
 export interface AddressOptions {

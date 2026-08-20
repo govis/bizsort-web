@@ -1,9 +1,8 @@
+import { apiFetch } from './api.js';
 import { Semantic } from '../model/foundation';
 import type { SliceOutput, SearchItem } from '../components/types.js';
 
-const API_BASE = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_URL) 
-  || (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.PUBLIC_API_URL)
-  || 'https://localhost:5001';
+
 
 /**
  * Fetches a list of featured offering entity IDs.
@@ -12,7 +11,7 @@ const API_BASE = (typeof process !== 'undefined' && process.env.NEXT_PUBLIC_API_
  */
 export async function getFeatured(index: number, length: number, category: number = 0, location: number = 1): Promise<SliceOutput<SearchItem>> {
   const sliceInput = JSON.stringify({ index, length, category, location });
-  const response = await fetch(`${API_BASE}/api/offering/profile/getFeatured?sliceInput=${sliceInput}`);
+  const response = await apiFetch(`/api/offering/profile/getFeatured?sliceInput=${sliceInput}`);
   
   if (!response.ok) {
     throw new Error(`Failed to fetch featured offerings: ${response.statusText}`);
@@ -36,8 +35,8 @@ export async function search(queryInput: any): Promise<any> {
   if (queryCopy.searchNear && queryCopy.searchNear.text) {
     queryCopy.searchNear.text = encodeURIComponent(queryCopy.searchNear.text);
   }
-  const payload = JSON.stringify(queryCopy);
-  const response = await fetch(`${API_BASE}/api/offering/profile/search?queryInput=${payload}`);
+  const payload = encodeURIComponent(JSON.stringify(queryCopy));
+  const response = await apiFetch(`/api/offering/profile/search?queryInput=${payload}`);
   
   if (!response.ok) {
     throw new Error(`Failed to perform offering search: ${response.statusText}`);
@@ -55,11 +54,16 @@ export async function search(queryInput: any): Promise<any> {
  * Legacy backend method: Data.Company.Offering.ToPreview
  * Legacy frontend mapping: /offering/profile/toPreview
  */
-export async function toPreview(offerings: any[]): Promise<any[]> {
+export async function toPreview(offerings: any[], options?: any): Promise<any[]> {
   if (!offerings || offerings.length === 0) return [];
   
-  const payload = JSON.stringify(offerings);
-  const response = await fetch(`${API_BASE}/api/offering/profile/toPreview?offerings=${payload}`);
+  const payload = encodeURIComponent(JSON.stringify(offerings));
+  let url = `/api/offering/profile/toPreview?offerings=${payload}`;
+  if (options) {
+    url += `&options=${encodeURIComponent(JSON.stringify(options))}`;
+  }
+  
+  const response = await apiFetch(url);
   
   if (!response.ok) {
     throw new Error(`Failed to fetch offering previews: ${response.statusText}`);
@@ -67,3 +71,18 @@ export async function toPreview(offerings: any[]): Promise<any[]> {
   
   return await response.json();
 }
+
+/**
+ * Fetches a single offering profile.
+ * Matches legacy: view(company, offering, options)
+ */
+export async function view(offeringId: number, companyId: number = 0, options: any = { company: 1 }): Promise<any> {
+  const optionsStr = encodeURIComponent(JSON.stringify(options));
+  const response = await apiFetch(`/api/company/offering/view?company=${companyId}&offering=${offeringId}&options=${optionsStr}`);
+  if (!response.ok) {
+    if (response.status === 404) return null;
+    throw new Error(`Failed to fetch offering: ${response.statusText}`);
+  }
+  return await response.json();
+}
+

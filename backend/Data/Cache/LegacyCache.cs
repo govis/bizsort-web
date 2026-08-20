@@ -28,7 +28,7 @@ namespace BizSrt.Api.Data.Cache
             CompanyFacetValues = new BizSrt.Api.Data.Cache.Company.Facet.ValuesCache();
             CompanyFacetSets = new BizSrt.Api.Data.Cache.Company.Facet.SetsCache();
             FeaturedCompanies = new BizSrt.Api.Data.Cache.Featured.FeaturedCompaniesCache();
-            CompanyOfferings = new BizSrt.Api.Data.Cache.Company.CompanyOfferingCache();
+            CompanyOfferings = new BizSrt.Api.Data.Cache.Offering.CompanyOfferingCache();
             CompanyOfferingFacetNames = new BizSrt.Api.Data.Cache.Offering.Facet.NamesCache();
             CompanyOfferingFacetValues = new BizSrt.Api.Data.Cache.Offering.Facet.ValuesCache();
             CompanyOfferingFacetSets = new BizSrt.Api.Data.Cache.Offering.Facet.SetsCache();
@@ -54,7 +54,7 @@ namespace BizSrt.Api.Data.Cache
         internal static BizSrt.Api.Data.Cache.Company.Facet.ValuesCache CompanyFacetValues { get; private set; }
         internal static BizSrt.Api.Data.Cache.Company.Facet.SetsCache CompanyFacetSets { get; private set; }
         internal static BizSrt.Api.Data.Cache.Featured.FeaturedCompaniesCache FeaturedCompanies { get; private set; }
-        internal static BizSrt.Api.Data.Cache.Company.CompanyOfferingCache CompanyOfferings { get; private set; }
+        internal static BizSrt.Api.Data.Cache.Offering.CompanyOfferingCache CompanyOfferings { get; private set; }
         internal static BizSrt.Api.Data.Cache.Offering.Facet.NamesCache CompanyOfferingFacetNames { get; private set; }
         internal static BizSrt.Api.Data.Cache.Offering.Facet.ValuesCache CompanyOfferingFacetValues { get; private set; }
         internal static BizSrt.Api.Data.Cache.Offering.Facet.SetsCache CompanyOfferingFacetSets { get; private set; }

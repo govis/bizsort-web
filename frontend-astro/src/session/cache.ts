@@ -102,11 +102,14 @@ export abstract class FetchOneCache<T> extends CacheBase<T> {
   /**
    * Modernized Promise-based getItem that automatically dedupes concurrent requests
    * for the same key, and falls back to fetching if missing.
+   * Note: In-memory/Session cache is skipped if this.enabled is false.
    */
   async getItem(key: number | string): Promise<T> {
-    const cachedItem = this.getItemInner(key);
-    if (cachedItem !== undefined) {
-      return cachedItem;
+    if (this.enabled) {
+      const cachedItem = this.getItemInner(key);
+      if (cachedItem !== undefined) {
+        return cachedItem;
+      }
     }
 
     // Dedupe concurrent fetch requests for the same key
@@ -115,7 +118,7 @@ export abstract class FetchOneCache<T> extends CacheBase<T> {
     }
 
     const promise = this.fetch(key).then(data => {
-      if (data && !this.getItemInner((data as any)[this.itemKey])) {
+      if (this.enabled && data && !this.getItemInner((data as any)[this.itemKey])) {
         this.items.push(data);
         this.isDirty = true;
       }

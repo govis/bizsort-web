@@ -55,6 +55,12 @@ export namespace Company {
         if (options.suppressNavigate) return { path, params: {} };
         return Navigation.go(path, {}, options);
     }
+
+    export function tabView(companyId: number, tab: string, options: INavigationOptions = {}) {
+        const path = `/company/${companyId}/${tab}`;
+        if (options.suppressNavigate) return { path, params: {} };
+        return Navigation.go(path, {}, options);
+    }
 }
 
 export namespace Offering {

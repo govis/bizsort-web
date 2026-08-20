@@ -1371,9 +1371,10 @@
 | [ ] | â†³ `class Person` | - | - |
 | [ ] | â†³ `class PersonalProfilesCache` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Reset()` | | |
-| [x] | â†³ `class Product` | `BizSrt.Api.Data.Company.CompanyProductService` | Fully ported product data access layer, replacing legacy static class. |
-| | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Search()` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `ToPreview()` | | |
+| [x] | â†³ `class Product` | `BizSrt.Api.Data.Company.CompanyOfferingService` | Fully ported product data access layer, replacing legacy static class. Renamed to Offering. |
+| [x] | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Search()` | [x] | |
+| [x] | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `ToPreview()` | [x] | |
+  | [x] | &nbsp;&nbsp;&nbsp;&nbsp;↳ View() | ViewAsync | Ported. Pulls 100% of available data from Cache exactly like legacy Data\\Product\\Profile.cs View. Note: Legacy logic was split between Data\\Company\\Product.cs and Data\\Product\\Profile.cs, but is now consolidated here. |
 | [ ] | â†³ `class ProductQueryOutput` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Reset()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `ToPreview()` | | |
@@ -3359,6 +3360,9 @@
 | [ ] | â†³ `class FacetFilter` | - | - |
 | [ ] | â†³ `class FacetName` | - | - |
 | [ ] | â†³ `class FacetValue` | - | - |
+| [x] | ↳ `class ProfileService` | `BizSrt.Api.Service.Offering.OfferingEndpoints` | Ported to minimal APIs. |
+| [x] | &nbsp;&nbsp;&nbsp;&nbsp;↳ `GetFeatured()` | `GetFeaturedAsync` | Ported. |
+| [x] | &nbsp;&nbsp;&nbsp;&nbsp;↳ `ToPreview()` | `ToPreviewAsync` | Ported. |
 | | **Namespace: `Model.Session`** | | |
 | [ ] | â†³ `class Company` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `CanPost()` | | |
@@ -3540,8 +3544,8 @@
 | [ ] | â†³ `class IUser` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `OnActionExecuted()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `OnActionExecuting()` | | |
-| [ ] | â†³ `class ImageService` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Get()` | | |
+| [x] | ↳ `class ImageService` | `BizSrt.Api.Service.ImageService` | Ported to minimal API and `GetImageAsync`. |
+| [x] | &nbsp;&nbsp;&nbsp;&nbsp;↳ `Get()` | `MapImageEndpoints` | Ported `/api/image/get` endpoint. |
 | [ ] | â†³ `class Service` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `CommunityApp()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `CommunityImage()` | | |

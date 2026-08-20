@@ -1,5 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { property, state } from 'lit/decorators.js';
+import { getLogoUrl } from '../../service/image.js';
 
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import '@awesome.me/webawesome/dist/components/button/button.js';
@@ -107,10 +108,11 @@ export class ImageView extends LitElement {
     }
 
     private _getImageUrl(): string {
+        if (!this.images || this.images.length === 0) return '';
         const img = this.images[this._imageIndex];
         if (!img) return '';
-        const backendUrl = process.env.NEXT_PUBLIC_API_URL || '';
-        return `${backendUrl}/api/image/get?entity=${img.entity}&id=${img.id || img.imageId}&width=800&height=600`;
+        
+        return getLogoUrl(img.entity, img.id || img.imageId, 800, 600);
     }
 
     _handleAction(direction: number) {

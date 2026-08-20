@@ -1,4 +1,5 @@
 import { html, css } from 'lit';
+import { property } from 'lit/decorators.js';
 import type { OfferingPreview } from '../types.js';
 import { toPreview } from '../../service/offering';
 import { Offering } from '../../navigation';
@@ -6,14 +7,9 @@ import { ListSlider } from '../list/slider';
 import './card';
 
 export class OfferingSlider extends ListSlider<OfferingPreview> {
-  static get properties() {
-    return {
-      ...super.properties,
-      offeringRefs: { type: Array, attribute: false }
-    };
-  }
-
+  @property({ type: Array, attribute: false })
   declare offeringRefs?: any[];
+  
   declare private _displayOptions: any;
 
   constructor() {
@@ -21,23 +17,35 @@ export class OfferingSlider extends ListSlider<OfferingPreview> {
     this._displayOptions = { company: false };
   }
 
-  connectedCallback() {
-    super.connectedCallback();
-    this.fetchPage();
-  }
-
   willUpdate(changed: Map<string, unknown>) {
     if (changed.has('offeringRefs') && changed.get('offeringRefs') !== undefined) {
+      this.reset();
+      this.fetchPage();
+    } else if (changed.has('companyId') && this.companyId) {
+      // If companyId was just initialized or changed, fetch!
       this.reset();
       this.fetchPage();
     }
   }
 
   protected async fetchPage() {
-    if (!this.offeringRefs || this.offeringRefs.length === 0) return;
     this._loading = true;
     try {
-      const previews = await toPreview(this.offeringRefs);
+      let refs = this.offeringRefs;
+
+      // If offeringRefs is empty but we have a companyId, fetch the list from the company service
+      if ((!refs || refs.length === 0) && this.companyId) {
+        const { getCompanyFeaturedOfferings } = await import('../../service/company.js');
+        const sliceOutput = await getCompanyFeaturedOfferings(this.companyId, this._nextIndex, 12);
+        refs = sliceOutput.series;
+        this._nextIndex = sliceOutput.index;
+      }
+
+      if (!refs || refs.length === 0) {
+        return;
+      }
+
+      const previews = await toPreview(refs);
       this._items = [...this._items, ...previews];
     } catch (e) {
       console.error('Slider offerings error:', e);

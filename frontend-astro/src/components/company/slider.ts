@@ -6,13 +6,8 @@ import { ListSlider } from '../list/slider';
 import './card';
 
 export class CompanySlider extends ListSlider<CompanyPreview> {
-  connectedCallback() {
-    super.connectedCallback();
-    this.fetchPage();
-  }
-
   willUpdate(changed: Map<string, unknown>) {
-    if (changed.has('companyId') && changed.get('companyId') !== undefined) {
+    if (changed.has('companyId') && this.companyId) {
       this.reset();
       this.fetchPage();
     }

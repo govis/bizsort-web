@@ -137,9 +137,10 @@ public static class CompanyEndpoints
              return Results.Ok(new SliceOutput<BizSrt.Model.EntityId<long>>(result.Series, result.StartIndex + result.Series.Length < result.TotalCount ? result.StartIndex + result.Series.Length : -1));
         });
 
-        group.MapGet("/offering/view", async ([FromQuery] int company, [FromQuery] long offering, [FromQuery] string? options, ICompanyService companyService) =>
+        group.MapGet("/offering/view", async ([FromQuery] int company, [FromQuery] long offering, [FromQuery] string? options, ICompanyOfferingService offeringService) =>
         {
-             var profile = await companyService.GetOfferingProfileAsync(company, offering);
+             var opts = string.IsNullOrWhiteSpace(options) ? null : JsonSerializer.Deserialize<Dictionary<string, object>>(options);
+             var profile = await offeringService.ViewAsync(company, offering, opts);
              return profile is not null ? Results.Ok(profile) : Results.NotFound();
         });
 
@@ -156,3 +157,4 @@ public static class CompanyEndpoints
         });
     }
 }
+

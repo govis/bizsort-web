@@ -7,7 +7,7 @@ using BizSrt.Model.Offering;
 using BizSrt.Foundation.Cache;
 using BizSrt.Foundation;
 
-namespace BizSrt.Api.Data.Cache.Company;
+namespace BizSrt.Api.Data.Cache.Offering;
 
 public class CachedCompanyOffering : PartCache, IKey<long>, IExpirationItem
 {
@@ -83,9 +83,8 @@ public class CompanyOfferingCache : ReadManyExpirationCache<long, CachedCompanyO
                 var query = from p in dbContext.Offerings
                             where offeringIds.Contains(p.Id)
                             join cp in dbContext.CompanyOfferings on p.Id equals cp.Offering
-                            from pmId in dbContext.OfferingMedia
+                            from pm in dbContext.OfferingMedia
                                 .Where(m => m.Offering == p.Id && m.Type == (byte)MediaType.Default_Image)
-                                .Select(m => new { m.Id, m.Metadata })
                                 .Take(1)
                                 .DefaultIfEmpty()
                             select new 
@@ -101,8 +100,8 @@ public class CompanyOfferingCache : ReadManyExpirationCache<long, CachedCompanyO
                                 p.CreatedBy, 
                                 p.Created, 
                                 p.Updated, 
-                                ImageId = pmId != null ? pmId.Id : 0, 
-                                ImageMetadata = pmId != null ? pmId.Metadata : null,
+                                ImageId = (long?)pm.Id ?? 0, 
+                                ImageMetadata = pm.Metadata,
                                 p.Status
                             };
 
@@ -133,9 +132,8 @@ public class CompanyOfferingCache : ReadManyExpirationCache<long, CachedCompanyO
                 var query = from p in dbContext.Offerings
                             where p.Id == offeringId
                             join cp in dbContext.CompanyOfferings on p.Id equals cp.Offering
-                            from pmId in dbContext.OfferingMedia
+                            from pm in dbContext.OfferingMedia
                                 .Where(m => m.Offering == p.Id && m.Type == (byte)MediaType.Default_Image)
-                                .Select(m => new { m.Id, m.Metadata })
                                 .Take(1)
                                 .DefaultIfEmpty()
                             select new 
@@ -151,8 +149,8 @@ public class CompanyOfferingCache : ReadManyExpirationCache<long, CachedCompanyO
                                 p.CreatedBy, 
                                 p.Created, 
                                 p.Updated, 
-                                ImageId = pmId != null ? pmId.Id : 0, 
-                                ImageMetadata = pmId != null ? pmId.Metadata : null,
+                                ImageId = (long?)pm.Id ?? 0, 
+                                ImageMetadata = pm.Metadata,
                                 p.Status
                             };
 

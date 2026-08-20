@@ -1,5 +1,6 @@
 porting the URL token deserialization and session authentication logic into Astro's src/middleware.ts? (This was the final big item from our SPA_MODERNIZATION.md plan!
 
+what is the best alternative to md-list-item component in webawsome v3?
 
 The legacy "Featured Sliders" had a "slice-based" API backing them and they swapped individual items continuously in a loop. Can you review their implementation once more. I assume the new slider implementation if more inline with a more modern approach (Experience similar to what one would find on Netflix) is it correct?
 

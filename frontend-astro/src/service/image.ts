@@ -1,8 +1,9 @@
+import { API_BASE } from './api.js';
+
 export function getLogoUrl(entity: number, imageId: number | undefined, width: number = 200, height?: number): string {
     if (!imageId) return '/images/bizsort-logo.svg';
     
-    const backendUrl = (typeof import.meta !== 'undefined' && import.meta.env?.PUBLIC_API_URL) || 'https://localhost:5001';
-    let url = `${backendUrl}/api/image/get?entity=${entity}&id=${imageId}&width=${width}`;
+    let url = `${API_BASE}/api/image/get?entity=${entity}&id=${imageId}&width=${width}`;
     if (height !== undefined) {
         url += `&height=${height}`;
     }

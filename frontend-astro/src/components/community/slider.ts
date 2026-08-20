@@ -2,6 +2,7 @@ import { html, css, LitElement } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { getCommunities } from '../../service/company.js';
 import { toPreview } from '../../service/community.js';
+import { getLogoUrl } from '../../service/image.js';
 import '../list/slider.js';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
 
@@ -21,6 +22,15 @@ export class CommunitySlider extends LitElement {
     this._previews = [];
     this._loading = false;
     this._hasMore = true;
+  }
+
+  willUpdate(changed: Map<string, unknown>) {
+    if (changed.has('companyId') && this.companyId) {
+      this._nextIndex = 0;
+      this._previews = [];
+      this._hasMore = true;
+      this.loadMore();
+    }
   }
 
   async loadMore() {
@@ -65,7 +75,7 @@ export class CommunitySlider extends LitElement {
           <a class="community-card" href="/community/${item.id}">
             <div class="image-placeholder">
               ${item.image && item.image.imageId > 0 ? html`
-                <img src="/api/image/get?entity=2&id=${item.image.imageId}&width=200&height=200" alt="${item.name}" loading="lazy" />
+                <img src="${getLogoUrl(2, item.image.imageId, 200, 200)}" alt="${item.name}" loading="lazy" />
               ` : html`
                 <wa-icon name="users" library="system"></wa-icon>
               `}
