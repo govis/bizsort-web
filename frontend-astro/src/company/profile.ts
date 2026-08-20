@@ -1,6 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { repeat } from 'lit/directives/repeat.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
+import { companyContext } from './context.js';
 import type { Company, Office } from '../components/types.js';
 
 // Web Awesome components
@@ -9,9 +10,6 @@ import '@awesome.me/webawesome/dist/components/option/option.js';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import '@awesome.me/webawesome/dist/components/button/button.js';
 import '@awesome.me/webawesome/dist/components/spinner/spinner.js';
-import '@awesome.me/webawesome/dist/components/tab-group/tab-group.js';
-import '@awesome.me/webawesome/dist/components/tab/tab.js';
-import '@awesome.me/webawesome/dist/components/tab-panel/tab-panel.js';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import '@awesome.me/webawesome/dist/components/dropdown/dropdown.js';
 import '@awesome.me/webawesome/dist/components/dropdown-item/dropdown-item.js';
@@ -41,6 +39,7 @@ export class CompanyProfile extends LitElement {
   }
 
   declare companyId?: number;
+  
   declare company?: Company;
   declare private _selectedOffice?: Office;
   declare activeTab: string;
@@ -50,29 +49,9 @@ export class CompanyProfile extends LitElement {
     this.activeTab = 'about';
   }
 
-  private _imageLoaded(e: Event) {
-    const img = e.target as HTMLImageElement;
-    if (img) {
-      try {
-        const headerLayout = this.shadowRoot?.querySelector('company-header-layout') as HTMLElement;
-        if (headerLayout) {
-          // 1. Mirror Legacy UI margin adjustments based on image height
-          if (img.clientHeight && img.clientHeight < 84) {
-            headerLayout.style.setProperty('--name-margin-left', `-${img.clientWidth}px`);
-          } else {
-            headerLayout.style.setProperty('--name-margin-left', '0px');
-          }
-          headerLayout.style.setProperty('--content-header-margin-left', `${img.clientWidth + 30}px`);
-        }
-      } catch (err) {
-        console.warn('Failed to adjust header layout', err);
-      }
-    }
-  }
-
   willUpdate(changedProperties: Map<string | number | symbol, unknown>) {
     if (changedProperties.has('company') && this.company) {
-      this._selectedOffice = this.company.headOffice || this.company.offices[0];
+      this._selectedOffice = this.company.headOffice || this.company.offices?.[0];
     }
   }
 
@@ -268,8 +247,6 @@ export class CompanyProfile extends LitElement {
     if (!this.company) return html`<div style="max-width:1000px; margin: 2rem auto;">Company not found.</div>`;
 
     const hasMultipleOffices = this.company.offices && this.company.offices.length > 1;
-    // Legacy ViewHead requested 290x145 image sizing for the main profile layout
-    const logoUrl = getLogoUrl(this.company.image?.entity || 1, this.company.image?.imageId, 290, 145);
 
     // Map activeTab from URL query params (default to about)
     const url = new URL(window.location.href);
@@ -279,27 +256,7 @@ export class CompanyProfile extends LitElement {
     }
 
     return html`
-      <style>
-        wa-tab-group {
-          /* Tab group styles */
-          width: 100%;
-        }
-        wa-tab-group::part(body) {
-          display: none;
-        }
-        wa-tab {
-          --wa-color-neutral-on-quiet: rgba(255, 255, 255, 0.7);
-          --wa-color-brand-on-quiet: white;
-        }
-        wa-tab-panel {
-          display: none;
-        }
-      </style>
-      <company-header-layout title-text="${this.company.name}" ?no-image="${!logoUrl}">
-        ${logoUrl ? html`
-          <img slot="logo" src="${logoUrl}" alt="${this.company.name} logo" crossOrigin="anonymous" @load="${this._imageLoaded}" />
-        ` : ''}
-
+      <company-header-layout .company="${this.company}" @tab-change="${this._handleTabChange}">
         <search-box slot="navbar"></search-box>
 
         <page-menu slot="dropdown" theme="dark">
@@ -317,24 +274,6 @@ export class CompanyProfile extends LitElement {
           </wa-dropdown-item>
         </page-menu>
 
-        <div slot="tabs">
-          <wa-tab-group style="--indicator-color: white; --track-color: transparent;" @wa-tab-show="${(e: any) => this._handleTabChange(e)}">
-            <wa-tab slot="nav" panel="about" ?active="${this.activeTab === 'about'}">About</wa-tab>
-            ${this.company.offerings?.view ? html`<wa-tab slot="nav" panel="offerings" ?active="${this.activeTab === 'offerings'}">${this.company.offerings.label || 'What we Do'}</wa-tab>` : ''}
-            ${this.company.projects != null ? html`<wa-tab slot="nav" panel="projects" ?active="${this.activeTab === 'projects'}">${this.company.projects.label || 'Projects'}</wa-tab>` : ''}
-            ${this.company.jobs != null ? html`<wa-tab slot="nav" panel="jobs" ?active="${this.activeTab === 'jobs'}">${this.company.jobs.label || 'Jobs'}</wa-tab>` : ''}
-            ${this.company.news != null ? html`<wa-tab slot="nav" panel="news" ?active="${this.activeTab === 'news'}">${this.company.news.label || 'News'}</wa-tab>` : ''}
-            ${this.company.articles != null ? html`<wa-tab slot="nav" panel="articles" ?active="${this.activeTab === 'articles'}">${this.company.articles.label || 'Articles'}</wa-tab>` : ''}
-            
-            <wa-tab-panel name="about"></wa-tab-panel>
-            <wa-tab-panel name="offerings"></wa-tab-panel>
-            <wa-tab-panel name="projects"></wa-tab-panel>
-            <wa-tab-panel name="jobs"></wa-tab-panel>
-            <wa-tab-panel name="news"></wa-tab-panel>
-            <wa-tab-panel name="articles"></wa-tab-panel>
-          </wa-tab-group>
-        </div>
-
         <div class="company-profile-content">
           ${this.activeTab === 'about' ? this._renderAboutTab(hasMultipleOffices) : ''}
           ${this.activeTab === 'offerings' ? this._renderOfferingsTab() : ''}
@@ -350,9 +289,11 @@ export class CompanyProfile extends LitElement {
     `;
   }
 
-  private _handleTabChange(e: any) {
-    const tabName = e.detail.name;
-    this.activeTab = tabName;
+    private _handleTabChange(e: any) {
+      const tabName = e.detail?.value || e.detail?.name;
+      if (!tabName) return;
+      
+      this.activeTab = tabName;
     const url = new URL(window.location.href);
     if (tabName === 'about') {
       url.searchParams.delete('tab');

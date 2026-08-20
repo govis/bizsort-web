@@ -116,6 +116,7 @@ export class OfferingSearch extends LitElement implements IViewAdapter {
     // @ts-expect-error
     this.viewModel = new OfferingSearchViewModel(this);
     this.viewModel.pager.pageSize = 24; 
+    this.viewModel.pager.pageSizes = [20, 50, 100];
   }
 
   firstUpdated() {
@@ -220,17 +221,17 @@ export class OfferingSearch extends LitElement implements IViewAdapter {
         .searchQuery=${this.searchQuery}
         .searchNear=${this.searchNear}
       >
-        <div class="content">
-          <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end;">
-            <div>
-              <h1>Offering Search Results</h1>
+          <div class="content">
+            <div class="list-header-container" style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+              <list-filter-available></list-filter-available>
+              <list-filter-applied></list-filter-applied>
               <list-header entity="offerings"></list-header>
+              <div style="margin-left: auto;">
+                <list-page-select .pager=${this.viewModel.pager}></list-page-select>
+              </div>
             </div>
-            <list-filter-available></list-filter-available>
-          </div>
-          <list-filter-applied style="margin-bottom: 1rem;"></list-filter-applied>
 
-          <offering-listview .items="${this._items}"></offering-listview>
+            <offering-listview .items="${this._items}"></offering-listview>
           
           ${this.isLoading 
             ? html`<div class="loading-state">Loading offerings...</div>` 

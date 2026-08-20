@@ -178,7 +178,7 @@ export class ListPageSelect extends LitElement {
         super.connectedCallback();
         if (this.pager && this.pager.observeProperty) {
             this._unobserve = this.pager.observeProperty((_sender: any, prop: string) => {
-                if (prop === 'pageSize' || prop === 'pageSizes' || prop === 'pageCount') {
+                if (prop === 'pageSize' || prop === 'pageSizes' || prop === 'pageCount' || prop === 'itemCount') {
                     this.requestUpdate();
                 }
             });

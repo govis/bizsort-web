@@ -228,7 +228,7 @@ export class CompanyOffering extends LitElement {
     const images = this._offering?.images || [];
 
     return html`
-      <company-header-layout tab="offering">
+      <company-header-layout tab="offering" .company="${this._company}">
         <div id="contentWidth" class="content content-center">
           
           <div id="mainCard">

@@ -81,24 +81,13 @@ export class CompanyOfferings extends LitElement implements IViewAdapter {
       min-height: 50vh;
       gap: 1rem;
     }
-    
-    wa-tab-group {
-      width: 100%;
-    }
-    wa-tab-group::part(body) {
-      display: none;
-    }
-    wa-tab {
-      --wa-color-neutral-on-quiet: rgba(255, 255, 255, 0.7);
-      --wa-color-brand-on-quiet: white;
-    }
   `;
   
   render() {
     if (!this.company) return html``;
     
     return html`
-      <company-header-layout active-tab="offerings">
+      <company-header-layout active-tab="offerings" .company="${this.company}">
         <div class="company-profile-content">
           <list-header entity="offering"></list-header>
           
