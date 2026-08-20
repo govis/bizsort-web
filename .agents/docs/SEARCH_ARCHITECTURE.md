@@ -1,6 +1,6 @@
 # BizSort Search Architecture
 
-This document outlines the end-to-end architecture for the search mechanism in BizSort, detailing how the frontend UI components (`search-home`, `search-category-input`, `search-location-input`) interact with Next.js routing and the backend caching layer.
+This document outlines the end-to-end architecture for the search mechanism in BizSort, detailing how the frontend UI components (`search-home`, `search-category-input`, `search-location-input`) interact with Astro routing and the backend caching layer.
 
 ## 1. Input Component Architectures
 
@@ -25,7 +25,7 @@ The `<search-home>` and `<search-header>` components act as the orchestrators. W
 1. **What:** At least ONE of *Selected Category* or *Search Text* must be present.
 2. **Where:** EXACTLY ONE of *Selected DB Location* or *Google Geocoded Point* must be present.
 
-If valid, `search-home` yields a `Selection` payload to its parent (e.g., `<offering-home>`), which dispatches it to `Navigation.go()`. The payload is converted into URL search parameters (e.g. `?categoryId=123&searchQuery=Bob&locationId=456`) and Next.js pushes the new route.
+If valid, `search-home` yields a `Selection` payload to its parent (e.g., `<offering-home>`), which dispatches it to `Navigation.go()`. The payload is converted into URL search parameters (e.g. `?categoryId=123&searchQuery=Bob&locationId=456`) and the browser navigates to the new route using standard MPA transitions (or Astro ViewTransitions).
 
 ## 3. Hydration (`reflectToken`)
 
