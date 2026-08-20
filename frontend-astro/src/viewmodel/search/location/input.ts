@@ -1,5 +1,5 @@
 import { ErrorInfo, type IViewAdapter, Validateable, ViewModel, ErrorMessageType } from '../../../viewmodel'
-import { ResolvedLocation } from '../../../model/foundation'
+
 
 export interface IInput extends ViewModel {
     validateable: Validateable;
@@ -131,9 +131,7 @@ export class Input extends ViewModel implements IInput {
         if (this._selected != value) {
             if (!this._geoMode && value && value.name)
                 this.setText(value.name);
-            const old = {
-                selected: this._selected
-            };
+
             this._selected = value;
             this.notifyView(['selected']);
         }
@@ -194,7 +192,7 @@ export class Input extends ViewModel implements IInput {
                         console.error('Failed to fetch location', err);
                         if (options.callback) options.callback();
                     });
-                }).catch(err => {
+                }).catch(_err => {
                     if (options.callback) options.callback();
                 });
             } else {
@@ -206,7 +204,7 @@ export class Input extends ViewModel implements IInput {
         }
     }
 
-    errorMessage(error: ErrorMessageType, data: any, options?: any) {
+    errorMessage(_error: ErrorMessageType, _data: any, _options?: any) {
         return "An error occurred"; // Simplified for now
     }
 }
@@ -237,13 +235,13 @@ export class GeocoderInput {
         }
     }
 
-    resolve(flag: boolean, callback: (match: boolean, location: any) => void) {
+    resolve(_flag: boolean, callback: (match: boolean, location: any) => void) {
         // Ported stub: normally hits /api/location/resolve with Google Places ID
         // For now, immediately resolve with the geoValidated location
         callback(true, this.geoValidated);
     }
 
-    initAutocomplete(inputElement: any, types: string[] = ['geocode']) {
+    initAutocomplete(inputElement: any, _types: string[] = ['geocode']) {
         this.inputElement = inputElement;
         // The modern architecture fully delegates Google Maps initialization
         // to the Lit View component (SearchLocationInput).

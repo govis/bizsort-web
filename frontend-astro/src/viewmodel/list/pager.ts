@@ -46,7 +46,7 @@ export class ListPagerViewModel extends ViewModel {
     initialize(options: IPagerInitOptions) {
         if (options.master) {
             this._master = options.master;
-            this._master.observeProperty((sender, prop) => {
+            this._master.observeProperty((_sender, prop) => {
                 switch (prop) {
                     case 'totalItemCount':
                         this._updatePageButtons();
@@ -144,7 +144,7 @@ export class ListPagerViewModel extends ViewModel {
         }
     }
 
-    protected _setCannotChangePage(needPage?: boolean) {
+    protected _setCannotChangePage(_needPage?: boolean) {
         this.firstPage.canMove = false;
         this.previousPage.canMove = false;
         this.nextPage.canMove = false;

@@ -129,7 +129,7 @@ export class OfferingSearch extends LitElement implements IViewAdapter {
     }
   }
 
-  modelUpdated(props: string[]) {
+  modelUpdated(_props: string[]) {
     this.requestUpdate();
   }
 

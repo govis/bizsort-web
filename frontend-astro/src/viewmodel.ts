@@ -1,4 +1,4 @@
-import type { Action, Constructor, IEventHandler, IPropertyBag } from './global'
+import type { Action } from './global'
 import { Event } from './global'
 import { ErrorMessageType } from './exception'
 
@@ -49,8 +49,8 @@ export class Validateable {
     
     constructor(
         public viewModel: ViewModel, 
-        options?: any, 
-        validator?: any, 
+        _options?: any, 
+        _validator?: any, 
         public customValidate?: (proceed: (result: boolean) => void) => void
     ) {
         this.errorInfo = new ErrorInfo(this);

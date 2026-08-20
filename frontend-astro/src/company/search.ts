@@ -155,7 +155,7 @@ export class CompanySearch extends LitElement implements IViewAdapter {
     }
   }
 
-  modelUpdated(props: string[]) {
+  modelUpdated(_props: string[]) {
     this.requestUpdate();
   }
 

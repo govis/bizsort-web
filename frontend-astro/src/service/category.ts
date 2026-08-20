@@ -1,5 +1,5 @@
 import { apiFetch } from './api.js';
-import type { IdName, Autocomplete, Node, NodeRef, SubType } from '../model/foundation';
+import type { IdName, Node, NodeRef, SubType } from '../model/foundation';
 
 
 

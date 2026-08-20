@@ -15,7 +15,7 @@ import '@awesome.me/webawesome/dist/components/tab-panel/tab-panel.js';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import '@awesome.me/webawesome/dist/components/dropdown/dropdown.js';
 import '@awesome.me/webawesome/dist/components/dropdown-item/dropdown-item.js';
-import { getLogoUrl, analyzeImage } from '../service/image.js';
+import { getLogoUrl } from '../service/image.js';
 
 // Building block components
 import '../components/search/box';

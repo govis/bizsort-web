@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
-import type { IdName, Autocomplete as AutocompleteModel } from '../../model/foundation';
+import { customElement, property } from 'lit/decorators.js';
+import type { Autocomplete as AutocompleteModel } from '../../model/foundation';
 import { Autocomplete as AutocompleteViewModel } from '../../viewmodel/group/autocomplete';
 import type { IViewAdapter } from '../../viewmodel';
 

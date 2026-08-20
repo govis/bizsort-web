@@ -1,7 +1,7 @@
 import { LitElement, html, css } from 'lit';
 import { customElement, property, state, query } from 'lit/decorators.js';
-import type { IdName, Autocomplete } from '../../../model/foundation';
-import { autocomplete as fetchCategories } from '../../../service/category';
+import type { IdName } from '../../../model/foundation';
+
 
 import '@awesome.me/webawesome/dist/components/input/input.js';
 import '@awesome.me/webawesome/dist/components/dropdown/dropdown.js';
@@ -12,7 +12,7 @@ import '@awesome.me/webawesome/dist/components/popup/popup.js';
 import type WaInput from '@awesome.me/webawesome/dist/components/input/input.js';
 import { Input as CategoryInputViewModel } from '../../../viewmodel/search/category/input';
 import type { IViewAdapter } from '../../../viewmodel';
-import type WaDropdown from '@awesome.me/webawesome/dist/components/dropdown/dropdown.js';
+
 import '../../group/autocomplete';
 
 @customElement('search-category-input')

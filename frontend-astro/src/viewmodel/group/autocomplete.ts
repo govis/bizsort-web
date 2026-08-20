@@ -1,7 +1,7 @@
 import { ViewModel } from '../../viewmodel';
 
 export interface InitOptions {}
-import type { IdName, Autocomplete as AutocompleteModel } from '../../model/foundation';
+import type { Autocomplete as AutocompleteModel } from '../../model/foundation';
 
 export interface IAutocompleteMaster extends ViewModel {
     text: string;

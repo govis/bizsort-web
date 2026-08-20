@@ -1,7 +1,7 @@
 import { defineMiddleware } from 'astro:middleware';
 
 export const onRequest = defineMiddleware(async (context, next) => {
-    const { url, request, redirect, cookies } = context;
+    const { url, redirect, cookies } = context;
 
     // 1. Legacy Token Interception (?t=)
     // We intercept legacy token state in query strings to issue 301 redirects to modern semantic URLs

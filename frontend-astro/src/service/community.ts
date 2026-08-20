@@ -1,5 +1,5 @@
 import { apiFetch } from './api.js';
-import type { SearchItem, SliceOutput } from '../components/types.js';
+import type { SearchItem } from '../components/types.js';
 import { FetchOneCache, Cache, SessionCacheType } from '../session/cache';
 
 

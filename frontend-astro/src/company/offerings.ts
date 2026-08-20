@@ -9,7 +9,6 @@ import './header-layout';
 import '../components/offering/listview';
 import '../components/list/header';
 import '../components/list/pager';
-import { getLogoUrl } from '../service/image';
 
 class CompanyOfferingsViewModel extends View {
   declare companyId: number;
@@ -42,7 +41,7 @@ export class CompanyOfferings extends LitElement implements IViewAdapter {
 
   viewModel: CompanyOfferingsViewModel;
   
-  modelUpdated(props: string[]) {
+  modelUpdated(_props: string[]) {
     this.requestUpdate();
   }
 

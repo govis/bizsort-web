@@ -449,7 +449,7 @@ export abstract class View extends ViewModel
         this._pager = new Pager();
         this._pager.populateBuffer = this.populate.bind(this);
         this._pager.populatePage = this.populatePage.bind(this);
-        this._pager.observeProperty((sender, propertyName) => {
+        this._pager.observeProperty((_sender, propertyName) => {
             if (propertyName == 'pageIndex' || propertyName == 'itemCount') {
                 this.showMore = (this._pager.pageIndex >= 0 && this._pager.hasPage(this._pager.pageIndex + 1) ? true : false);
             }
@@ -461,7 +461,7 @@ export abstract class View extends ViewModel
         this.listHeader = options.listHeader || (this.view as any).getViewModel?.('listHeader');
     }
 
-    load(...args: any[]) {
+    load(..._args: any[]) {
         if (this.validateable && this.validateable.errorInfo) {
            this.validateable.errorInfo.clear();
         }
@@ -469,12 +469,12 @@ export abstract class View extends ViewModel
         this.populate(0);
     }
 
-    search(...args: any[]) {
+    search(..._args: any[]) {
         this._pager.reset();
         this.populate(0);
     }
 
-    protected populate(pageIndex: number, ...args: any[]) {
+    protected populate(pageIndex: number, ..._args: any[]) {
         var queryInput: List.QueryInput = {
             startIndex: (pageIndex > 0 ? this._pager.fetchIndex : 0),
             length: this._pager.fetchLimit
@@ -607,7 +607,7 @@ export abstract class View extends ViewModel
         }
     }
 
-    protected formatActions(isEmpty?: boolean) {
+    protected formatActions(_isEmpty?: boolean) {
     }
 
     abstract fetchPage(page: EntityId[], fetchAction: Action<Object[]>, faultCallback: Action<any>): void;

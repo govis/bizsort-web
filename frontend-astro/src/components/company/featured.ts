@@ -1,6 +1,6 @@
 import { LitElement, html, css } from 'lit';
 import { repeat } from 'lit/directives/repeat.js';
-import type { CompanyPreview, SliceOutput } from '../types.js';
+import type { CompanyPreview } from '../types.js';
 import { getFeatured, toPreview } from '../../service/company';
 import { Company } from '../../navigation';
 import './card';

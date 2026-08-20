@@ -61,7 +61,7 @@ export class ListViewModel extends ViewModel {
         this.itemSelectedChanged = new Event<EntityId>();
     }
 
-    initialize(options?: any) {
+    initialize(_options?: any) {
         // ViewModel base class does not have an initialize method
     }
 
