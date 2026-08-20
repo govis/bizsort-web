@@ -92,7 +92,7 @@ export class CompanyOfferings extends LitElement implements IViewAdapter {
           <list-header entity="offering"></list-header>
           
           <div class="content vertical layout flex">
-            <offering-listview id="listView" list noCategory></offering-listview>
+            <offering-listview id="listView" noCategory></offering-listview>
             <div class="flex"></div>
             <list-pager class="self-center" .master=${this.viewModel.pager}></list-pager>
           </div>
