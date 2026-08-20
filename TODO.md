@@ -7,14 +7,12 @@ This document tracks the tasks required to fully transition the frontend from Ne
 - [x] **Un-wrap Profile Page**: Restored `<company-header-layout>` inside `frontend/src/company/profile.ts` so the Web Component manages its own layout shell again.
 - [x] **Astro Profile Route**: Created `src/pages/company/[id].astro` to fetch data server-side and render `<company-profile>` natively without React.
 - [ ] **Migrate Middleware**: Port the Next.js `middleware.ts` logic (legacy `?t=` token redirection) to Astro's `src/middleware.ts`.
-- [ ] **Un-wrap Remaining Pages**: Remove React wrappers (`bundle.tsx`) and reintegrate layout logic into:
-  - `company/home.ts`
-  - `company/search.ts`
-  - `offering/home.ts`
-  - `offering/search.ts`
-- [ ] **Astro Routes**: Create corresponding `.astro` routes for the above pages in `src/pages/`.
-- [ ] **SPA Routing (ViewTransitions)**: Add `<ViewTransitions />` to Astro layouts and update `Navigation.go()` in `frontend/src/navigation.ts` to use Astro's `navigate()` API for soft page transitions.
-- [ ] **Cleanup**: Delete Next.js specific files (`frontend/src/app/`, `bundle.tsx`, `next.config.ts`, etc.) and move `frontend/src` directly into `frontend-astro`.
+- [ ] **Port Remaining Legacy Pages**: Create `.astro` routes and port the following legacy pages to the modern Astro architecture:
+  - `company-search`
+  - `offering-home`
+  - `offering-search`
+- [ ] **SPA Routing (ViewTransitions)**: Add `<ViewTransitions />` to Astro layouts and ensure soft page transitions work across all routes.
+- [ ] **Cleanup**: Final cleanup of any lingering experimental scaffolding.
 
 ## 2. Featured Sections (Profile Page)
 The core profile page is ported, but the following featured sections need to be implemented using existing backend endpoints:
