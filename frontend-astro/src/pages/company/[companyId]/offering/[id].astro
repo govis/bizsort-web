@@ -42,9 +42,9 @@ const companyJson = JSON.stringify(company || {});
      Rendered with Astro (Zero React Wrappers)
   </div>
 
-  <company-offering offering={offeringJson}></company-offering>
+  <company-offering company={companyJson} offering={offeringJson}></company-offering>
 
-  <script>
+  <script>window.onerror = function(msg, url, line) { document.body.innerHTML += "<div style='color:red;font-size:20px;z-index:9999;position:relative;'>" + msg + " at " + line + "</div>"; };
     import '../../../../company/offering.ts';
   </script>
 </Layout>
