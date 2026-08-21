@@ -20,10 +20,6 @@ export async function search(queryInput: any): Promise<any> {
   const payload = encodeURIComponent(JSON.stringify(queryCopy));
   const response = await apiFetch(`/api/company/profile/search?queryInput=${payload}`);
   
-  if (!response.ok) {
-    throw new Error(`Failed to perform search: ${response.statusText}`);
-  }
-  
   const data = await response.json();
   // Mirror legacy: back-populate each FacetValue.name reference so the filter UI works
   if (data.facets) Semantic.Facet.deserialize(data.facets);
@@ -40,10 +36,6 @@ export async function getFeatured(index: number, length: number, category: numbe
   const sliceInput = JSON.stringify({ index, length, category, location });
   const response = await apiFetch(`/api/company/profile/getFeatured?sliceInput=${sliceInput}`);
   
-  if (!response.ok) {
-    throw new Error(`Failed to fetch featured companies: ${response.statusText}`);
-  }
-  
   return await response.json();
 }
 
@@ -54,10 +46,6 @@ export async function getFeatured(index: number, length: number, category: numbe
 export async function getOfferings(companyId: number, queryInput: any): Promise<any> {
   const payload = encodeURIComponent(JSON.stringify(queryInput));
   const response = await apiFetch(`/api/company/profile/getOfferings?company=${companyId}&queryInput=${payload}`);
-  
-  if (!response.ok) {
-    throw new Error(`Failed to fetch company offerings: ${response.statusText}`);
-  }
   
   const data = await response.json();
   if (data.facets) {
@@ -74,10 +62,6 @@ export async function getCompanyFeaturedOfferings(companyId: number, index: numb
   const sliceInput = JSON.stringify({ index, length });
   const response = await apiFetch(`/api/company/offering/getFeatured?company=${companyId}&sliceInput=${sliceInput}`);
   
-  if (!response.ok) {
-    throw new Error(`Failed to fetch company featured offerings: ${response.statusText}`);
-  }
-  
   return await response.json();
 }
 
@@ -89,10 +73,6 @@ export async function getAffiliations(companyId: number, index: number = 0, leng
   const sliceInput = JSON.stringify({ index, length });
   const response = await apiFetch(`/api/company/profile/getAffiliations?company=${companyId}&sliceInput=${sliceInput}`);
   
-  if (!response.ok) {
-    throw new Error(`Failed to fetch affiliations: ${response.statusText}`);
-  }
-  
   return await response.json();
 }
 
@@ -103,10 +83,6 @@ export async function getAffiliations(companyId: number, index: number = 0, leng
 export async function getCommunities(companyId: number, index: number = 0, length: number = 10): Promise<any> {
   const sliceInput = JSON.stringify({ index, length });
   const response = await apiFetch(`/api/company/profile/getCommunities?company=${companyId}&sliceInput=${sliceInput}`);
-  
-  if (!response.ok) {
-    throw new Error(`Failed to fetch communities: ${response.statusText}`);
-  }
   
   return await response.json();
 }
@@ -122,10 +98,6 @@ export async function toPreview(companies: SearchItem[]): Promise<CompanyPreview
   
   const payload = JSON.stringify(companies);
   const response = await apiFetch(`/api/company/profile/toPreview?companies=${payload}`);
-  
-  if (!response.ok) {
-    throw new Error(`Failed to fetch company previews: ${response.statusText}`);
-  }
   
   return await response.json();
 }

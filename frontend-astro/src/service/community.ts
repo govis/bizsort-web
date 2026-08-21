@@ -15,10 +15,6 @@ export async function toPreview(communities: SearchItem[]): Promise<any[]> {
   const payload = JSON.stringify(communities);
   const response = await apiFetch(`/api/community/profile/toPreview?communities=${payload}`);
   
-  if (!response.ok) {
-    throw new Error(`Failed to fetch community previews: ${response.statusText}`);
-  }
-  
   return await response.json();
 }
 
