@@ -75,7 +75,7 @@ public class CommunitiesCache : ReadManyExpirationCache<int, CachedCommunity>
                                 .Where(cc => cc.Community == c.Id)
                                 .DefaultIfEmpty()
                             from cm in dbContext.CommunityMedia
-                                .Where(ci => ci.Community == c.Id && ci.Type == (byte)MediaType.Default_Image)
+                                .Where(ci => ci.Community == c.Id && (ci.Type & (byte)MediaType.Default_Image) > 0)
                                 .Take(1)
                                 .DefaultIfEmpty()
                             select new { 
@@ -95,6 +95,7 @@ public class CommunitiesCache : ReadManyExpirationCache<int, CachedCommunity>
                     Company = ct.Company,
                     Name = ct.Community.Name,
                     ImageId = ct.ImageId ?? 0,
+                    ImageSize = ct.ImageMetadata != null ? BizSrt.Foundation.Entity.Image.ResolveSize(BizSrt.Model.ImageEntity.Community, ct.ImageMetadata) : ImageSizeType.None,
                     Text = ct.Community.Text ?? string.Empty,
                     Address = ct.Community.Location != null && ct.Community.Location.HasValue ? new BizSrt.Model.Location { Address = new BizSrt.Model.Geocoder.Address { StreetNumber = ct.Community.StreetNumber, Address1 = ct.Community.Address1, PostalCode = ct.Community.PostalCode } } : null,
                     Options = new Option.Set { Value = (Option.Flags)ct.Community.Options },
@@ -111,7 +112,7 @@ public class CommunitiesCache : ReadManyExpirationCache<int, CachedCommunity>
                                 .Where(cc => cc.Community == c.Id)
                                 .DefaultIfEmpty()
                             from cm in dbContext.CommunityMedia
-                                .Where(ci => ci.Community == c.Id && ci.Type == (byte)MediaType.Default_Image)
+                                .Where(ci => ci.Community == c.Id && (ci.Type & (byte)MediaType.Default_Image) > 0)
                                 .Take(1)
                                 .DefaultIfEmpty()
                             select new { 
@@ -133,6 +134,7 @@ public class CommunitiesCache : ReadManyExpirationCache<int, CachedCommunity>
                     Company = ct.Company,
                     Name = ct.Community.Name,
                     ImageId = ct.ImageId ?? 0,
+                    ImageSize = ct.ImageMetadata != null ? BizSrt.Foundation.Entity.Image.ResolveSize(BizSrt.Model.ImageEntity.Community, ct.ImageMetadata) : ImageSizeType.None,
                     Text = ct.Community.Text ?? string.Empty,
                     Address = ct.Community.Location != null && ct.Community.Location.HasValue ? new BizSrt.Model.Location { Address = new BizSrt.Model.Geocoder.Address { StreetNumber = ct.Community.StreetNumber, Address1 = ct.Community.Address1, PostalCode = ct.Community.PostalCode } } : null,
                     Options = new Option.Set { Value = (Option.Flags)ct.Community.Options },
