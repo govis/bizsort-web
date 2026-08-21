@@ -211,7 +211,7 @@ public class CompanyProfilesCache : ReadManyExpirationCache<int, CachedCompanyPr
                             where accountIds.Contains(c.Id)
                             from media in dbContext.CompanyMedia
                                 .Where(m => m.Company == c.Id && m.Type == (byte)BizSrt.Model.MediaType.Default_Image)
-                                .Select(m => new { m.Id, m.Metadata })
+                                .Select(m => new { Id = (int?)m.Id, m.Metadata })
                                 .Take(1)
                                 .DefaultIfEmpty()
                             select new { Profile = c, Media = media };
@@ -231,7 +231,7 @@ public class CompanyProfilesCache : ReadManyExpirationCache<int, CachedCompanyPr
                         ServiceType = p.Profile.ServiceType,
                         TransactionType = p.Profile.TransactionType,
                         Options = new BizSrt.Model.Company.Option.Set { Value = (BizSrt.Model.Company.Option.Flags)p.Profile.Options },
-                        ImageId = p.Media != null ? p.Media.Id : 0,
+                        ImageId = p.Media != null ? p.Media.Id ?? 0 : 0,
                         ImageSize = p.Media != null ? BizSrt.Foundation.Entity.Image.ResolveSize(BizSrt.Model.ImageEntity.Company, p.Media.Metadata) : BizSrt.Model.ImageSizeType.None
                     };
                 }).ToArray();
@@ -244,7 +244,7 @@ public class CompanyProfilesCache : ReadManyExpirationCache<int, CachedCompanyPr
                                    where c.Id == accountId
                                    from media in dbContext.CompanyMedia
                                        .Where(m => m.Company == c.Id && m.Type == (byte)BizSrt.Model.MediaType.Default_Image)
-                                       .Select(m => new { m.Id, m.Metadata })
+                                       .Select(m => new { Id = (int?)m.Id, m.Metadata })
                                        .Take(1)
                                        .DefaultIfEmpty()
                                    select new { Profile = c, Media = media };
@@ -264,7 +264,7 @@ public class CompanyProfilesCache : ReadManyExpirationCache<int, CachedCompanyPr
                     ServiceType = p.Profile.ServiceType,
                     TransactionType = p.Profile.TransactionType,
                     Options = new BizSrt.Model.Company.Option.Set { Value = (BizSrt.Model.Company.Option.Flags)p.Profile.Options },
-                    ImageId = p.Media != null ? p.Media.Id : 0,
+                    ImageId = p.Media != null ? p.Media.Id ?? 0 : 0,
                     ImageSize = p.Media != null ? BizSrt.Foundation.Entity.Image.ResolveSize(BizSrt.Model.ImageEntity.Company, p.Media.Metadata) : BizSrt.Model.ImageSizeType.None
                 };
             },
