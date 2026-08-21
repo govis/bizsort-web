@@ -1133,7 +1133,7 @@
 | [ ] | â†³ `class CachedCompanyProduct` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Reset()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `ToPreview()` | | |
-| [ ] | â†³ `class CachedCompanyProfile` | - | - |
+| [!!] |     ↗ class CachedCompanyProfile | BizSrt.Api.Data.Cache.Company.CachedCompanyProfile | **PARTIALLY PORTED WITH GAPS (2026-08-21 audit).** Missing ServiceType (long) and TransactionType (short) properties vs legacy. ImageSize property exists on model but is not mapped in either EF loader query (Metadata blob not selected). |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Reset()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `ToPreview()` | | |
 | [ ] | â†³ `class CachedImage` | - | - |
@@ -1244,7 +1244,7 @@
 | [ ] | â†³ `class CompanyProductCache` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Reset()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `ToPreview()` | | |
-| [ ] | â†³ `class CompanyProfilesCache` | - | - |
+| [!!] |     ↗ class CompanyProfilesCache | BizSrt.Api.Data.Cache.Company.CompanyProfilesCache | **PARTIALLY PORTED WITH GAPS (2026-08-21 audit).** Cache class exists and functions but does not map ServiceType, TransactionType, or compute ImageSize from Metadata. See CachedCompanyProfile entry above. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Reset()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `ToPreview()` | | |
 | [ ] | â†³ `class CompanyQueryOutput` | - | - |
@@ -1265,7 +1265,7 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Reset()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `ToPreview()` | | |
 | [x] | â†³ `class FeaturedCache` | `BizSrt.Api.Data.Cache.Company.FeaturedCompaniesCache` | Ported successfully. |
-| [x] | â†³ `class FeaturedCompanyCache` | `BizSrt.Api.Data.Cache.Company.FeaturedCompaniesCache` | Ported successfully. Combined with FeaturedCache<T> logic. |
+| [!!] |     ↗ class FeaturedCompanyCache | BizSrt.Api.Data.Cache.Company.FeaturedCompaniesCache | **PORTED WITH BUGS (2026-08-21 audit).** Two critical LINQ issues documented as fixed were never applied: (1) .ToArray() before .OrderByDescending().Take(500) - full table fetched into C# memory. (2) Location filter uses join+Distinct() instead of .Any() (EXISTS). Fix both before production. |
 | [ ] | â†³ `class FeaturedJobCache` | - | - |
 | [ ] | â†³ `class FeaturedProductCache` | - | - |
 | [ ] | â†³ `class FeaturedProjectCache` | - | - |

@@ -232,3 +232,17 @@ The legacy codebase is split into two primary areas:
 - [x] Ensure sliders mapping to `/api/company/offering/getFeatured` correctly fetch `SliceOutput` and hydrate models.
 - [x] Deep codebase sweep and pruning of orphaned/unused TypeScript imports and parameters.
 - [ ] Further migration of remaining legacy frontend modules (see `LEGACY_FRONTEND_TRACKER.md`).
+
+---
+
+### 9. Backend Audit Issues (2026-08-21)
+
+Identified during backend integrity audit comparing ackend/ against legacy/server/. Items marked [!!] indicate **false claims in the tracker** — they were documented as complete but the fixes were never applied to the actual source files.
+
+- [ ] **[CRITICAL] FeaturedCompaniesCache — Full table scan before sort**: ackend/Data/Cache/Featured/Company.cs calls .ToArray() before .OrderByDescending().Take(500), fetching the entire CompanyProfiles table into C# heap on every cold-cache fill. Move .OrderByDescending(x => x.Created).Take(500) into the LINQ query before .ToArray() so SQL Server handles the sort+limit via the IX_CompanyProfiles_Created index. **This was documented as fixed in section 3 of this file but was never implemented.**
+- [ ] **[CRITICAL] FeaturedCompaniesCache — Location filter uses join+Distinct() instead of ANY**: ackend/Data/Cache/Featured/Company.cs:41-45 constructs a Distinct() subquery then joins to it, forcing SQL Server to SELECT all CompanyOffices columns for uniqueness checking. Replace with .Any(co => co.Company == c.Id && locIds.Contains(co.Location)) to generate a cheap SQL EXISTS. **This was documented as fixed in section 3 of this file but was never implemented.**
+- [ ] **[CRITICAL] CachedCompanyProfile — Missing ServiceType and TransactionType**: ackend/Data/Cache/Company/Profile.cs is missing ServiceType (long) and TransactionType (short) properties that exist in the legacy cache and are used to build transaction/service type facet badges on company cards. Both EF loader queries (batch and single) also need to select and map these columns.
+- [ ] **[WARNING] CachedCompanyProfile — ImageSize not mapped from Metadata**: The ImageSize property exists on the model but is never populated. Legacy code computed it via Entity.Image.ResolveSize(ImageEntity.Company, bt.ImageMetadata) using the CompanyMedia.Metadata blob. The modern loader selects only m.Id (not m.Metadata), so ImageSize always defaults to zero.
+- [ ] **[WARNING] GetInfoAsync — Direct EF DB hit bypasses CompanyProfilesCache**: ackend/Data/Company/Profile.cs (~line 632) queries dbContext.CompanyProfiles directly. Per architecture rules, the service layer must not hit the DB for cached entities. Update to resolve via LegacyCache.CompanyProfiles.
+- [ ] **[WARNING] Reference_SearchAsync — Dead reference method in Profile.cs**: ackend/Data/Company/Profile.cs contains a large Reference_SearchAsync method with no callers, kept only for historical reference. Delete it to reduce noise.
+- [ ] **[INFO] Commented-out DI registration in Program.cs:29**: A commented-out uilder.Services.AddSingleton<CompanyProfilesCache>() line should be removed.
