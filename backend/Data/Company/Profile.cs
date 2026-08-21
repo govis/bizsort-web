@@ -627,17 +627,17 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
         return promotions;
     }
 
-    public async Task<BizSrt.Model.Account?> GetInfoAsync(int id)
+    public Task<BizSrt.Model.Account?> GetInfoAsync(int id)
     {
-        var company = await dbContext.CompanyProfiles.AsNoTracking().FirstOrDefaultAsync(c => c.Id == id);
-        if (company is null) return null;
+        var company = BizSrt.Api.Data.Cache.LegacyCache.CompanyProfiles[id];
+        if (company is null) return Task.FromResult<BizSrt.Model.Account?>(null);
 
-        return new BizSrt.Model.Account
+        return Task.FromResult<BizSrt.Model.Account?>(new BizSrt.Model.Account
         {
             Id = company.Id,
             Name = company.Name,
             AccountType = BizSrt.Model.AccountType.Company
-        };
+        });
     }
 
     public async Task<BizSrt.Model.Job.Profile?> GetJobProfileAsync(int companyId, long jobId)
