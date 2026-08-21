@@ -125,3 +125,32 @@ The modernized C# models strictly mirror the legacy GetActive() filters.
 - **Company Profiles** rely on the Accounts.Status (where Active = 2) rather than CompanyProfiles.Status.
 - **Offerings (Legacy Products)** explicitly filter on Offerings.Status == 1 (Active) AND Offerings.Type != 0 (Multiproduct). 
 If a database seed or dump contains Status = 0 (Draft) for all offerings, the EF Core query is mathematically correct in returning 0 rows. Do not remove the Status == 1 filter to force data to appear, as this breaks legacy parity; the underlying database rows must be updated to Status = 1 for testing.
+
+## Backend Hierarchy Traversal (CRITICAL)
+
+When translating frontend Search Filters (like Category or Location) into backend LINQ queries (e.g. FeaturedCompaniesCache, SearchAsync), you must properly differentiate between **Upward Ancestry** and **Downward Expansion**.
+
+### 1. Downward Expansion (Search Filters)
+When a user filters by a Category (e.g., *Technology*) or Location (e.g., *Canada*), they expect to see results for that specific node **and all its children** (e.g., *Software, Hardware*, or *Ontario, Toronto*).
+*   **The Rule:** You MUST use the Categories_Unwound or Locations_Unwound closure tables to resolve children.
+*   **The Pitfall:** NEVER use .GetPath() for search filters. GetPath() walks *upwards* to the root. Filtering by GetPath() for Canada will restrict results to only companies whose raw database value is exactly "Canada", completely excluding all companies in Toronto or Ontario.
+
+**Correct Downward Search Implementation (via SQL EXISTS):**
+`csharp
+// Category (Direct Column mapping)
+query = from c in query
+        where c.Category == catId || dbContext.Categories_Unwound.Any(cu => cu.Parent == catId && cu.Child == c.Category)
+        select c;
+
+// Location (Joined table mapping)
+query = from c in query
+        where dbContext.CompanyOffices.Any(co => 
+            co.Company == c.Id && 
+            (co.Location == locId || dbContext.Locations_Unwound.Any(lu => lu.Parent == locId && lu.Child == co.Location)))
+        select c;
+`
+*Note: We never materialize the Unwound tables into a C# list for a .Contains() filter because it destroys SQL Server execution plans by generating hundreds of SQL parameters.*
+
+### 2. Upward Ancestry (Breadcrumbs & Pathing)
+When you are displaying a company profile or resolving URL slugs, you need to know the *parents* of a node (e.g., displaying the breadcrumb *Canada > Ontario > Toronto*).
+*   **The Rule:** You MUST use LegacyCache.Categories[id].GetPath(null) or LegacyCache.Locations[id].GetPath(null). This safely resolves the parent chain entirely in C# memory instantly.

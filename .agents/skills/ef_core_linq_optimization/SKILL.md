@@ -25,32 +25,34 @@ var ids = allMatches.OrderByDescending(c => c.Created).Select(c => c.Id).ToArray
 **The Pitfall:** You may be tempted to use `.Union()` to avoid `OR EXISTS` subqueries. However, SQL Server's query compiler completely breaks down when trying to generate an execution plan that involves a `UNION` combined with a massive parameterized `IN (@p1... @p90)` clause or a complex `IQueryable` subquery. This will result in 15+ second compilation and execution times.
 **The Solution:** Use `OR EXISTS` (via `.Any()`) instead of `UNION` for complex queries. The `OR EXISTS` logic executes flawlessly and natively as a forward table scan.
 
-## 3. Eagerly Materialize Small Dimension Tables — With Caution on Size
-**The Pitfall:** When checking hierarchy membership (e.g., `Categories_Unwound`, `Locations_Unwound`), EF Core's `.Any()` generates a correlated `EXISTS` subquery per row. For isolated single-filter queries, this can be slower than fetching the child IDs and using `.Contains()`.
-**The Solution (ONLY for very small sets, <10 items):** Execute the dimension query first, materialize it into a `List<int>`, and pass it to `.Contains()`. This forces EF Core to generate a simple parameterized `IN (@p1, @p2)` clause.
+## 3. Hierarchy Traversal: Downward Search (Closure Tables) vs Upward Path
+**The Context:** The BizSort database utilizes the **Closure Table** pattern (via `Categories_Unwound` and `Locations_Unwound`) to instantly resolve deep hierarchy relationships in SQL Server.
+**The Pitfall:** Do NOT use `LegacyCache.Locations.GetPath()` or `Category.GetPath()` to filter database queries. `GetPath()` resolves the *upward* ancestry (e.g. Toronto -> Ontario -> Canada). When a user applies a search filter for "Canada", they are looking *downward* for all companies operating within Canada (e.g. Canada -> Ontario -> Toronto). Using `GetPath` for search filters will incorrectly exclude all children nodes.
+Additionally, do NOT fetch the unwound child IDs into a C# `List<int>` and pass them to `.Contains()`. EF Core generates individual SQL parameters (`@p1..@p900`) for lists, destroying SQL Server's query plan compilation time.
 
-> [!WARNING] **EF Core Parameter Padding (CRITICAL):** EF Core 10 pads `List<T>.Contains()` to fixed bucket sizes:
-> - 84 items → **90 parameters** (`@catIds1..@catIds90`)
-> - 566 items → **600 parameters** (`@locIds1..@locIds600`)
-> - 820 items → **900 parameters** (`@allIds1..@allIds900`)
->
-> Each padded query causes SQL Server to compile a distinct plan shape, leading to timeouts. **Never materialize dimension tables with >10 items for use with `.Contains()`**. Use an `IQueryable` subquery or `OPENJSON` instead.
+**The Solution:** Always perform *downward* hierarchy searches using the `_Unwound` SQL tables directly within the LINQ `Where` clause. Combine this with `.Any()` to generate highly optimal SQL `EXISTS` queries.
 
 ```csharp
-// ONLY safe for very small lists (< 10 items)
-var locIds = await dbContext.Locations_Unwound.Where(lu => lu.Parent == targetLoc).Select(lu => lu.Child).ToListAsync();
-locIds.Add(targetLoc);
-query = query.Where(c => locIds.Contains(c.Location)); // OK only if list is tiny
+// BAD (Upward Path mismatch - Excludes sub-cities/sub-categories):
+var locIds = BizSrt.Api.Data.Cache.LegacyCache.Locations[locationId].GetPath(null).Select(l => l.Id).ToArray();
+query = query.Where(c => dbContext.CompanyOffices.Any(co => co.Company == c.Id && locIds.Contains(co.Location)));
 
-// For large hierarchies (>10 children), use IQueryable subquery instead:
-var childLocations = dbContext.Locations_Unwound
-    .Where(lu => lu.Parent == queryInput.Location)
-    .Select(lu => lu.Child);
-var locationCompanyIds = dbContext.CompanyOffices
-    .Where(co => co.Location == queryInput.Location || childLocations.Contains(co.Location))
-    .Select(co => co.Company)
-    .Distinct();
-// EF Core generates: WHERE Location = @loc OR Location IN (SELECT Child FROM Locations_Unwound WHERE Parent = @loc)
+// BAD (Parameter Padding Timeout - Materializing closure table to C# memory):
+var catIds = dbContext.Categories_Unwound.Where(cu => cu.Parent == catId).Select(cu => cu.Child).ToList();
+query = query.Where(c => catIds.Contains(c.Category)); // Generates @p1..@p100 in SQL
+
+// GOOD (Optimal Downward Search via SQL EXISTS):
+// For direct columns (e.g., Category):
+query = from c in query
+        where c.Category == catId || dbContext.Categories_Unwound.Any(cu => cu.Parent == catId && cu.Child == c.Category)
+        select c;
+
+// GOOD (Optimal Downward Search for child table relationships like CompanyOffices):
+query = from c in query
+        where dbContext.CompanyOffices.Any(co => 
+            co.Company == c.Id && 
+            (co.Location == locId || dbContext.Locations_Unwound.Any(lu => lu.Parent == locId && lu.Child == co.Location)))
+        select c;
 ```
 
 ## 4. `Distinct()` vs `Any()` (EXISTS)
