@@ -32,7 +32,7 @@ namespace BizSrt.Api.Data.Cache.Featured
 
             if (key.Item2 > 0)
             {
-                var locIds = BizSrt.Api.Data.Cache.LegacyCache.LocationSearch.GetPath(key.Item2).Select(i => i.Id).ToArray();
+                var locIds = BizSrt.Api.Data.Cache.LegacyCache.Locations.GetPath(key.Item2).Select(i => i.Id).ToArray();
 
                 cq = from c in cq
                      where dbContext.CompanyOffices
