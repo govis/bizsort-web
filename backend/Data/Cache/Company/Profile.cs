@@ -210,7 +210,7 @@ public class CompanyProfilesCache : ReadManyExpirationCache<int, CachedCompanyPr
                 var query = from c in dbContext.CompanyProfiles
                             where accountIds.Contains(c.Id)
                             from media in dbContext.CompanyMedia
-                                .Where(m => m.Company == c.Id && m.Type == (byte)BizSrt.Model.MediaType.Default_Image)
+                                .Where(m => m.Company == c.Id && (m.Type & (byte)BizSrt.Model.MediaType.Default_Image) > 0)
                                 .Select(m => new { Id = (int?)m.Id, m.Metadata })
                                 .Take(1)
                                 .DefaultIfEmpty()
@@ -243,7 +243,7 @@ public class CompanyProfilesCache : ReadManyExpirationCache<int, CachedCompanyPr
                 var profileQuery = from c in dbContext.CompanyProfiles
                                    where c.Id == accountId
                                    from media in dbContext.CompanyMedia
-                                       .Where(m => m.Company == c.Id && m.Type == (byte)BizSrt.Model.MediaType.Default_Image)
+                                       .Where(m => m.Company == c.Id && (m.Type & (byte)BizSrt.Model.MediaType.Default_Image) > 0)
                                        .Select(m => new { Id = (int?)m.Id, m.Metadata })
                                        .Take(1)
                                        .DefaultIfEmpty()

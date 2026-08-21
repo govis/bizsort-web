@@ -32,11 +32,9 @@ namespace BizSrt.Api.Data.Cache.Featured
 
             if (key.Item2 > 0)
             {
-                var locIds = BizSrt.Api.Data.Cache.LegacyCache.Locations[key.Item2].GetPath(null).Select(i => i.Id).ToArray();
-
                 cq = from c in cq
                      where dbContext.CompanyOffices
-                         .Any(co => co.Company == c.Id && locIds.Contains(co.Location))
+                         .Any(co => co.Company == c.Id && (co.Location == key.Item2 || dbContext.Locations_Unwound.Any(lu => lu.Parent == key.Item2 && lu.Child == co.Location)))
                      select c;
             }
 
@@ -49,7 +47,7 @@ namespace BizSrt.Api.Data.Cache.Featured
             // into C# memory before sorting and then issued N+1 CompanyMedia queries.
             var qt = (from b in cq
                       from media in dbContext.CompanyMedia
-                          .Where(m => m.Company == b.Id && m.Type == (byte)BizSrt.Model.MediaType.Default_Image)
+                          .Where(m => m.Company == b.Id && (m.Type & (byte)BizSrt.Model.MediaType.Default_Image) > 0)
                           .Select(m => new { m.Metadata })
                           .Take(1)                        // CROSS APPLY (no DefaultIfEmpty) — drops companies with no media
                       orderby b.Created descending
