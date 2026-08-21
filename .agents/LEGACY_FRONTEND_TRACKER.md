@@ -926,12 +926,12 @@
 | [ ] | ↳ `src/service/admin/website.ts` | - | - |
 | [x] | ↳ `src/service/category.ts` | `frontend-astro/src/service/category.ts` | Ported category service helpers. |
 | [ ] | ↳ `src/service/community.ts` | - | - |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class communityCache` | | |
+| [x] | &nbsp;&nbsp;&nbsp;&nbsp;↳ class communityCache | STRIPPED | Deliberately stripped to remove redundant frontend caching per AGENTS. |
 | [x] | ↳ `src/service/company.ts` | `frontend-astro/src/service/company.ts` | Ported company service helpers. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Featured` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Communities` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Affiliations` | | |
-| | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class companyCache` | | |
+| [x] | &nbsp;&nbsp;&nbsp;&nbsp;↳ class companyCache | STRIPPED | Deliberately stripped to remove redundant frontend caching per AGENTS. |
 | [x] | ↳ `src/service/geocoder.ts` | `src/service/geocoder.ts` | Ported to handle client-side rich address formatting and maps |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class AddressOptions` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;↳ `class Window` | | |
