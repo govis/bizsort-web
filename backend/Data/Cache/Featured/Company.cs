@@ -25,16 +25,18 @@ namespace BizSrt.Api.Data.Cache.Featured
 
             if (key.Item1 > 0)
             {
+                var childCategories = dbContext.Categories_Unwound.Where(cu => cu.Parent == key.Item1).Select(cu => cu.Child);
                 cq = from c in cq
-                     where c.Category == key.Item1 || dbContext.Categories_Unwound.Any(cu => cu.Parent == key.Item1 && cu.Child == c.Category)
+                     where c.Category == key.Item1 || childCategories.Contains(c.Category)
                      select c;
             }
 
             if (key.Item2 > 0)
             {
+                var childLocations = dbContext.Locations_Unwound.Where(lu => lu.Parent == key.Item2).Select(lu => lu.Child);
                 cq = from c in cq
                      where dbContext.CompanyOffices
-                         .Any(co => co.Company == c.Id && (co.Location == key.Item2 || dbContext.Locations_Unwound.Any(lu => lu.Parent == key.Item2 && lu.Child == co.Location)))
+                         .Any(co => co.Company == c.Id && (co.Location == key.Item2 || childLocations.Contains(co.Location)))
                      select c;
             }
 

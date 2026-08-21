@@ -41,17 +41,24 @@ query = query.Where(c => dbContext.CompanyOffices.Any(co => co.Company == c.Id &
 var catIds = dbContext.Categories_Unwound.Where(cu => cu.Parent == catId).Select(cu => cu.Child).ToList();
 query = query.Where(c => catIds.Contains(c.Category)); // Generates @p1..@p100 in SQL
 
-// GOOD (Optimal Downward Search via SQL EXISTS):
-// For direct columns (e.g., Category):
+// BAD (Correlated Subquery IO Spike - Executing EXISTS per row):
 query = from c in query
         where c.Category == catId || dbContext.Categories_Unwound.Any(cu => cu.Parent == catId && cu.Child == c.Category)
+        select c; // Generates 20,000+ logical reads because the subquery correlates to c.Category
+
+// GOOD (Optimal Downward Search via Uncorrelated IQueryable Subquery):
+// For direct columns (e.g., Category):
+var childCategories = dbContext.Categories_Unwound.Where(cu => cu.Parent == catId).Select(cu => cu.Child);
+query = from c in query
+        where c.Category == catId || childCategories.Contains(c.Category)
         select c;
 
 // GOOD (Optimal Downward Search for child table relationships like CompanyOffices):
+var childLocations = dbContext.Locations_Unwound.Where(lu => lu.Parent == locId).Select(lu => lu.Child);
 query = from c in query
         where dbContext.CompanyOffices.Any(co => 
             co.Company == c.Id && 
-            (co.Location == locId || dbContext.Locations_Unwound.Any(lu => lu.Parent == locId && lu.Child == co.Location)))
+            (co.Location == locId || childLocations.Contains(co.Location)))
         select c;
 ```
 

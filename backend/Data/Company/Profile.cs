@@ -167,13 +167,15 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
         // OR EXISTS on Categories_Unwound is a compact 2-param subquery SQL Server handles cleanly.
         if (queryInput.Category > 0)
         {
+            var childCategories = dbContext.Categories_Unwound.Where(cu => cu.Parent == queryInput.Category).Select(cu => cu.Child);
+            
             var offeringCategoryMatches = (from cp in dbContext.CompanyOfferings
                                           join p in dbContext.Offerings on cp.Offering equals p.Id
                                           where (p.Type == 0 || (cp.UnlistedType == (byte)BizSrt.Model.Offering.UnlistedType.Listed && p.Status == (byte)BizSrt.Model.Offering.Status.Active)) &&
-                                                (cp.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == cp.Category))
+                                                (cp.Category == queryInput.Category || childCategories.Contains(cp.Category))
                                           select cp);
 
-            query = query.Where(c => (c.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == c.Category))
+            query = query.Where(c => (c.Category == queryInput.Category || childCategories.Contains(c.Category))
                 || offeringCategoryMatches.Any(cp => cp.Company == c.Id));
         }
 
@@ -319,13 +321,15 @@ public class CompanyService(AppDbContext dbContext) : ICompanyService
 
         if (queryInput.Category > 0)
         {
+            var childCategories = dbContext.Categories_Unwound.Where(cu => cu.Parent == queryInput.Category).Select(cu => cu.Child);
+            
             query = query.Where(c => 
-                (c.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == c.Category))
+                (c.Category == queryInput.Category || childCategories.Contains(c.Category))
                 ||
                 (from cp in dbContext.CompanyOfferings
                  join p in dbContext.Offerings on cp.Offering equals p.Id
                  where (p.Type == 0 || (cp.UnlistedType == (byte)BizSrt.Model.Offering.UnlistedType.Listed && p.Status == (byte)BizSrt.Model.Offering.Status.Active)) &&
-                       (cp.Category == queryInput.Category || dbContext.Categories_Unwound.Any(cu => cu.Parent == queryInput.Category && cu.Child == cp.Category))
+                       (cp.Category == queryInput.Category || childCategories.Contains(cp.Category))
                  select cp).Any(cp => cp.Company == c.Id)
             );
         }

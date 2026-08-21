@@ -135,20 +135,22 @@ When a user filters by a Category (e.g., *Technology*) or Location (e.g., *Canad
 *   **The Rule:** You MUST use the Categories_Unwound or Locations_Unwound closure tables to resolve children.
 *   **The Pitfall:** NEVER use .GetPath() for search filters. GetPath() walks *upwards* to the root. Filtering by GetPath() for Canada will restrict results to only companies whose raw database value is exactly "Canada", completely excluding all companies in Toronto or Ontario.
 
-**Correct Downward Search Implementation (via SQL EXISTS):**
-`csharp
+**Correct Downward Search Implementation (via Uncorrelated IQueryable Subquery):**
+```csharp
 // Category (Direct Column mapping)
+var childCategories = dbContext.Categories_Unwound.Where(cu => cu.Parent == catId).Select(cu => cu.Child);
 query = from c in query
-        where c.Category == catId || dbContext.Categories_Unwound.Any(cu => cu.Parent == catId && cu.Child == c.Category)
+        where c.Category == catId || childCategories.Contains(c.Category)
         select c;
 
 // Location (Joined table mapping)
+var childLocations = dbContext.Locations_Unwound.Where(lu => lu.Parent == locId).Select(lu => lu.Child);
 query = from c in query
         where dbContext.CompanyOffices.Any(co => 
             co.Company == c.Id && 
-            (co.Location == locId || dbContext.Locations_Unwound.Any(lu => lu.Parent == locId && lu.Child == co.Location)))
+            (co.Location == locId || childLocations.Contains(co.Location)))
         select c;
-`
+```
 *Note: We never materialize the Unwound tables into a C# list for a .Contains() filter because it destroys SQL Server execution plans by generating hundreds of SQL parameters.*
 
 ### 2. Upward Ancestry (Breadcrumbs & Pathing)
