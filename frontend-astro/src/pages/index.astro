@@ -1,11 +1,3 @@
 ---
-import Layout from '../layouts/main.astro';
+return Astro.redirect('/companies', 301);
 ---
-
-<Layout title="Redirecting to Companies...">
-  <script>
-    import { navigate } from 'astro:transitions/client';
-    // Perform a soft client-side redirect so it stays within the SPA router
-    navigate('/companies', { history: 'replace' });
-  </script>
-</Layout>

@@ -79,10 +79,7 @@ export async function toPreview(offerings: any[], options?: any): Promise<any[]>
 export async function view(offeringId: number, companyId: number = 0, options: any = { company: 1 }): Promise<any> {
   const optionsStr = encodeURIComponent(JSON.stringify(options));
   const response = await apiFetch(`/api/company/offering/view?company=${companyId}&offering=${offeringId}&options=${optionsStr}`);
-  if (!response.ok) {
-    if (response.status === 404) return null;
-    throw new Error(`Failed to fetch offering: ${response.statusText}`);
-  }
+  if (!response.ok && response.status === 404) return null;
   return await response.json();
 }
 

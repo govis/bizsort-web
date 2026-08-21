@@ -1,13 +1,8 @@
-import { API_BASE } from './api.js';
+import { ApiConfig } from '../settings.js';
+import { Image } from '../model.js';
 
 export function getLogoUrl(entity: number, imageId: number | undefined, width: number = 200, height?: number): string {
-    if (!imageId) return '/images/bizsort-logo.svg';
-    
-    let url = `${API_BASE}/api/image/get?entity=${entity}&id=${imageId}&width=${width}`;
-    if (height !== undefined) {
-        url += `&height=${height}`;
-    }
-    return url;
+    return Image.getImageUrl(entity, imageId, width, height);
 }
 
 export function analyzeImage(img: HTMLImageElement, border: number = 5): { background: { r: number, g: number, b: number }, foreground?: { r: number, g: number, b: number } } {

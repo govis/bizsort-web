@@ -237,37 +237,39 @@ export class CompanyHeaderLayout extends LitElement {
           </wa-tab>
         ` : ''}
         
-        ${this.company.projects ? html`
+        ${/* this.company.projects ? html`
           <wa-tab slot="nav" panel="projects" ?active="${this.activeTab === 'projects'}">
             ${this.company.projects.label || 'Projects'}
           </wa-tab>
-        ` : ''}
+        ` : '' */ ''}
         
-        ${this.company.jobs ? html`
+        ${/* this.company.jobs ? html`
           <wa-tab slot="nav" panel="jobs" ?active="${this.activeTab === 'jobs'}">
             ${this.company.jobs.label || 'Jobs'}
           </wa-tab>
-        ` : ''}
+        ` : '' */ ''}
         
-        ${this.company.news ? html`
+        ${/* this.company.news ? html`
           <wa-tab slot="nav" panel="news" ?active="${this.activeTab === 'news'}">
             ${this.company.news.label || 'News'}
           </wa-tab>
-        ` : ''}
+        ` : '' */ ''}
         
-        ${this.company.articles ? html`
+        ${/* this.company.articles ? html`
           <wa-tab slot="nav" panel="articles" ?active="${this.activeTab === 'articles'}">
             ${this.company.articles.label || 'Articles'}
           </wa-tab>
-        ` : ''}
+        ` : '' */ ''}
         
         <!-- We must include empty panels for wa-tab-group to render properly -->
         <wa-tab-panel name="about"></wa-tab-panel>
         <wa-tab-panel name="offerings"></wa-tab-panel>
+        <!--
         <wa-tab-panel name="projects"></wa-tab-panel>
         <wa-tab-panel name="jobs"></wa-tab-panel>
         <wa-tab-panel name="news"></wa-tab-panel>
         <wa-tab-panel name="articles"></wa-tab-panel>
+        -->
       </wa-tab-group>
     `;
   }

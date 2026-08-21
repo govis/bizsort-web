@@ -1,4 +1,5 @@
 import { LitElement, html, css } from 'lit';
+import { customElement, property, state } from 'lit/decorators.js';
 import type { CompanyPreview } from '../types.js';
 import { getLogoUrl, analyzeImage } from '../../service/image.js';
 import { stringify } from '../../service/geocoder';
@@ -6,14 +7,9 @@ import { stringify } from '../../service/geocoder';
 import '@awesome.me/webawesome/dist/components/icon/icon.js';
 
 export class CompanyCard extends LitElement {
-  static get properties() {
-    return {
-      model: { type: Object },
-      _imageLoaded: { state: true }
-    };
-  }
-
+@property({ type: Object })
   declare model?: CompanyPreview;
+  @state()
   declare private _imageLoaded: boolean;
 
   constructor() {

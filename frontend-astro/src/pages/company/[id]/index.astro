@@ -9,7 +9,6 @@ const { id } = Astro.params;
 const companyId = parseInt(id as string, 10);
 
 // We bypass SSL for the local .NET backend during SSR
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 // 1. Fetch data on the server using the unified service helper!
 let company: any = null;
@@ -27,7 +26,7 @@ const title = company?.category
 const description = company?.text || undefined;
 
 // 3. Serialize the complex object into a string for the HTML attribute
-const companyJson = JSON.stringify(company || {});
+const companyJson = JSON.stringify(company || null);
 ---
 
 <Layout title={title} description={description}>
@@ -42,3 +41,4 @@ const companyJson = JSON.stringify(company || {});
     import '../../../company/profile.ts';
   </script>
 </Layout>
+

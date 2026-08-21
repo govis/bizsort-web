@@ -345,8 +345,10 @@ export class SearchHome extends LitElement implements IViewAdapter {
         <wa-tab-group @wa-tab-show="${this._onTabSelect}">
           <wa-tab slot="nav" panel="company" ?active="${this.tab === 'company'}">Companies</wa-tab>
           <wa-tab slot="nav" panel="offering" ?active="${this.tab === 'offering'}">Offerings</wa-tab>
+          ${/*
           <wa-tab slot="nav" panel="project" ?active="${this.tab === 'project'}">Projects</wa-tab>
           <wa-tab slot="nav" panel="job" ?active="${this.tab === 'job'}">Jobs</wa-tab>
+          */ ''}
         </wa-tab-group>
 
         <div class="search-inputs" @keydown="${this._handleKeydown}">

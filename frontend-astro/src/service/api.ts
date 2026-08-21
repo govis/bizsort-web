@@ -1,6 +1,5 @@
 import { showToast } from '../components/utility/message-toast.js';
-
-export const API_BASE = import.meta.env.SSR ? 'https://localhost:5001' : '';
+import { ApiConfig } from '../settings.js';
 
 /**
  * A wrapper around native fetch that mimics the legacy notifyErrorAjax mechanism.
@@ -8,7 +7,7 @@ export const API_BASE = import.meta.env.SSR ? 'https://localhost:5001' : '';
  * and presenting toasts for UI feedback.
  */
 export async function apiFetch(endpoint: string, options: RequestInit = {}): Promise<Response> {
-    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE}${endpoint}`;
+    const url = endpoint.startsWith('http') ? endpoint : `${ApiConfig.baseUrl}${endpoint}`;
     
     try {
         const response = await fetch(url, options);

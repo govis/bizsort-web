@@ -251,8 +251,8 @@ export const Session = {
     }
 };
 
-export const Service = {
-    origin: "http://localhost:8000", //http://localhost:8000  //http://bizsrt.svc
+export const ApiConfig = {
+    baseUrl: import.meta.env.PUBLIC_API_BASE || "",
     httpHeader: {
         fault: "X-BizSrt-Fault"
     },
@@ -261,7 +261,7 @@ export const Service = {
     },
     google: {
         clientId: "549148705671-ja1hg0pm9bh4nqntldrk66rnpfl51cmh.apps.googleusercontent.com",
-        apiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+        mapsApiKey: import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY || "",
         siteKey: "6LcAKtYUAAAAAM4pMPEBo8KUxpdbVCoNPncLXILe"
     }
 };

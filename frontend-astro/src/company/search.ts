@@ -16,8 +16,6 @@ import '../components/directory/header-layout';
 
 class CompanySearchViewModel extends Filterable(Searchview as any) {
   fetchList(queryInput: any, callback: Action<any>, faultCallback: Action<any>) {
-    console.log('[CompanySearch] fetchList called, searchParams=', this.searchParams, 'queryInput=', queryInput);
-    console.log('[CompanySearch] _filterApplied=', (this as any)._filterApplied, '_filterAvail=', (this as any)._filterAvail);
 
     if (!this.searchParams) {
       faultCallback(new Error('No search params'));
@@ -50,20 +48,17 @@ class CompanySearchViewModel extends Filterable(Searchview as any) {
 
     // Bridge async service function → callback pattern
     search(queryInput).then((data: any) => {
-      console.log('[CompanySearch] fetchList callback data=', data, 'series.length=', data?.series?.length);
       callback(data);
     }).catch(faultCallback);
   }
 
   fetchPage(page: any[], callback: Action<Object[]>, faultCallback: Action<any>) {
-    console.log('[CompanySearch] fetchPage called, page=', page);
     const items = page.map((item: any) => ({
       id: item.id || item,
       office: item.office || undefined
     }));
 
     toPreview(items).then(results => {
-      console.log('[CompanySearch] toPreview results=', results);
       if (this.searchParams?.searchNear && results) {
         results.forEach((r: any, i: number) => {
           const ref = page[i];
@@ -138,15 +133,11 @@ export class CompanySearch extends LitElement implements IViewAdapter {
   }
 
   firstUpdated() {
-    console.log('[CompanySearch] firstUpdated, categoryId=', this.categoryId, 'searchQuery=', this.searchQuery);
-    console.log('[CompanySearch] filterAvail el=', this.shadowRoot?.querySelector('list-filter-available'));
-    console.log('[CompanySearch] filterApplied el=', this.shadowRoot?.querySelector('list-filter-applied'));
     // Now that the shadow DOM is rendered, we can initialize the ViewModel 
     // so it can find 'list-header', 'list-filter-available', etc.
     this.viewModel.initialize({
       listView: this as any
     });
-    console.log('[CompanySearch] after initialize, _filterApplied=', (this.viewModel as any)._filterApplied);
     
     // Trigger the initial search now that filters are wired up
     if (this.categoryId || this.searchQuery) {
@@ -181,8 +172,6 @@ export class CompanySearch extends LitElement implements IViewAdapter {
     if (changedProperties.has('searchQuery') || changedProperties.has('categoryId') || 
         changedProperties.has('locationId') || changedProperties.has('searchNear') || 
         changedProperties.has('transactionType')) {
-        
-      console.log('[CompanySearch] willUpdate', this.categoryId, this.searchQuery);
       if (!this.categoryId && !this.searchQuery) {
         this._errorText = "Invalid Search: Please provide either a category or a search query to continue.";
         return;
@@ -291,3 +280,4 @@ export class CompanySearch extends LitElement implements IViewAdapter {
 if (!customElements.get('company-search')) {
   customElements.define('company-search', CompanySearch);
 }
+

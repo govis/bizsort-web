@@ -1,5 +1,7 @@
+import type { Geocoder } from '../model/foundation';
+
 export interface Location {
-  address: string;
+  address: Geocoder.Address | string;
   geoLocation?: {
     lat: number;
     lng: number;
@@ -133,4 +135,8 @@ export interface SearchItem {
   id: number;
   office?: number;
   distance?: number;
+}
+
+export function getHeadOffice(company: Company): Office | undefined {
+    return company?.headOffice || (company?.offices?.length ? company.offices[0] : undefined);
 }

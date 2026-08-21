@@ -155,7 +155,7 @@ export class CompanyOffering extends LitElement {
     }
   `;
 
-  render() { console.log("Render called! Company:", this.company, "Offering:", this.offering);
+  render() {
     if (!this.company || !this.offering) {
       return html`
         <company-header-layout tab="offering">

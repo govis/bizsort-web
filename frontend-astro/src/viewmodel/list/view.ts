@@ -238,7 +238,6 @@ export class Pager {
     }
     set pageSize(pageSize: number) {
         if (this._pageSize != pageSize) {
-            console.log(`[Pager] pageSize setter triggered. Changing from ${this._pageSize} to ${pageSize}`);
             this._pageSize = pageSize;
             this.notifyProperty(['pageSize']);
             this._populatePage(0, {
@@ -319,11 +318,9 @@ export class Pager {
     }
 
     _populatePage(pageIndex: number, options: notifyPageOptions) {
-        console.log(`[Pager] _populatePage called with pageIndex: ${pageIndex}. Current buffer length: ${this._buffer ? this._buffer.length : 0}`);
         if (this._buffer && this._buffer.length > 0 && pageIndex >= 0) {
             var startIndex = pageIndex * this.pageSize;
             var page = this._buffer.slice(startIndex, startIndex + this.pageSize);
-            console.log(`[Pager] Slicing buffer from ${startIndex} to ${startIndex + this.pageSize}. Yielded ${page.length} lightweight IDs.`);
 
             if (!options.addItems) {
                 this.fromRecord = startIndex + 1;
@@ -651,4 +648,5 @@ export abstract class Searchview extends View {
         }
     }
 }
+
 

@@ -32,8 +32,40 @@ export class SearchCategoryMenu extends LitElement {
 
   private _handleAction(e: Event, type: 'in' | 'near') {
     e.preventDefault();
-    // In a real implementation, this would trigger Next.js routing with the search token
-    console.log(`Searching category ${this.category?.name} ${type} location`);
+    
+    if (this.category && this.location) {
+      const searchParams = new URLSearchParams();
+      searchParams.append('categoryId', this.category.id.toString());
+      
+      if (type === 'near' && this.location.geoLocation) {
+        let city = '';
+        let postalCode = null;
+        if (this.location.address) {
+          if (typeof this.location.address === 'string') {
+            city = this.location.address.split(',')[0];
+            const match = this.location.address.match(/[A-Z]\d[A-Z] \d[A-Z]\d/i);
+            postalCode = match ? match[0] : null;
+          } else {
+            city = (this.location.address as any).city || '';
+            postalCode = (this.location.address as any).postalCode || null;
+          }
+        }
+        
+        searchParams.append('searchNear', JSON.stringify({
+          text: postalCode || city,
+          lat: this.location.geoLocation.lat,
+          lng: this.location.geoLocation.lng
+        }));
+      } else {
+        searchParams.append('locationId', (this.location as any).id?.toString());
+      }
+      
+      this.dispatchEvent(new CustomEvent('app-navigate', { 
+        detail: { path: '/companies?' + searchParams.toString() }, 
+        bubbles: true, 
+        composed: true 
+      }));
+    }
     
     // Close dropdown
     const dropdown = this.shadowRoot?.querySelector('wa-dropdown');

@@ -8,10 +8,7 @@ export interface AddressOptions {
     address1?: boolean;
 }
 
-const LocationSettings = {
-    address1Threshold: 10,
-    country: { id: 1, name: 'Canada' } // Mocked for now, can be wired to actual settings later
-};
+import { Location as LocationSettings } from '../settings.js';
 
 export function stringify(address: Geocoder.Address | string | undefined, options: AddressOptions = {}): string {
     if (!address) return '';
@@ -186,7 +183,8 @@ export function Parse(gData: any) {
 const numbers = "0123456789";
 
 //https://developers.google.com/maps/documentation/geocoding/
-export function geocode(textLocation: string | Geocoder.Geolocation, callback: Function, faultCallback?: Function) {
+export function geocode(textLocation: string | Geocoder.Geolocation): Promise<any> {
+    return new Promise((resolve, reject) => {
     var request: any = {};
     var dashIdx: number = -1, address1: string | undefined;
     if (typeof textLocation === 'string') {
@@ -256,11 +254,12 @@ export function geocode(textLocation: string | Geocoder.Geolocation, callback: F
                         geocoded.address.address1 = address1;
                 }
 
-                callback(geocoded);
+                resolve(geocoded);
             }
-            else if (faultCallback) {
-                faultCallback(status);
+            else {
+                reject(new Error(status));
             }
         });
     }
+    });
 }

@@ -4,7 +4,7 @@ import { ListViewModel, ViewType, ItemOption } from '../../viewmodel/list/listvi
 import type { IViewAdapter } from '../../viewmodel';
 
 import './card';
-// Note: company-listitem component to be ported or mapped to a horizontal card
+import './listitem';
 
 export class CompanyListView extends LitElement implements IViewAdapter {
     @property({ type: Boolean, attribute: 'list' })
@@ -91,21 +91,21 @@ export class CompanyListView extends LitElement implements IViewAdapter {
             }
         }
 
-        company-card {
+        company-card, company-listitem {
             animation: list-enter 500ms cubic-bezier(0.4, 0, 0.2, 1) both;
         }
 
         /* 10-item cascade to mimic legacy JS index * delay without massive infinite wait times */
-        company-card:nth-child(10n + 1) { animation-delay: 0ms; }
-        company-card:nth-child(10n + 2) { animation-delay: 60ms; }
-        company-card:nth-child(10n + 3) { animation-delay: 120ms; }
-        company-card:nth-child(10n + 4) { animation-delay: 180ms; }
-        company-card:nth-child(10n + 5) { animation-delay: 240ms; }
-        company-card:nth-child(10n + 6) { animation-delay: 300ms; }
-        company-card:nth-child(10n + 7) { animation-delay: 360ms; }
-        company-card:nth-child(10n + 8) { animation-delay: 420ms; }
-        company-card:nth-child(10n + 9) { animation-delay: 480ms; }
-        company-card:nth-child(10n + 10) { animation-delay: 540ms; }
+        company-card:nth-child(10n + 1), company-listitem:nth-child(10n + 1) { animation-delay: 0ms; }
+        company-card:nth-child(10n + 2), company-listitem:nth-child(10n + 2) { animation-delay: 60ms; }
+        company-card:nth-child(10n + 3), company-listitem:nth-child(10n + 3) { animation-delay: 120ms; }
+        company-card:nth-child(10n + 4), company-listitem:nth-child(10n + 4) { animation-delay: 180ms; }
+        company-card:nth-child(10n + 5), company-listitem:nth-child(10n + 5) { animation-delay: 240ms; }
+        company-card:nth-child(10n + 6), company-listitem:nth-child(10n + 6) { animation-delay: 300ms; }
+        company-card:nth-child(10n + 7), company-listitem:nth-child(10n + 7) { animation-delay: 360ms; }
+        company-card:nth-child(10n + 8), company-listitem:nth-child(10n + 8) { animation-delay: 420ms; }
+        company-card:nth-child(10n + 9), company-listitem:nth-child(10n + 9) { animation-delay: 480ms; }
+        company-card:nth-child(10n + 10), company-listitem:nth-child(10n + 10) { animation-delay: 540ms; }
     `;
 
     private _handleCompanySelect(e: CustomEvent<{ id: number; name: string }>) {
@@ -133,13 +133,11 @@ export class CompanyListView extends LitElement implements IViewAdapter {
             ` : html`
                 <div class="list-view">
                     ${this._items.map(item => html`
-                        <!-- Temporary fallback to card until company-listitem is fully ported -->
-                        <company-card 
+                        <company-listitem 
                             .model=${item} 
                             .itemOptions=${this._displayOptions}
-                            layout="horizontal"
                             @company-select=${this._handleCompanySelect}
-                        ></company-card>
+                        ></company-listitem>
                     `)}
                 </div>
             `}
@@ -150,3 +148,4 @@ export class CompanyListView extends LitElement implements IViewAdapter {
 if (!customElements.get('company-listview')) {
     customElements.define('company-listview', CompanyListView);
 }
+

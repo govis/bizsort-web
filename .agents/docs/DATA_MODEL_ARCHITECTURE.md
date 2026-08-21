@@ -102,3 +102,35 @@ During the backend modernization into `BizSrt.Api.Data.Cache.Company.CachedCompa
 - **`OfferingsView` is now computed dynamically**: Instead of being stored explicitly as an attribute, the rendering strategy (e.g., `Multioffering`, `OfferingList`, `Marketplace`, or `NoOfferings`) is evaluated at runtime in methods like `ToPreview()` and `CompanyProfileService.ViewAsync()`.
 - **The Computation Logic**: The modernized backend calculates the view by checking if `MultiOffering` exists. Crucially, `MultiOffering` is strictly evaluated to match the legacy `GetMultiProduct` constraint: it only returns rich text if the company has **exactly one** listed offering and its `Type` is `0` (`Multioffering`). If absent, it checks the `Options.Offerings_Marketplace` bitwise flag. Finally, it falls back to a standard `OfferingList`, unless `Offerings.Length == 0`, in which case it securely forces `NoOfferings`.
 - **Frontend Fallbacks**: Because granular overrides like `Label` or `HideOfferings` were dropped during this flattening, the Astro/Lit frontend components (`<company-profile>`) are now responsible for rendering sensible default labels (e.g., `'What we Do'`) via conditional fallback logic (`this.company.offerings.label || 'What we Do'`).
+
+## 5. Dual-Purpose Utility Strategy (Static + Instance Proxies)
+
+As we modernize the frontend, a core conflict arises between the **Public Astro UI** (which fetches plain JSON interfaces over the network) and the upcoming **Admin UI** (which utilizes rich class deserialization to manage complex state).
+
+If we strip all methods out of our models (Option 1 above), the Admin UI will have to be completely rewritten to avoid using member functions like ddress.equalsTo(other). If we strictly enforce Option 2, we bloat the public UI.
+
+### The Solution: Static Core + Instance Proxy
+We adopted a hybrid pattern that satisfies both architectures with zero code duplication:
+1. **The Core Logic is Static:** We extract the actual method logic into a static function on the class (or a standalone exported utility function). 
+2. **The Public UI calls the Static Function:** The Astro/Lit UI imports the class simply to use its static method as a pure function, passing the raw JSON object as an argument: Address.equalsTo(jsonAddress1, jsonAddress2).
+3. **The Instance Method Proxies the Static Function:** The class retains its member function signature, but the body simply proxies the static method: equalsTo(other) { return Address.equalsTo(this, other); }.
+
+**Example:**
+``typescript
+export class Address {
+    country: string;
+    city: string;
+
+    // 1. Static utility for Public UI (pure JSON objects)
+    static equalsTo(a1: Address | any, a2: Address | any): boolean {
+        if (!a1 || !a2) return false;
+        return a1.country === a2.country && a1.city === a2.city;
+    }
+
+    // 2. Instance proxy for Admin UI (rich deserialized objects)
+    equalsTo(other: Address): boolean {
+        return Address.equalsTo(this, other);
+    }
+}
+``
+This guarantees that the logic is defined exactly once, while allowing the Public UI to execute it without instantiation overhead, and the Admin UI to safely execute it on deserialized models seamlessly.

@@ -1,6 +1,6 @@
 // @ts-nocheck
 import type { EntityId, IdName, ILocation, ImageType, Geocoder, List, LocationRef, LocationType, ResolvedLocation, Semantic, ServiceProvider } from './model/foundation.js'
-import { Image as ImageSettings, Service as ServiceSettings } from './settings.js'
+import { Image as ImageSettings, ApiConfig as ServiceSettings } from './settings.js'
 import { SessionException, SessionExceptionType } from './exception.js'
 
 export type { EntityId, IdName, ILocation, ImageType, Geocoder, List, LocationRef, LocationType, ResolvedLocation, Semantic, ServiceProvider }
@@ -108,9 +108,15 @@ export interface IImage {
 }
 
 export class Image {
-    static getImageRef(entity: ImageEntity, id: number, size: ImageSize = ImageSettings.thumbnail) {
-        //https://github.com/PolymerElements/iron-image/pull/117
-        return ServiceSettings.origin + '/image/get?entity=' + entity + '&id=' + id + '&width=' + size.width + (size.height ? '&height=' + size.height : '');
+    static getImageUrl(entity: number, imageId: number | undefined, width: number = 200, height?: number) {
+        if (!imageId) return '/images/bizsort-logo.svg';
+
+        let url = `${ServiceSettings.baseUrl}/api/image/get?entity=${entity}&id=${imageId}&width=${width}`;
+
+        if (height !== undefined) {
+            url += `&height=${height}`;
+        }
+        return url;
     }
 
     constructor(public entity: ImageEntity, object?: Image) {
@@ -126,12 +132,12 @@ export class Image {
     get imageRef(): string {
         if (this.hasImage) {
             if (this.imageId)
-                return Image.getImageRef(this.entity, this.imageId, this.imageSize);
+                return Image.getImageUrl(this.entity, this.imageId, this.imageSize?.width || 200, this.imageSize?.height);
             else
-                return '/images/bizsort-logo.svg'; //throw "ImageId is required";
+                return '/images/bizsort-logo.svg';
         }
         else
-            return Image.getImageRef(this.entity, 0, this.imageSize);
+            return Image.getImageUrl(this.entity, 0, this.imageSize?.width || 200, this.imageSize?.height);
     }
 }
 
@@ -197,33 +203,7 @@ export namespace ImageSize {
     }
 }
 
-export class WebAppImage {
-    static getImageRef(app: string, alias: string, size: WebAppImage.Size) {
-        //https://github.com/PolymerElements/iron-image/pull/117
-        return ServiceSettings.origin + '/image/get_App?app=' + app + '&alias=' + alias + '&size=' + size;
-    }
 
-    constructor(public app: string, public alias: string, public size: WebAppImage.Size, object?: WebAppImage) {
-        if (object)
-            Object.assign(this, object);
-    }
-
-    type: string;
-    token?: string;
-
-    get imageRef(): string {
-        if (this.alias && this.size)
-            return WebAppImage.getImageRef(this.app, this.alias, this.size);
-        return '/images/bizsort-logo.svg';
-    }
-}
-
-export namespace WebAppImage {
-    export enum Size {
-        Icon_512 = 1,
-        Icon_192 = 2
-    }
-}
 
 export enum PendingStatus {
     EmailConfirmation = 1,
@@ -231,56 +211,7 @@ export enum PendingStatus {
     StaffReview = 4
 }
 
-export class OfferingStats {
-    Total: number;
-    TotalQuota: number;
-    Active: number;
-    ActiveQuota: number;
-    Pending: number;
-    PendingQuota: number;
-    Inactive: number;
-    constructor(totalQuota: number, activeQuota: number, pendingQuota: number) {
-        this.Total = 0;
-        this.TotalQuota = totalQuota;
-        this.Active = 0;
-        this.ActiveQuota = activeQuota;
-        this.Pending = 0;
-        this.PendingQuota = pendingQuota;
-        this.Inactive = 0;
-    }
-    CanList() {
-        return (this.Total < this.TotalQuota && this.Active < this.ActiveQuota && this.Pending < this.PendingQuota ? true : false);
-    }
-    Refresh(count) {
-        this.Pending = count.Pending;
-        this.Active = count.Active;
-        this.Inactive = count.Inactive;
-        this.Total = count.Total;
-    }
-    Test() {
-        var quota = -1;
-        var quotaType;
-        if (this.Total >= this.TotalQuota) {
-            quota = this.TotalQuota;
-            quotaType = "Total";
-        }
-        else if (this.Active >= this.ActiveQuota) {
-            quota = this.ActiveQuota;
-            quotaType = "Active";
-        }
-        else if (this.Pending >= this.PendingQuota) {
-            quota = this.PendingQuota;
-            quotaType = "Pending";
-        }
-        if (quota >= 0) {
-            throw new SessionException(SessionExceptionType.QuotaExceeded, (ex) => {
-                ex["Quota"] = quota;
-                if (quotaType)
-                    ex["QuotaType"] = quotaType;
-            });
-        }
-    }
-}
+
 
 export namespace OfferingType {
     export const Default = 16387;

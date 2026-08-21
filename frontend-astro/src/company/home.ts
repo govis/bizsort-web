@@ -19,7 +19,7 @@ import '../components/company/featured';
  * Legacy used: connect(store)(PageElement), Redux state for responsive width,
  * PageModel/ViewModel for SEO and search validation.
  * Modern: Standalone Lit element, responsive via CSS media queries,
- * SEO handled by Next.js metadata exports, routing by App Router.
+ * SEO handled by Astro frontmatter, routing by Astro file-based router.
  */
 export class CompanyHome extends LitElement {
   static get properties() {

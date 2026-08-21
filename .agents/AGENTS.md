@@ -37,6 +37,11 @@ This file contains structural and naming conventions that all agents must follow
 - **NEVER** launch more than one subagent in parallel.
 - If a task requires multiple subagents, you must invoke them sequentially. Wait for the first subagent to finish and report back before using \invoke_subagent\ for the next one.
 
+
+### 6. Enums and Magic Numbers
+- **No Magic Numbers:** Never hardcode "magic numbers" in the UI (e.g., `if (type === 41)`). You MUST always find, port, and use the explicit Enums from the legacy codebase.
+- **Preserve Enum Integer Mappings:** When porting enums from the legacy frontend (`legacy\website\wwwroot\src\`) or C# backend to the modern Astro frontend, you MUST preserve their exact legacy integer values (e.g., `Argument_Invalid = 41`). Do not let TypeScript auto-increment them from zero. If the integers diverge, API error parsing and JSON serialization will silently break.
+
 ## Backend Modernization Rules
 
 ### 1. API Semantics & Naming Conventions
@@ -91,3 +96,4 @@ This file contains structural and naming conventions that all agents must follow
 - **CRITICAL:** The 	oPreview API is inherently a **global** operation because it takes an array of globally-unique Entity IDs (e.g. [ {id: 123}, {id: 456} ]) and hydrates them into rich Preview models for cards.
 - Therefore, 	oPreview MUST be ported from the **Master/Global** legacy service (C:\Bizsort\legacy\server\Service\Product\Profile.cs for backend, and C:\Bizsort\legacy\website\wwwroot\src\service\product.ts for frontend).
 - Do NOT port 	oPreview from the Company-scoped services. This global 	oPreview pattern applies equally to Offerings, Projects, and Jobs.
+

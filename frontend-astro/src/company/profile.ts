@@ -3,6 +3,7 @@ import { repeat } from 'lit/directives/repeat.js';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 import { companyContext } from './context.js';
 import type { Company, Office } from '../components/types.js';
+import { getHeadOffice } from '../components/types.js';
 
 // Web Awesome components
 import '@awesome.me/webawesome/dist/components/select/select.js';
@@ -23,7 +24,6 @@ import '../components/layout/card';
 import '../components/menu/page';
 import '../components/search/category/menu';
 import '../components/map/view';
-import '../components/offering/slider';
 import '../components/company/slider';
 import '../components/community/slider';
 import { stringify } from '../service/geocoder';
@@ -49,19 +49,15 @@ export class CompanyProfile extends LitElement {
     this.activeTab = 'about';
   }
 
-  willUpdate(changedProperties: Map<string | number | symbol, unknown>) {
-    if (changedProperties.has('company') && this.company) {
-      this._selectedOffice = this.company.headOffice || this.company.offices?.[0];
-    }
-  }
+
 
   private _handleOfficeChange(e: Event) {
     const officeId = (e.target as HTMLSelectElement).value;
-    this._selectedOffice = this.company?.offices.find(o => o.id.toString() === officeId);
+    this._selectedOffice = this.company?.offices?.find(o => o.id.toString() === officeId);
   }
 
   private _officeName(office: Office, index: number) {
-    if (office.id === this.company?.headOffice?.id || index === 0) return "Head Office";
+    if (office.id === getHeadOffice(this.company!)?.id) return "Head Office";
     return office.name || "Office";
   }
 
@@ -243,17 +239,21 @@ export class CompanyProfile extends LitElement {
     }
   `;
 
-  render() {
-    if (!this.company) return html`<div style="max-width:1000px; margin: 2rem auto;">Company not found.</div>`;
-
-    const hasMultipleOffices = this.company.offices && this.company.offices.length > 1;
-
-    // Map activeTab from URL query params (default to about)
+  willUpdate(changedProperties: Map<string | number | symbol, unknown>) {
+    if (changedProperties.has('company') && this.company) {
+      this._selectedOffice = getHeadOffice(this.company);
+    }
     const url = new URL(window.location.href);
     const tabFromUrl = url.searchParams.get('tab');
     if (tabFromUrl && tabFromUrl !== this.activeTab) {
       this.activeTab = tabFromUrl;
     }
+  }
+
+  render() {
+    if (!this.company) return html`<div style="max-width:1000px; margin: 2rem auto;">Company not found.</div>`;
+
+    const hasMultipleOffices = this.company.offices && this.company.offices.length > 1;
 
     return html`
       <company-header-layout .company="${this.company}" @tab-change="${this._handleTabChange}">
@@ -390,7 +390,7 @@ export class CompanyProfile extends LitElement {
                 marginwidth="0">
               </iframe>
               <div class="map-click-overlay" @click="${() => {
-                const map = this.shadowRoot?.getElementById('mapView') as any;
+                const map = this.shadowRoot?.querySelector('#mapView') as any;
                 if (map) map.open(this.company?.offices);
               }}" title="View Full Map"></div>
             ` : html`

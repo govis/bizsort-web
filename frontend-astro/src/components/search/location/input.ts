@@ -13,6 +13,7 @@ import '@awesome.me/webawesome/dist/components/icon/icon.js';
 import '@awesome.me/webawesome/dist/components/popup/popup.js';
 import type WaInput from '@awesome.me/webawesome/dist/components/input/input.js';
 import { Input as LocationInputViewModel } from '../../../viewmodel/search/location/input';
+import { ApiConfig } from '../../../settings.js';
 import type { IViewAdapter } from '../../../viewmodel';
 
 import '../../group/autocomplete';
@@ -168,7 +169,7 @@ export class SearchLocationInput extends LitElement implements IViewAdapter {
 
 
     private async initGooglePlaces() {
-        const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+        const apiKey = ApiConfig.google.mapsApiKey;
         if (!apiKey) return;
 
         try {

@@ -11,7 +11,6 @@ const offeringId = parseInt(id as string, 10);
 const companyId = parseInt(companyIdStr as string, 10);
 
 // We bypass SSL for the local .NET backend during SSR
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 // 1. Fetch data on the server using the unified service helper!
 let offering: any = null;
@@ -33,8 +32,8 @@ const title = offering?.title
 const description = offering?.text || undefined;
 
 // 3. Serialize the complex object into a string for the HTML attribute
-const offeringJson = JSON.stringify(offering || {});
-const companyJson = JSON.stringify(company || {});
+const offeringJson = JSON.stringify(offering || null);
+const companyJson = JSON.stringify(company || null);
 ---
 
 <Layout title={title} description={description}>
@@ -48,3 +47,4 @@ const companyJson = JSON.stringify(company || {});
     import '../../../../company/offering.ts';
   </script>
 </Layout>
+

@@ -5,13 +5,6 @@ import { ErrorMessageType } from './exception'
 export type { Action }
 export { Event, ErrorMessageType }
 
-export enum ElementType {
-    HostElement = 1,
-    ChildElement = 2,
-    ErrorContainer = 3,
-    ChildElement_Selector = 4
-}
-
 export interface IViewAdapter {
     host?: any;
     modelUpdated(props: string[]): void;

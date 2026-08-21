@@ -2227,7 +2227,7 @@
 | [ ] | â†³ `class Search_Job` | - | - |
 | [ ] | â†³ `class Search_Product` | - | - |
 | [ ] | â†³ `class Search_Project` | - | - |
-| [ ] | â†³ `class SecurityProfile` | - | - |
+| [x] | ↳ `class SecurityProfile` | `BizSrt.Model.Session.SecurityProfile` | Ported. Fixed legacy Product terminology. |
 | [ ] | â†³ `class SecurityProfilePriviledge` | - | - |
 | [ ] | â†³ `class ServiceType` | - | - |
 | [ ] | â†³ `class Session` | - | - |
@@ -3083,7 +3083,7 @@
 | [ ] | â†³ `class ResolvedLocation` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Clone()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `ToString()` | | |
-| [ ] | â†³ `class SecurityProfile` | - | - |
+| [x] | ↳ `class SecurityProfile` | `BizSrt.Model.Session.SecurityProfile` | Ported. Fixed legacy Product terminology. |
 | [ ] | â†³ `class ServiceType` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Convert()` | | |
 | [ ] | â†³ `class Street` | - | - |
@@ -3397,7 +3397,7 @@
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `ShouldSerializeName()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `ShouldSerializeProductStats()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `ShouldSerializeSecurityProfile()` | | |
-| [ ] | â†³ `class SecurityProfile` | - | - |
+| [x] | ↳ `class SecurityProfile` | `BizSrt.Model.Session.SecurityProfile` | Ported. Fixed legacy Product terminology. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `CanPost()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Enter()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Exit()` | | |
@@ -3820,3 +3820,4 @@
 | [ ] | â†³ `class Service.Data` | - | - |
 | [ ] | â†³ `class Service.Engine` | - | - |
 | [ ] | â†³ `class Service.Process` | - | - |
+

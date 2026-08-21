@@ -45,17 +45,21 @@ export namespace Geocoder {
                 Object.assign(this, object);
         }
 
-        equalsTo(address: Address): boolean {
-            if (!address ||
-                this.country != address.country ||
+        static equalsTo(a1: Address | any, a2: Address | any): boolean {
+            if (!a1 || !a2 ||
+                a1.country != a2.country ||
                 //Geocoder does not seem to populate State for UK address
-                (this.state != address.state && this.state && !this.county) ||
-                this.county != address.county ||
-                this.city != address.city ||
-                this.streetName != address.streetName)
+                (a1.state != a2.state && a1.state && !a1.county) ||
+                a1.county != a2.county ||
+                a1.city != a2.city ||
+                a1.streetName != a2.streetName)
                 return false;
             else
                 return true;
+        }
+
+        equalsTo(address: Address): boolean {
+            return Address.equalsTo(this, address);
         }
     }
 
@@ -162,19 +166,14 @@ export namespace List {
     }
 
     export interface SliceInput {
-        Index: number;
-        Length: number;
+        index: number;
+        length: number;
     }
 
     export interface DirectorySliceInput extends SliceInput {
-        Category: number;
-        Location: number;
-        Skip: number[];
-    }
-
-    export interface SliceOutput {
-        Series: number[];
-        Index: number;
+        category: number;
+        location: number;
+        skip?: number[];
     }
 }
 
@@ -322,29 +321,80 @@ export class ResolvedLocation implements ILocation {
         }
     }
 
-    get county(): LocationRef {
-        return this.get(LocationType.County);
+    static getCounty(location: ILocation | any): LocationRef | null {
+        return ResolvedLocation.getLocation(location, LocationType.County);
     }
 
-    get city(): LocationRef {
-        return this.get(LocationType.City);
+    static getCity(location: ILocation | any): LocationRef | null {
+        return ResolvedLocation.getLocation(location, LocationType.City);
     }
 
-    get(locationType) {
-        var location: ILocation = this;
-        while (location) {
-            if (location.type === locationType)
+    static getLocation(location: ILocation | any, locationType: LocationType): LocationRef | null {
+        var loc: ILocation = location;
+        while (loc) {
+            if (loc.type === locationType)
                 break;
-            else if (location.type > locationType)
-                location = location.parent;
+            else if (loc.type > locationType)
+                loc = loc.parent;
             else
-                location = null;
+                loc = null as any;
         }
-        return location;
+        return loc;
+    }
+
+    get county(): LocationRef | null {
+        return ResolvedLocation.getCounty(this);
+    }
+
+    get city(): LocationRef | null {
+        return ResolvedLocation.getCity(this);
+    }
+
+    get(locationType: LocationType): LocationRef | null {
+        return ResolvedLocation.getLocation(this, locationType);
     }
 }
 
 export namespace Semantic {
+    export class QueryInput {
+        searchQuery?: string;
+        startIndex: number;
+        exclude?: boolean;
+        inclFacets?: FacetFilter;
+        exclFacets?: FacetFilter;
+
+        constructor(facets?: Facet[], public length: number = 0) {
+            this.startIndex = 0;
+            if (facets && facets.length > 0) {
+                facets = facets.slice();
+                var sorted = facets.sort((f1, f2) => f1.name - f2.name);
+                this.inclFacets = QueryInput.facetFilter(sorted, false);
+                this.exclFacets = QueryInput.facetFilter(sorted, true);
+            } else {
+                this.inclFacets = QueryInput.facetFilter();
+                this.exclFacets = QueryInput.facetFilter();
+            }
+        }
+
+        static facetFilter(facets?: Facet[], excluded?: boolean): FacetFilter {
+            if (facets && facets.length > 0) {
+                var filters = facets.filter(f => (f.exclude || false) == excluded);
+                if (filters.length > 0) {
+                    return {
+                        noFilters: filters.length,
+                        filterNames: filters.map(f => f.name),
+                        filterValues: filters.map(f => f.value)
+                    };
+                }
+            }
+            return { noFilters: 0 };
+        }
+        
+        facetFilter(facets?: Facet[], excluded?: boolean): FacetFilter {
+            return QueryInput.facetFilter(facets, excluded);
+        }
+    }
+
     export namespace Facet {
         export function deserialize(facets: FacetName[]) {
             if (facets && facets.length > 0)

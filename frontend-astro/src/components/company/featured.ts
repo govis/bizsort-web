@@ -83,7 +83,7 @@ export class CompanyFeatured extends LitElement {
   }
 
   private _handleCompanySelect(e: CustomEvent<{ id: number; name: string }>) {
-    // Navigate to company profile via Next.js routing
+    // Navigate to company profile via global navigation router
     Company.profileView(e.detail.id);
   }
 
