@@ -25,48 +25,45 @@ namespace BizSrt.Api.Data.Cache.Featured
 
             if (key.Item1 > 0)
             {
-                var catIds = dbContext.Categories_Unwound.Where(cu => cu.Parent == key.Item1).Select(cu => cu.Child).ToList();
-                catIds.Add(key.Item1);
-
                 cq = from c in cq
-                     where catIds.Contains(c.Category)
+                     where c.Category == key.Item1 || dbContext.Categories_Unwound.Any(cu => cu.Parent == key.Item1 && cu.Child == c.Category)
                      select c;
             }
 
             if (key.Item2 > 0)
             {
-                var locIds = dbContext.Locations_Unwound.Where(lu => lu.Parent == key.Item2).Select(lu => lu.Child).ToList();
-                locIds.Add(key.Item2);
-
-                var companyIdsInLocation = dbContext.CompanyOffices.Where(co => locIds.Contains(co.Location)).Select(co => co.Company).Distinct();
+                var locIds = BizSrt.Api.Data.Cache.LegacyCache.LocationSearch.GetPath(key.Item2).Select(i => i.Id).ToArray();
 
                 cq = from c in cq
-                     join id in companyIdsInLocation on c.Id equals id
+                     where dbContext.CompanyOffices
+                         .Any(co => co.Company == c.Id && locIds.Contains(co.Location))
                      select c;
             }
 
-            var allItems = (from b in cq
-                            select new { b.Id, b.Created }).ToArray();
+            // Port of legacy FeaturedCompanyCache.FetchItems:
+            // Use CROSS APPLY pattern (skill guideline #10) to let SQL Server:
+            //   1. Filter companies that have a Default_Image media entry (CROSS APPLY = no DefaultIfEmpty)
+            //   2. Sort by Created DESC and project only Id + Metadata (never fetch the blob body)
+            //   3. Bring only the top ~2000 candidates to C# for ImageSize resolution
+            // This replaces the prior two-step anti-pattern that fetched ALL matching companies
+            // into C# memory before sorting and then issued N+1 CompanyMedia queries.
+            var qt = (from b in cq
+                      from media in dbContext.CompanyMedia
+                          .Where(m => m.Company == b.Id && m.Type == (byte)BizSrt.Model.MediaType.Default_Image)
+                          .Select(m => new { m.Metadata })
+                          .Take(1)                        // CROSS APPLY (no DefaultIfEmpty) — drops companies with no media
+                      orderby b.Created descending
+                      select new { b.Id, media.Metadata })
+                     .Take(2000)                          // SQL-side cap: prevent unbounded fetch on massive tables
+                     .AsEnumerable();                     // Stream remainder of work to C#
 
-            var qt = allItems.OrderByDescending(x => x.Created).Select(x => x.Id).Take(500);
-
-            var result = new System.Collections.Generic.List<int>();
-            foreach (var id in qt)
-            {
-                var cm = dbContext.CompanyMedia
-                    .Where(m => m.Company == id && m.Type == (byte)BizSrt.Model.MediaType.Default_Image)
-                    .Select(m => m.Metadata)
-                    .FirstOrDefault();
-
-                if (cm != null && cm.Length > 0)
-                {
-                    result.Add(id);
-                    if (result.Count >= 100)
-                        break;
-                }
-            }
-
-            return result.ToArray();
+            // Resolve ImageSize from Metadata blob locally (never load the full blob via SQL)
+            // Note: Image sizing logic is not yet ported to the modern backend.
+            return qt
+                .Where(b => b.Metadata != null && b.Metadata.Length > 0)
+                .Select(b => b.Id)
+                .Take(100)
+                .ToArray();
         }
     }
 }
