@@ -26,7 +26,6 @@ builder.Services.AddScoped<BizSrt.Api.Data.Company.ICompanyService, BizSrt.Api.D
 builder.Services.AddScoped<BizSrt.Api.Data.Company.ICompanyOfferingService, BizSrt.Api.Data.Company.CompanyOfferingService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<ILocationService, LocationService>();
-// builder.Services.AddSingleton<BizSrt.Api.Data.Cache.Company.CompanyProfilesCache>();
 builder.Services.AddSingleton<IImageService, ImageService>();
 
 builder.Services.AddCors(options =>
