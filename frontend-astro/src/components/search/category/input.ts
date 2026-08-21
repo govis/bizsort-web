@@ -192,6 +192,8 @@ export class SearchCategoryInput extends LitElement implements IViewAdapter {
     protected firstUpdated() {
         this.model.initialize();
         this.requestUpdate(); // Force re-render to pass this.inputElement to group-autocomplete
+        // Notify parent that our ViewModel is ready for attachment (avoids parent querying DOM)
+        this.dispatchEvent(new CustomEvent('model-ready', { bubbles: true, composed: true }));
     }
 
     updated(changedProperties: Map<string, any>) {

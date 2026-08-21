@@ -103,29 +103,25 @@ export class SearchHome extends LitElement implements IViewAdapter {
   }
 
   firstUpdated() {
-    const category = this.shadowRoot?.querySelector('search-category-input') as SearchCategoryInput;
-    const location = this.shadowRoot?.querySelector('search-location-input') as SearchLocationInput;
-    if (category && location) {
-      this.model.attachInputs(category.model, location.model);
-    }
+    // Listen for children to announce their ViewModels are ready.
+    // This avoids fragile shadowRoot.querySelector() calls that can race or break encapsulation.
+    this.shadowRoot?.addEventListener('model-ready', () => {
+      const category = this.shadowRoot?.querySelector('search-category-input') as SearchCategoryInput | null;
+      const location = this.shadowRoot?.querySelector('search-location-input') as SearchLocationInput | null;
+      if (category?.model && location?.model && (!this.model['_category'] || !this.model['_location'])) {
+        this.model.attachInputs(category.model, location.model);
+      }
+    });
   }
 
   private _onTabSelect(e: CustomEvent<{ name: string }>) {
     const targetTab = e.detail.name;
     if (targetTab === this.tab) return;
     
-    // Flush current inputs to model selection before navigating (bypass 300ms debouncer!)
+    // Flush current inputs to model selection before navigating.
+    // The child ViewModels (_category, _location) already maintain live text state
+    // via their own input event handlers — no need to reach into the DOM.
     if (this.model) {
-      const catInput = this.shadowRoot?.querySelector('search-category-input') as any;
-      if (catInput?.inputElement) {
-        catInput.model.text = catInput.inputElement.value;
-      }
-
-      const locInput = this.shadowRoot?.querySelector('search-location-input') as any;
-      if (locInput?.inputElement) {
-        locInput.model.text = locInput.inputElement.value;
-      }
-
       this.model.reflectSelection();
     }
     
@@ -371,11 +367,7 @@ export class SearchHome extends LitElement implements IViewAdapter {
               is-icon-button
               pill
               class="geo-action"
-              @click="${() => {
-                this._geoMode = !this._geoMode;
-                const locInput = this.shadowRoot?.querySelector('search-location-input') as any;
-                if (locInput) locInput.geoMode = this._geoMode;
-              }}"
+              @click="${() => { this._geoMode = !this._geoMode; }}"
             >
               <wa-icon library="bizsrt" name="${this._geoMode ? 'place' : 'location-off'}"></wa-icon>
             </wa-button>

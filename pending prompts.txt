@@ -8,6 +8,10 @@ can you make sure notes are up to date
 /resume 1ad51775-7022-4a39-a138-65c42d5b2612
 check how IndexCompanyAsync in backend\Process\Company.cs creates "Category" facets for every company, can you check the undelying table(s) and create new query variant "LINQNew" that leverages Facets for Category query instead of doing Categories_Unwound
 
+can you review the port to astro we are in the middle of (@frontend-astro\), check for its integrity overall and with the legacy codebase in ..\Bizsort\legacy\website\wwwroot, look for any dead or obsolete code, inconsistencies and inefficiencies
+  
+can you review the port we are in the middle of (@backend\), check for its integrity overall and with the legacy codebase in ..\Bizsort\legacy\server, look for any dead or obsolete code, inconsistencies and inefficiencies
+
 can you double check these newly added code members for any deviations from legacy code base
 The backend build is now completely fixed and passing!
 

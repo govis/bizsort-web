@@ -164,6 +164,8 @@ export class SearchLocationInput extends LitElement implements IViewAdapter {
             this.initGooglePlaces();
         }
         this.requestUpdate();
+        // Notify parent that our ViewModel is ready for attachment (avoids parent querying DOM)
+        this.dispatchEvent(new CustomEvent('model-ready', { bubbles: true, composed: true }));
     }
 
 
