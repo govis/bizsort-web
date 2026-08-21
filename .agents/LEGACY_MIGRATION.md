@@ -31,7 +31,7 @@ The legacy codebase is split into two primary areas:
 
 ## Modernization Principles
 
-👉 **All database, EF Core, and LINQ optimization guidelines have been consolidated into [LINQ_MODERNIZATION.md](file:///C:/Bizsort/bizsort-web/database/LINQ_MODERNIZATION.md).**
+ðŸ‘‰ **All database, EF Core, and LINQ optimization guidelines have been consolidated into [LINQ_MODERNIZATION.md](file:///C:/Bizsort/bizsort-web/database/LINQ_MODERNIZATION.md).**
 
 1. **Strict API Parity:** You must not invent new REST schemas. Your ported .NET Endpoints must exactly match what the legacy TypeScript `src/service/` layers expect.
 2. **Schema Name Remapping (Business -> Company):** During modernization, all instances of `Business` in the database schema and object models have been renamed to `Company` (e.g., `Businesses` table became `CompanyProfiles`, `BusinessOffices` became `CompanyOffices`, and LINQ variables `bi` -> `cm`, `bo` -> `co`). All database indexes have also been renamed to use the `Company*` prefix.
@@ -76,12 +76,12 @@ The legacy codebase is split into two primary areas:
    1. Replaced `.Distinct()` and `join` for `CompanyOffices` with a native `coq.Any(co => co.Company == c.Id)`. EF Core 10 translates `.Distinct()` on entities by fetching *all* columns just to check uniqueness.
    2. Added a SQL `IX_CompanyProfiles_Created` index and appended `.Take(500)` to the LINQ query. The complex `EXISTS` conditions in `getFeatured` forced SQL Server to bypass the index and scan/sort the entire 30,000+ row table on cold cache (7 seconds). Enforcing `.Take(500)` in LINQ biases the query optimizer to scan the index instead.
 - [x] **`CachedCompanyProfile` model:** Ported to `backend/Data/Cache/Company/Profile.cs` (inner class). Properties match legacy: `Id`, `Name`, `Email`, `WebSite`, `Text`, `Category`, `ServiceType`, `TransactionType`, `Options`, `ImageId`, `ImageSize`, `Offices`, `Products`, `MultiProduct`.
-- [x] **`CompanyProfileService`:** Ported to `backend/Service/Company/Profile.cs`. Implements `GetFeaturedAsync` (with default `Location=1` / Canada fix) and `ToPreviewAsync`. Uses `LegacyCache.FeaturedCompanies` and `LegacyCache.CompanyProfiles` — does NOT hit DB directly.
+- [x] **`CompanyProfileService`:** Ported to `backend/Service/Company/Profile.cs`. Implements `GetFeaturedAsync` (with default `Location=1` / Canada fix) and `ToPreviewAsync`. Uses `LegacyCache.FeaturedCompanies` and `LegacyCache.CompanyProfiles` â€” does NOT hit DB directly.
 - [x] **`Company.Profile` Data Layer:** Ported to `backend/Data/Company/Profile.cs`. Contains `GetFeaturedAsync` and `ToPreviewAsync` logic matching legacy `Data.Company.Profile`.
 - [x] **`CompanyProfileEndpoints`:** Mapped in `backend/Endpoint/` to `/api/company/profile/getFeatured` and `/api/company/profile/toPreview`.
-- [x] **EF Schema fix:** `Category_Unwound` and `Location_Unwound` entities have no `Id` column — composite keys configured in `AppDbContext.cs` via `HasKey(e => new { e.Parent, e.Child })`.
+- [x] **EF Schema fix:** `Category_Unwound` and `Location_Unwound` entities have no `Id` column â€” composite keys configured in `AppDbContext.cs` via `HasKey(e => new { e.Parent, e.Child })`.
 
-### 4. Frontend — Company Pages & Components
+### 4. Frontend â€” Company Pages & Components
 
 - [x] **`company/home.ts`:** Page-level Lit element (`<company-home>`). Orchestrates `<search-home>` and `<company-featured>`, handles `search-submit` events, passes selection to featured component.
 - [x] **`components/company/featured.ts`:** New `<company-featured>` Lit element. Accepts `selection: { category, location }` property (defaults `category=0, location=1`). Re-fetches on property change via `updated()` lifecycle. Calls `getFeatured()` service helper.
@@ -141,7 +141,7 @@ The legacy codebase is split into two primary areas:
 
 ## Modernization Principles
 
-👉 **All database, EF Core, and LINQ optimization guidelines have been consolidated into [LINQ_MODERNIZATION.md](file:///C:/Bizsort/bizsort-web/database/LINQ_MODERNIZATION.md).**
+ðŸ‘‰ **All database, EF Core, and LINQ optimization guidelines have been consolidated into [LINQ_MODERNIZATION.md](file:///C:/Bizsort/bizsort-web/database/LINQ_MODERNIZATION.md).**
 
 1. **Strict API Parity:** You must not invent new REST schemas. Your ported .NET Endpoints must exactly match what the legacy TypeScript `src/service/` layers expect.
 2. **Schema Name Remapping (Business -> Company):** During modernization, all instances of `Business` in the database schema and object models have been renamed to `Company` (e.g., `Businesses` table became `CompanyProfiles`, `BusinessOffices` became `CompanyOffices`, and LINQ variables `bi` -> `cm`, `bo` -> `co`). All database indexes have also been renamed to use the `Company*` prefix.
@@ -186,12 +186,12 @@ The legacy codebase is split into two primary areas:
    1. Replaced `.Distinct()` and `join` for `CompanyOffices` with a native `coq.Any(co => co.Company == c.Id)`. EF Core 10 translates `.Distinct()` on entities by fetching *all* columns just to check uniqueness.
    2. Added a SQL `IX_CompanyProfiles_Created` index and appended `.Take(500)` to the LINQ query. The complex `EXISTS` conditions in `getFeatured` forced SQL Server to bypass the index and scan/sort the entire 30,000+ row table on cold cache (7 seconds). Enforcing `.Take(500)` in LINQ biases the query optimizer to scan the index instead.
 - [x] **`CachedCompanyProfile` model:** Ported to `backend/Data/Cache/Company/Profile.cs` (inner class). Properties match legacy: `Id`, `Name`, `Email`, `WebSite`, `Text`, `Category`, `ServiceType`, `TransactionType`, `Options`, `ImageId`, `ImageSize`, `Offices`, `Products`, `MultiProduct`.
-- [x] **`CompanyProfileService`:** Ported to `backend/Service/Company/Profile.cs`. Implements `GetFeaturedAsync` (with default `Location=1` / Canada fix) and `ToPreviewAsync`. Uses `LegacyCache.FeaturedCompanies` and `LegacyCache.CompanyProfiles` — does NOT hit DB directly.
+- [x] **`CompanyProfileService`:** Ported to `backend/Service/Company/Profile.cs`. Implements `GetFeaturedAsync` (with default `Location=1` / Canada fix) and `ToPreviewAsync`. Uses `LegacyCache.FeaturedCompanies` and `LegacyCache.CompanyProfiles` â€” does NOT hit DB directly.
 - [x] **`Company.Profile` Data Layer:** Ported to `backend/Data/Company/Profile.cs`. Contains `GetFeaturedAsync` and `ToPreviewAsync` logic matching legacy `Data.Company.Profile`.
 - [x] **`CompanyProfileEndpoints`:** Mapped in `backend/Endpoint/` to `/api/company/profile/getFeatured` and `/api/company/profile/toPreview`.
-- [x] **EF Schema fix:** `Category_Unwound` and `Location_Unwound` entities have no `Id` column — composite keys configured in `AppDbContext.cs` via `HasKey(e => new { e.Parent, e.Child })`.
+- [x] **EF Schema fix:** `Category_Unwound` and `Location_Unwound` entities have no `Id` column â€” composite keys configured in `AppDbContext.cs` via `HasKey(e => new { e.Parent, e.Child })`.
 
-### 4. Frontend — Company Pages & Components
+### 4. Frontend â€” Company Pages & Components
 
 - [x] **`company/home.ts`:** Page-level Lit element (`<company-home>`). Orchestrates `<search-home>` and `<company-featured>`, handles `search-submit` events, passes selection to featured component.
 - [x] **`components/company/featured.ts`:** New `<company-featured>` Lit element. Accepts `selection: { category, location }` property (defaults `category=0, location=1`). Re-fetches on property change via `updated()` lifecycle. Calls `getFeatured()` service helper.
@@ -225,7 +225,7 @@ The legacy codebase is split into two primary areas:
 ### Pending Tasks
 
 - [x] Port remaining company pages: `company/search.ts`, `company/profile.ts`, `company/header-layout.ts` (Refactored to use `@lit/context` Provider pattern and Native Tabs. See [COMPANY_PAGES_ARCHITECTURE.md](file:///C:/Bizsort/bizsort-web/.agents/docs/COMPANY_PAGES_ARCHITECTURE.md)).
-- [x] Fix Google Maps API Loader version incompatibility in `components/search/location/input.ts` (uses deprecated `Loader` class — must switch to functional `setOptions()`/`importLibrary()` API).
+- [x] Fix Google Maps API Loader version incompatibility in `components/search/location/input.ts` (uses deprecated `Loader` class â€” must switch to functional `setOptions()`/`importLibrary()` API).
 - [x] Port `company/products.ts` to `company/offerings.ts` as a standalone SEO-friendly SSR Astro page (Refactored to `/company/[companyId]/offerings`).
 - [x] Rebuild `PageModel(ListView)` architectural orchestration via `CompanyOfferingsViewModel` and `ListViewModel` (Ensured `modelUpdated` satisfies `IViewAdapter`).
 - [x] Resolve `Lit` property inheritance wipeout bugs for `ListSlider` state decorators.
@@ -237,12 +237,13 @@ The legacy codebase is split into two primary areas:
 
 ### 9. Backend Audit Issues (2026-08-21)
 
-Identified during backend integrity audit comparing ackend/ against legacy/server/. Items marked [!!] indicate **false claims in the tracker** � they were documented as complete but the fixes were never applied to the actual source files.
+Identified during backend integrity audit comparing ackend/ against legacy/server/. Items marked [!!] indicate **false claims in the tracker** — they were documented as complete but the fixes were never applied to the actual source files.
 
-- [ ] **[CRITICAL] FeaturedCompaniesCache � Full table scan before sort**: ackend/Data/Cache/Featured/Company.cs calls .ToArray() before .OrderByDescending().Take(500), fetching the entire CompanyProfiles table into C# heap on every cold-cache fill. Move .OrderByDescending(x => x.Created).Take(500) into the LINQ query before .ToArray() so SQL Server handles the sort+limit via the IX_CompanyProfiles_Created index. **This was documented as fixed in section 3 of this file but was never implemented.**
-- [ ] **[CRITICAL] FeaturedCompaniesCache � Location filter uses join+Distinct() instead of ANY**: ackend/Data/Cache/Featured/Company.cs:41-45 constructs a Distinct() subquery then joins to it, forcing SQL Server to SELECT all CompanyOffices columns for uniqueness checking. Replace with .Any(co => co.Company == c.Id && locIds.Contains(co.Location)) to generate a cheap SQL EXISTS. **This was documented as fixed in section 3 of this file but was never implemented.**
-- [ ] **[CRITICAL] CachedCompanyProfile � Missing ServiceType and TransactionType**: ackend/Data/Cache/Company/Profile.cs is missing ServiceType (long) and TransactionType (short) properties that exist in the legacy cache and are used to build transaction/service type facet badges on company cards. Both EF loader queries (batch and single) also need to select and map these columns.
-- [ ] **[WARNING] CachedCompanyProfile � ImageSize not mapped from Metadata**: The ImageSize property exists on the model but is never populated. Legacy code computed it via Entity.Image.ResolveSize(ImageEntity.Company, bt.ImageMetadata) using the CompanyMedia.Metadata blob. The modern loader selects only m.Id (not m.Metadata), so ImageSize always defaults to zero.
-- [ ] **[WARNING] GetInfoAsync � Direct EF DB hit bypasses CompanyProfilesCache**: ackend/Data/Company/Profile.cs (~line 632) queries dbContext.CompanyProfiles directly. Per architecture rules, the service layer must not hit the DB for cached entities. Update to resolve via LegacyCache.CompanyProfiles.
-- [ ] **[WARNING] Reference_SearchAsync � Dead reference method in Profile.cs**: ackend/Data/Company/Profile.cs contains a large Reference_SearchAsync method with no callers, kept only for historical reference. Delete it to reduce noise.
-- [ ] **[INFO] Commented-out DI registration in Program.cs:29**: A commented-out uilder.Services.AddSingleton<CompanyProfilesCache>() line should be removed.
+Identified during backend integrity audit comparing  ackend/ against legacy/server/. Items marked [!!] indicate **false claims in the tracker** — they were documented as complete but the fixes were never applied to the actual source files.
+
+- [ ] **[CRITICAL] FeaturedCompaniesCache — Full table scan before sort**:  ackend/Data/Cache/Featured/Company.cs calls .ToArray() before .OrderByDescending().Take(500), fetching the entire CompanyProfiles table into C# heap on every cold-cache fill. Move .OrderByDescending(x => x.Created).Take(500) into the LINQ query before .ToArray() so SQL Server handles the sort+limit via the IX_CompanyProfiles_Created index. **This was documented as fixed in section 3 of this file but was never implemented.**
+- [ ] **[CRITICAL] FeaturedCompaniesCache — Location filter uses join+Distinct() instead of ANY**:  ackend/Data/Cache/Featured/Company.cs:41-45 constructs a Distinct() subquery then joins to it, forcing SQL Server to SELECT all CompanyOffices columns for uniqueness checking. Replace with .Any(co => co.Company == c.Id && locIds.Contains(co.Location)) to generate a cheap SQL EXISTS. **This was documented as fixed in section 3 of this file but was never implemented.**
+- [ ] **[CRITICAL] CachedCompanyProfile — Missing ServiceType and TransactionType**:  ackend/Data/Cache/Company/Profile.cs is missing ServiceType (long) and TransactionType (short) properties that exist in the legacy cache and are used to build transaction/service type facet badges on company cards. Both EF loader queries (batch and single) also need to select and map these columns.
+- [ ] **[WARNING] CachedCompanyProfile — ImageSize not mapped from Metadata**: The ImageSize property exists on the model but is never populated. Legacy code computed it via Entity.Image.ResolveSize(ImageEntity.Company, bt.ImageMetadata) using the CompanyMedia.Metadata blob. The modern loader selects only m.Id (not m.Metadata), so ImageSize always defaults to zero.
+- [ ] **[WARNING] GetInfoAsync — Direct EF DB hit bypasses CompanyProfilesCache**:  ackend/Data/Company/Profile.cs (~line 632) queries dbContext.CompanyProfiles directly. Per architecture rules, the service layer must not hit the DB for cached entities. Update to resolve via LegacyCache.CompanyProfiles.
+- [ ] **[INFO] Commented-out DI registration in `Program.cs:29`**: A commented-out  uilder.Services.AddSingleton<CompanyProfilesCache>() line should be removed.
