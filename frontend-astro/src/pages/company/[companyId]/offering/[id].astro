@@ -37,10 +37,6 @@ const companyJson = JSON.stringify(company || null);
 ---
 
 <Layout title={title} description={description}>
-  <div style="background: #111827; color: white; padding: 1rem 2rem; text-align: center;">
-     Rendered with Astro (Zero React Wrappers)
-  </div>
-
   <company-offering company={companyJson} offering={offeringJson}></company-offering>
 
   <script>window.onerror = function(msg, url, line) { document.body.innerHTML += "<div style='color:red;font-size:20px;z-index:9999;position:relative;'>" + msg + " at " + line + "</div>"; };
