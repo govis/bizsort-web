@@ -47,6 +47,12 @@ The legacy codebase is split into two primary areas:
 
 ## Migration progress. **Please also refer to [LEGACY_BACKEND_TRACKER.md](file:///C:/Bizsort/bizsort-web/.agents/LEGACY_BACKEND_TRACKER.md) for a line-by-line backend tracking matrix and [LEGACY_FRONTEND_TRACKER.md](file:///C:/Bizsort/bizsort-web/.agents/LEGACY_FRONTEND_TRACKER.md) for the frontend tracking matrix.**
 
+### 0. Continuous Integrity Audits (2026-08-21)
+During an integrity audit comparing the modern implementation against the strict legacy standards, several critical deviations were identified and fixed. Future ports must strictly adhere to the updated port_legacy_backend skill to prevent regressions:
+- **LINQ Performance Degradation:** Scaffolded queries frequently diverged from legacy SQL semantics. Issues fixed include removing unbounded parameter-padded .Contains() clauses, replacing Cartesian Join().Distinct() products with EXISTS (.Any()) subqueries, and eliminating full-table .ToArray() loads by employing native CROSS APPLY (via .Take(1)) for Media fetches.
+- **Cache Omissions:** EF Core projections frequently dropped binary blobs (e.g. ImageMetadata) to save bandwidth, silently breaking UI size resolution. Bitwise UI flags (ServiceType, TransactionType) were also missed. All properties of a legacy cached entity must be fully hydrated.
+- **Cache Bypassing:** Developers incorrectly substituted raw EF Core queries (e.g., dbContext.CompanyProfiles.FirstOrDefaultAsync()) for direct cache resolutions (e.g., LegacyCache.CompanyProfiles[id]), eliminating the O(1) performance advantage of the architecture.
+
 ### 1. Backend Services & Data
 
 - [x] **Project Structure & Libraries:** Refactored the monolith into BizSrt.Model, BizSrt.Foundation, BizSrt.Data, BizSrt.Worker, and BizSrt.Api. Handled circular dependencies and enforced InternalsVisibleTo.
@@ -156,6 +162,12 @@ The legacy codebase is split into two primary areas:
     ```
 
 ## Migration progress. **Please also refer to [LEGACY_BACKEND_TRACKER.md](file:///C:/Bizsort/bizsort-web/.agents/LEGACY_BACKEND_TRACKER.md) for a line-by-line backend tracking matrix and [LEGACY_FRONTEND_TRACKER.md](file:///C:/Bizsort/bizsort-web/.agents/LEGACY_FRONTEND_TRACKER.md) for the frontend tracking matrix.**
+
+### 0. Continuous Integrity Audits (2026-08-21)
+During an integrity audit comparing the modern implementation against the strict legacy standards, several critical deviations were identified and fixed. Future ports must strictly adhere to the updated port_legacy_backend skill to prevent regressions:
+- **LINQ Performance Degradation:** Scaffolded queries frequently diverged from legacy SQL semantics. Issues fixed include removing unbounded parameter-padded .Contains() clauses, replacing Cartesian Join().Distinct() products with EXISTS (.Any()) subqueries, and eliminating full-table .ToArray() loads by employing native CROSS APPLY (via .Take(1)) for Media fetches.
+- **Cache Omissions:** EF Core projections frequently dropped binary blobs (e.g. ImageMetadata) to save bandwidth, silently breaking UI size resolution. Bitwise UI flags (ServiceType, TransactionType) were also missed. All properties of a legacy cached entity must be fully hydrated.
+- **Cache Bypassing:** Developers incorrectly substituted raw EF Core queries (e.g., dbContext.CompanyProfiles.FirstOrDefaultAsync()) for direct cache resolutions (e.g., LegacyCache.CompanyProfiles[id]), eliminating the O(1) performance advantage of the architecture.
 
 ### 1. Backend Services & Data
 
