@@ -58,9 +58,8 @@ namespace BizSrt.Api.Data.Cache.Featured
                      .AsEnumerable();                     // Stream remainder of work to C#
 
             // Resolve ImageSize from Metadata blob locally (never load the full blob via SQL)
-            // Note: Image sizing logic is not yet ported to the modern backend.
             return qt
-                .Where(b => b.Metadata != null && b.Metadata.Length > 0)
+                .Where(b => b.Metadata != null && b.Metadata.Length > 0 && BizSrt.Foundation.Entity.Image.ResolveSize(BizSrt.Model.ImageEntity.Company, b.Metadata) > 0)
                 .Select(b => b.Id)
                 .Take(100)
                 .ToArray();

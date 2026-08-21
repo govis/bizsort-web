@@ -209,12 +209,12 @@ public class CompanyProfilesCache : ReadManyExpirationCache<int, CachedCompanyPr
                 
                 var query = from c in dbContext.CompanyProfiles
                             where accountIds.Contains(c.Id)
-                            from biId in dbContext.CompanyMedia
+                            from media in dbContext.CompanyMedia
                                 .Where(m => m.Company == c.Id && m.Type == (byte)BizSrt.Model.MediaType.Default_Image)
-                                .Select(m => (int?)m.Id)
+                                .Select(m => new { m.Id, m.Metadata })
                                 .Take(1)
                                 .DefaultIfEmpty()
-                            select new { Profile = c, ImageId = biId ?? 0 };
+                            select new { Profile = c, Media = media };
 
                 var profiles = query.AsNoTracking().ToArray();
                 
@@ -231,7 +231,8 @@ public class CompanyProfilesCache : ReadManyExpirationCache<int, CachedCompanyPr
                         ServiceType = p.Profile.ServiceType,
                         TransactionType = p.Profile.TransactionType,
                         Options = new BizSrt.Model.Company.Option.Set { Value = (BizSrt.Model.Company.Option.Flags)p.Profile.Options },
-                        ImageId = p.ImageId
+                        ImageId = p.Media != null ? p.Media.Id : 0,
+                        ImageSize = p.Media != null ? BizSrt.Foundation.Entity.Image.ResolveSize(BizSrt.Model.ImageEntity.Company, p.Media.Metadata) : BizSrt.Model.ImageSizeType.None
                     };
                 }).ToArray();
             },
@@ -241,12 +242,12 @@ public class CompanyProfilesCache : ReadManyExpirationCache<int, CachedCompanyPr
                 
                 var profileQuery = from c in dbContext.CompanyProfiles
                                    where c.Id == accountId
-                                   from biId in dbContext.CompanyMedia
+                                   from media in dbContext.CompanyMedia
                                        .Where(m => m.Company == c.Id && m.Type == (byte)BizSrt.Model.MediaType.Default_Image)
-                                       .Select(m => (int?)m.Id)
+                                       .Select(m => new { m.Id, m.Metadata })
                                        .Take(1)
                                        .DefaultIfEmpty()
-                                   select new { Profile = c, ImageId = biId ?? 0 };
+                                   select new { Profile = c, Media = media };
 
                 var p = profileQuery.AsNoTracking().SingleOrDefault();
 
@@ -263,7 +264,8 @@ public class CompanyProfilesCache : ReadManyExpirationCache<int, CachedCompanyPr
                     ServiceType = p.Profile.ServiceType,
                     TransactionType = p.Profile.TransactionType,
                     Options = new BizSrt.Model.Company.Option.Set { Value = (BizSrt.Model.Company.Option.Flags)p.Profile.Options },
-                    ImageId = p.ImageId
+                    ImageId = p.Media != null ? p.Media.Id : 0,
+                    ImageSize = p.Media != null ? BizSrt.Foundation.Entity.Image.ResolveSize(BizSrt.Model.ImageEntity.Company, p.Media.Metadata) : BizSrt.Model.ImageSizeType.None
                 };
             },
             1000)
