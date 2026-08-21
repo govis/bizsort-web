@@ -180,3 +180,34 @@ var bestOffices = allOfficesForPage
     .Select(g => g.OrderBy(co => co.Order).First())
     .ToList();
 ```
+
+## 13. Case Study: FeaturedCompaniesCache Refactoring (2026-08-21)
+
+A real-world audit of FeaturedCompaniesCache.cs revealed severe cold-cache timeouts caused by three critical LINQ anti-patterns that were bypassed during initial porting.
+
+**1. The Parameter Padding Trap (Category Filter)**
+- **Broken Modern Code:** ar catIds = dbContext.Categories_Unwound.Where(cu => cu.Parent == catId).Select(cu => cu.Child).ToList(); query.Where(c => catIds.Contains(c.Category))
+- **The Impact:** Categories with 100 children generated 100 SQL parameters (@p1..@p100), forcing SQL Server into a heavy plan compilation step.
+- **The Fix (Reverted to Legacy Pattern):** query.Where(c => c.Category == catId || dbContext.Categories_Unwound.Any(cu => cu.Parent == catId && cu.Child == c.Category)) (Generated a clean EXISTS subquery).
+
+**2. The \Distinct()\ vs \EXISTS\ Trap (Location Filter)**
+- **Broken Modern Code:** join id in dbContext.CompanyOffices.Where(...).Select(co => co.Company).Distinct() on c.Id equals id
+- **The Impact:** Forced SQL Server to SELECT all columns from CompanyOffices to compute uniqueness.
+- **The Fix:** where dbContext.CompanyOffices.Any(co => co.Company == c.Id && locIds.Contains(co.Location)) (Native EXISTS subquery, dropping Distinct() entirely).
+
+**3. The Full-Table Scan & N+1 Cascade (Media Check & Sort)**
+- **Broken Modern Code:** Fetched ALL matching active companies into C# memory ar allItems = (from b in cq select new { b.Id, b.Created }).ToArray();, applied Take(500) in C#, then looped to run 500 individual CompanyMedia queries.
+- **The Impact:** Massive heap allocation (30,000+ objects) and 500 N+1 database roundtrips.
+- **The Fix (EF Core 10 CROSS APPLY):**
+  `csharp
+  var qt = (from b in cq
+            from media in dbContext.CompanyMedia
+                .Where(m => m.Company == b.Id && m.Type == (byte)MediaType.Default_Image)
+                .Select(m => new { m.Metadata })
+                .Take(1)                        // CROSS APPLY — naturally filters out companies with no media
+            orderby b.Created descending
+            select new { b.Id, media.Metadata })
+           .Take(2000)                          // SQL-side cap
+           .AsEnumerable();                     // Stream to C#
+  `
+  This allowed SQL Server to sort, cap, and filter natively in a single round-trip.
