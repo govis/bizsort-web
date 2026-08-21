@@ -1133,7 +1133,7 @@
 | [ ] | â†³ `class CachedCompanyProduct` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Reset()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `ToPreview()` | | |
-| [!!] |     ↗ class CachedCompanyProfile | BizSrt.Api.Data.Cache.Company.CachedCompanyProfile | **PARTIALLY PORTED WITH GAPS (2026-08-21 audit).** Missing ServiceType (long) and TransactionType (short) properties vs legacy. ImageSize property exists on model but is not mapped in either EF loader query (Metadata blob not selected). |
+| [!!] |     ↗ class CachedCompanyProfile | BizSrt.Api.Data.Cache.Company.CachedCompanyProfile | **PARTIALLY PORTED WITH GAPS (2026-08-21 audit).** ServiceType and TransactionType mapped. ImageSize property exists on model but is not mapped in either EF loader query (Metadata blob not selected). |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Reset()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `ToPreview()` | | |
 | [ ] | â†³ `class CachedImage` | - | - |
@@ -1244,7 +1244,7 @@
 | [ ] | â†³ `class CompanyProductCache` | - | - |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Reset()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `ToPreview()` | | |
-| [!!] |     ↗ class CompanyProfilesCache | BizSrt.Api.Data.Cache.Company.CompanyProfilesCache | **PARTIALLY PORTED WITH GAPS (2026-08-21 audit).** Cache class exists and functions but does not map ServiceType, TransactionType, or compute ImageSize from Metadata. See CachedCompanyProfile entry above. |
+| [!!] |     ↗ class CompanyProfilesCache | BizSrt.Api.Data.Cache.Company.CompanyProfilesCache | **PARTIALLY PORTED WITH GAPS (2026-08-21 audit).** ServiceType and TransactionType mapped. Cache class exists and functions but does not compute ImageSize from Metadata. See CachedCompanyProfile entry above. |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `Reset()` | | |
 | | &nbsp;&nbsp;&nbsp;&nbsp;â†³ `ToPreview()` | | |
 | [ ] | â†³ `class CompanyQueryOutput` | - | - |

@@ -22,6 +22,8 @@ public class CachedCompanyProfile : BizSrt.Foundation.Cache.PartCache, BizSrt.Fo
     public string WebSite { get; set; } = string.Empty;
     public string Text { get; set; } = string.Empty;
     public short Category { get; set; }
+    public long ServiceType { get; set; }
+    public short TransactionType { get; set; }
     
     public BizSrt.Model.Company.Option.Set Options { get; set; } = new();
 
@@ -226,6 +228,8 @@ public class CompanyProfilesCache : ReadManyExpirationCache<int, CachedCompanyPr
                         WebSite = p.Profile.WebSite ?? string.Empty,
                         Text = p.Profile.Text ?? string.Empty,
                         Category = p.Profile.Category,
+                        ServiceType = p.Profile.ServiceType,
+                        TransactionType = p.Profile.TransactionType,
                         Options = new BizSrt.Model.Company.Option.Set { Value = (BizSrt.Model.Company.Option.Flags)p.Profile.Options },
                         ImageId = p.ImageId
                     };
@@ -256,6 +260,8 @@ public class CompanyProfilesCache : ReadManyExpirationCache<int, CachedCompanyPr
                     WebSite = p.Profile.WebSite ?? string.Empty,
                     Text = p.Profile.Text ?? string.Empty,
                     Category = p.Profile.Category,
+                    ServiceType = p.Profile.ServiceType,
+                    TransactionType = p.Profile.TransactionType,
                     Options = new BizSrt.Model.Company.Option.Set { Value = (BizSrt.Model.Company.Option.Flags)p.Profile.Options },
                     ImageId = p.ImageId
                 };
